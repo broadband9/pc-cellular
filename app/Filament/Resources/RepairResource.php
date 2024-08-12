@@ -26,8 +26,32 @@ class RepairResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Select::make('customer_id')
-                    ->relationship('customer', 'name')
-                    ->required(),
+                ->label('Customer')
+                ->relationship('customer', 'name')
+                ->required()
+                ->searchable()
+                ->options(function () {
+                    return \App\Models\Customer::all()
+                        ->pluck('name', 'id')
+                        ->map(function ($name, $id) {
+                            $customer = \App\Models\Customer::find($id);
+                            return "{$name} ({$customer->phone})";
+                        });
+                })
+                ->getSearchResultsUsing(function (string $query) {
+                    return \App\Models\Customer::where('name', 'like', "%{$query}%")
+                        ->orWhere('phone', 'like', "%{$query}%")
+                        ->get()
+                        ->mapWithKeys(function ($customer) {
+                            return [$customer->id => "{$customer->name} ({$customer->phone})"];
+                        });
+                })
+                ->getOptionLabelUsing(function ($value) {
+                    $customer = \App\Models\Customer::find($value);
+                    return $customer ? "{$customer->name} ({$customer->phone})" : null;
+                }),
+            
+            
                 
                 Forms\Components\Select::make('device_type')
                     ->options([
