@@ -78,7 +78,7 @@ class RepairResource extends Resource
                         Forms\Components\TextInput::make('passcode')
                             ->label('Passcode')
                             ->visible(fn ($get) => $get('device_type') === 'mobile'),
-                        Forms\Components\TextArea::make('issue_description')
+                        Forms\Components\Textarea::make('issue_description')
                             ->label('Issue Description / Notes')
                             ->visible(fn ($get) => $get('device_type') === 'mobile'),
                         Forms\Components\TextInput::make('estimated_cost')
@@ -137,7 +137,7 @@ class RepairResource extends Resource
                         Forms\Components\TextInput::make('laptop_warranty')
                             ->label('Warranty Status')
                             ->visible(fn ($get) => $get('device_type') === 'laptop'),
-                        Forms\Components\TextArea::make('laptop_issue_description')
+                        Forms\Components\Textarea::make('laptop_issue_description')
                             ->label('Issue Description / Notes')
                             ->visible(fn ($get) => $get('device_type') === 'laptop'),
                         Forms\Components\TextInput::make('laptop_estimated_cost')

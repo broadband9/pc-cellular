@@ -25,22 +25,23 @@ return new class extends Migration
             $table->text('issue_description')->nullable();
 
             // Fields for mobile phones
-            $table->string('mobile_make')->nullable();
-            $table->string('mobile_model')->nullable();
-            $table->string('mobile_imei')->nullable();
-            $table->string('mobile_network')->nullable();
-            $table->string('mobile_passcode')->nullable();
-            $table->boolean('mobile_power_up')->default(false);
-            $table->boolean('mobile_lens_lcd_damage')->default(false);
-            $table->boolean('mobile_missing_parts')->default(false);
-            $table->boolean('mobile_liquid_damage')->default(false);
-            $table->boolean('mobile_tampered')->default(false);
-            $table->boolean('mobile_button_functions_ok')->default(false);
-            $table->boolean('mobile_camera_lens_damage')->default(false);
-            $table->boolean('mobile_sim_sd_removed')->default(false);
-            $table->boolean('mobile_risk_to_back')->default(false);
-            $table->boolean('mobile_risk_to_lcd')->default(false);
-            $table->boolean('mobile_risk_to_biometrics')->default(false);
+            $table->string('make')->nullable();
+            $table->string('model')->nullable();
+            $table->string('imei')->nullable();
+            $table->string('network')->nullable();
+            $table->string('passcode')->nullable();
+            $table->decimal('estimated_cost', 10, 2)->nullable();
+            $table->boolean('power_up')->default(false);
+            $table->boolean('lens_lcd_damage')->default(false);
+            $table->boolean('missing_parts')->default(false);
+            $table->boolean('liquid_damage')->default(false);
+            $table->boolean('tampered')->default(false);
+            $table->boolean('button_functions_ok')->default(false);
+            $table->boolean('camera_lens_damage')->default(false);
+            $table->boolean('sim_sd_removed')->default(false);
+            $table->boolean('risk_to_back')->default(false);
+            $table->boolean('risk_to_lcd')->default(false);
+            $table->boolean('risk_to_biometrics')->default(false);
 
             // Fields for laptops
             $table->string('laptop_make')->nullable();

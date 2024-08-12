@@ -17,7 +17,6 @@ class Repair extends Model
         'risk_to_lcd', 'risk_to_biometrics', 'laptop_make', 'laptop_model', 
         'laptop_serial_number', 'laptop_os', 'laptop_warranty', 'laptop_issue_description',
         'laptop_estimated_cost', 'laptop_location'
-        // Add other device-specific fields as needed
     ];
 
     public function customer()
