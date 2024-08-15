@@ -14,7 +14,7 @@ return [
     |
     */
 
-    'default' => env('MAIL_MAILER', 'log'),
+'default' => env('MAIL_MAILER', 'smtp'),
 
     /*
     |--------------------------------------------------------------------------
@@ -37,17 +37,31 @@ return [
 
     'mailers' => [
 
-        'smtp' => [
-            'transport' => 'smtp',
-            'url' => env('MAIL_URL'),
-            'host' => env('MAIL_HOST', '127.0.0.1'),
-            'port' => env('MAIL_PORT', 2525),
-            'encryption' => env('MAIL_ENCRYPTION', 'tls'),
-            'username' => env('MAIL_USERNAME'),
-            'password' => env('MAIL_PASSWORD'),
-            'timeout' => null,
-            'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url(env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
-        ],
+       'smtp' => [
+                'transport' => 'smtp',
+                'host' => env('MAIL_HOST', 'mail.smtp2go.com'),
+                'port' => env('MAIL_PORT', 587),
+                'encryption' => env('MAIL_ENCRYPTION', 'tls'),
+                'username' => env('MAIL_USERNAME', 'app@pccellular.hosting.9.technology'),
+                'password' => env('MAIL_PASSWORD', 'VLbbMDerkSAlm2gb'),
+                'timeout' => null,
+                'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url(env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
+            ],
+
+
+//             'mailers' => [
+
+//       'smtp' => [
+//     'transport' => 'smtp',
+//     'host' => env('MAIL_HOST', 'smtp.gmail.com'),
+//     'port' => env('MAIL_PORT', 587),
+//     'encryption' => env('MAIL_ENCRYPTION', 'tls'),
+//     'username' => env('MAIL_USERNAME', 'muazzam.zulfiqar123@gmail.com'),
+//     'password' => env('MAIL_PASSWORD', 'kfbalomtqkbjddqn'),
+//     'timeout' => null,
+//     'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url(env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
+// ],
+
 
         'ses' => [
             'transport' => 'ses',

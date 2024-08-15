@@ -22,18 +22,25 @@ class CustomerResource extends Resource
     public static function form(Form $form): Form {
         return $form->schema([
             Forms\Components\TextInput::make('name')->required(),
-            Forms\Components\TextInput::make('phone')->required(),
-            Forms\Components\TextInput::make('email')->email()->required()->unique(),
+            Forms\Components\TextInput::make('phone'),
+            Forms\Components\TextInput::make('email')->email()->unique(),
+            Forms\Components\TextInput::make('postcode'), 
+
         ]);
     }
     
-    public static function table(Table $table): Table {
-        return $table->columns([
-            Tables\Columns\TextColumn::make('name'),
-            Tables\Columns\TextColumn::make('phone'),
-            Tables\Columns\TextColumn::make('email'),
+    public static function table(Table $table): Table
+{
+    return $table
+        ->columns([
+            Tables\Columns\TextColumn::make('name')->searchable(),
+            Tables\Columns\TextColumn::make('phone')->searchable(),
+            Tables\Columns\TextColumn::make('email')->searchable(),
+            Tables\Columns\TextColumn::make('postcode')->searchable(), 
+
         ]);
-    }
+        
+}
     
 
     public static function getRelations(): array

@@ -2,31 +2,28 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use App\Models\User; // Make sure to import the User model
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
-    public function run(): void
+    public function run()
     {
-        // Create 10 random users
-        User::factory(10)->create();
+        // Create roles
+        $superAdmin = Role::create(['name' => 'super_admin']);
+       
 
-        // Create a specific admin user
-        $adminUser = User::factory()->create([
+        // Create the admin user
+        $adminUser = User::create([
             'name' => 'Admin User',
             'email' => 'admin@ezy2.com',
             'password' => Hash::make('password'), // Set the password here
         ]);
 
-        // Ensure roles and permissions are properly set up
-
-        // Assign the admin role to the created user
-        $adminUser->assignRole('super_admin');
+        // Assign the role to the user
+        $adminUser->assignRole($superAdmin);
     }
-
 }

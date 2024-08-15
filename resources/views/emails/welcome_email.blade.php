@@ -1,13 +1,21 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Welcome to Our Repair Service</title>
-</head>
-<body>
-    <h1>Welcome!</h1>
-    <p>Thank you for bringing your {{ $repair->device_type }} in for repair.</p>
-    <p>Repair Number: {{ $repair->repair_number }}</p>
-    <p>We will update you on the status of your repair shortly.</p>
-    <p>Best regards,<br>Your Repair Service Team</p>
-</body>
-</html>
+@component('mail::message')
+# Repair Created
+
+Dear {{ $repair->customer->name }},
+
+Your repair with number **{{ $repair->repair_number }}** has been successfully created.
+
+### Device Information
+- **Device Type:** {{ ucfirst($repair->device_type) }}
+- **Status:** {{ ucfirst($repair->status) }}
+- **Estimated Cost:** ${{ number_format($repair->estimated_cost, 2) }}
+
+@component('mail::button', ['url' => ''])
+View Repair Details
+@endcomponent
+
+Thank you for choosing our service.
+
+Best regards,<br>
+{{ config('app.name') }}
+@endcomponent

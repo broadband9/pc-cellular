@@ -10,7 +10,7 @@ use Illuminate\Queue\SerializesModels;
 
 class WelcomeEmail extends Mailable
 {
-    use Queueable, SerializesModels;
+    use  SerializesModels;
 
     public $repair;
 
@@ -21,9 +21,7 @@ class WelcomeEmail extends Mailable
 
     public function build()
     {
-        return $this->view('emails.welcome_email')
-                    ->with([
-                        'repair' => $this->repair,
-                    ]);
+        return $this->subject('Repair Created: ' . $this->repair->repair_number)
+                    ->markdown('emails.welcome_email');
     }
 }

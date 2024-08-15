@@ -2,10 +2,10 @@
 
 namespace App\Filament\Resources;
 
-namespace App\Filament\Resources;
-
 use App\Filament\Resources\RepairResource\Pages;
 use App\Models\Repair;
+use App\Models\RepairStatus;
+use App\Models\Location;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\RepairReadyForPickup;
 use App\Mail\RepairAwaitingParts;
 use App\Mail\RepairAwaitingCustomer;
+
 class RepairResource extends Resource
 {
     protected static ?string $model = Repair::class;
@@ -26,32 +27,30 @@ class RepairResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Select::make('customer_id')
-                ->label('Customer')
-                ->relationship('customer', 'name')
-                ->required()
-                ->searchable()
-                ->options(function () {
-                    return \App\Models\Customer::all()
-                        ->pluck('name', 'id')
-                        ->map(function ($name, $id) {
-                            $customer = \App\Models\Customer::find($id);
-                            return "{$name} ({$customer->phone})";
-                        });
-                })
-                ->getSearchResultsUsing(function (string $query) {
-                    return \App\Models\Customer::where('name', 'like', "%{$query}%")
-                        ->orWhere('phone', 'like', "%{$query}%")
-                        ->get()
-                        ->mapWithKeys(function ($customer) {
-                            return [$customer->id => "{$customer->name} ({$customer->phone})"];
-                        });
-                })
-                ->getOptionLabelUsing(function ($value) {
-                    $customer = \App\Models\Customer::find($value);
-                    return $customer ? "{$customer->name} ({$customer->phone})" : null;
-                }),
-            
-            
+                    ->label('Customer')
+                    ->relationship('customer', 'name')
+                    ->required()
+                    ->searchable()
+                    ->options(function () {
+                        return \App\Models\Customer::all()
+                            ->pluck('name', 'id')
+                            ->map(function ($name, $id) {
+                                $customer = \App\Models\Customer::find($id);
+                                return "{$name} ({$customer->phone})";
+                            });
+                    })
+                    ->getSearchResultsUsing(function (string $query) {
+                        return \App\Models\Customer::where('name', 'like', "%{$query}%")
+                            ->orWhere('phone', 'like', "%{$query}%")
+                            ->get()
+                            ->mapWithKeys(function ($customer) {
+                                return [$customer->id => "{$customer->name} ({$customer->phone})"];
+                            });
+                    })
+                    ->getOptionLabelUsing(function ($value) {
+                        $customer = \App\Models\Customer::find($value);
+                        return $customer ? "{$customer->name} ({$customer->phone})" : null;
+                    }),
                 
                 Forms\Components\Select::make('device_type')
                     ->options([
@@ -60,7 +59,11 @@ class RepairResource extends Resource
                     ->required()
                     ->reactive()
                     ->afterStateUpdated(fn ($state, callable $set) => $set('device_details', null)),
-                
+
+                Forms\Components\TextInput::make('repair_number')
+                    ->hidden()
+                    ->default(fn () => strtoupper(Str::random(8))),
+
                 Forms\Components\Fieldset::make('Device Details')
                     ->schema([
                         Forms\Components\TextInput::make('make')
@@ -72,8 +75,19 @@ class RepairResource extends Resource
                         Forms\Components\TextInput::make('imei')
                             ->label('IMEI')
                             ->visible(fn ($get) => $get('device_type') === 'mobile'),
-                        Forms\Components\TextInput::make('network')
+                        Forms\Components\Select::make('network')
                             ->label('Network')
+                            ->options([
+                                'O2' => 'O2',
+                                'Vodafone' => 'Vodafone',
+                                'EE' => 'EE',
+                                'Three' => 'Three',
+                                'BT' => 'BT',
+                                'Giffgaff' => 'Giffgaff',
+                                'Tesco Mobile' => 'Tesco Mobile',
+                                'Sky Mobile' => 'Sky Mobile',
+                                'Virgin Mobile' => 'Virgin Mobile',
+                            ])
                             ->visible(fn ($get) => $get('device_type') === 'mobile'),
                         Forms\Components\TextInput::make('passcode')
                             ->label('Passcode')
@@ -85,9 +99,8 @@ class RepairResource extends Resource
                             ->label('Estimated Cost')
                             ->numeric()
                             ->visible(fn ($get) => $get('device_type') === 'mobile'),
-                        Forms\Components\TextInput::make('location')
-                            ->label('Location')
-                            ->visible(fn ($get) => $get('device_type') === 'mobile'),
+                        
+                        // Mobile-specific boolean fields
                         Forms\Components\Checkbox::make('power_up')
                             ->label('Power Up')
                             ->visible(fn ($get) => $get('device_type') === 'mobile'),
@@ -121,45 +134,34 @@ class RepairResource extends Resource
                         Forms\Components\Checkbox::make('risk_to_biometrics')
                             ->label('Risk to Biometrics')
                             ->visible(fn ($get) => $get('device_type') === 'mobile'),
-
-                        Forms\Components\TextInput::make('laptop_make')
-                            ->label('Make')
-                            ->visible(fn ($get) => $get('device_type') === 'laptop'),
-                        Forms\Components\TextInput::make('laptop_model')
-                            ->label('Model')
-                            ->visible(fn ($get) => $get('device_type') === 'laptop'),
-                        Forms\Components\TextInput::make('laptop_serial_number')
-                            ->label('Serial Number')
-                            ->visible(fn ($get) => $get('device_type') === 'laptop'),
-                        Forms\Components\TextInput::make('laptop_os')
-                            ->label('Operating System')
-                            ->visible(fn ($get) => $get('device_type') === 'laptop'),
-                        Forms\Components\TextInput::make('laptop_warranty')
-                            ->label('Warranty Status')
-                            ->visible(fn ($get) => $get('device_type') === 'laptop'),
-                        Forms\Components\Textarea::make('laptop_issue_description')
-                            ->label('Issue Description / Notes')
-                            ->visible(fn ($get) => $get('device_type') === 'laptop'),
-                        Forms\Components\TextInput::make('laptop_estimated_cost')
-                            ->label('Estimated Cost')
-                            ->numeric()
-                            ->visible(fn ($get) => $get('device_type') === 'laptop'),
-                        Forms\Components\TextInput::make('laptop_location')
-                            ->label('Location')
-                            ->visible(fn ($get) => $get('device_type') === 'laptop'),
-
-                        Forms\Components\TextInput::make('repair_number')
-                            ->required()
-                            ->unique()
-                            ->default(fn () => strtoupper(Str::random(8))),
-                        Forms\Components\TextInput::make('status')
-                            ->required(),
-                        Forms\Components\TextInput::make('quoted_price')
-                            ->numeric(),
-                        Forms\Components\TextInput::make('finalized_price')
-                            ->numeric(),
-                        Forms\Components\TextInput::make('location'),
                     ]),
+                
+                Forms\Components\Select::make('status_id')
+                    ->label('Status')
+                    ->relationship('status', 'name')
+                    ->searchable()
+                    ->required()
+                    ->createOptionForm([
+                        Forms\Components\TextInput::make('name')
+                            ->label('Status Name')
+                            ->required(),
+                    ])
+                    ->options(RepairStatus::all()->pluck('name', 'id')->toArray()),
+
+                Forms\Components\Select::make('location_id')
+                    ->label('Location')
+                    ->relationship('location', 'name')
+                    ->searchable()
+                    ->createOptionForm([
+                        Forms\Components\TextInput::make('name')
+                            ->label('Location Name')
+                            ->required(),
+                    ])
+                    ->options(Location::all()->pluck('name', 'id')->toArray()),
+
+                Forms\Components\TextInput::make('finalized_price')
+                    ->label('Finalized Price')
+                    ->numeric(),
             ]);
     }
 
@@ -170,8 +172,8 @@ class RepairResource extends Resource
                 Tables\Columns\TextColumn::make('repair_number'),
                 Tables\Columns\TextColumn::make('customer.name')->label('Customer'),
                 Tables\Columns\TextColumn::make('device_type')->label('Device Type'),
-                Tables\Columns\TextColumn::make('status'),
-                Tables\Columns\TextColumn::make('location'),
+                Tables\Columns\TextColumn::make('status.name')->label('Status'),
+                Tables\Columns\TextColumn::make('location.name')->label('Location'),
             ])
             ->actions([
                 Action::make('viewDetails')
@@ -180,44 +182,20 @@ class RepairResource extends Resource
                     ->modalContent(fn ($record) => view('components.repair-details', ['record' => $record]))
                     ->icon('heroicon-o-eye'),
 
-                    Action::make('updateStatus')
+                Action::make('updateStatus')
                     ->label('Update Status')
                     ->modalHeading('Update Repair Status')
                     ->form([
-                        Forms\Components\Select::make('status')
+                        Forms\Components\Select::make('status_id')
                             ->label('Status')
-                            ->options([
-                                'awaiting_parts' => 'Awaiting Parts',
-                                'awaiting_customer' => 'Awaiting Customer',
-                            ])
-                            ->required(),
-                        Forms\Components\TextInput::make('finalized_price')
-                            ->label('Finalized Price')
-                            ->numeric(),
+                            ->relationship('status', 'name')
+                            ->options(RepairStatus::all()->pluck('name', 'id')->toArray()),
                     ])
                     ->action(function ($record, $data) {
-                        $record->update([
-                            'status' => $data['status'],
-                            'finalized_price' => $data['finalized_price'],
-                        ]);
-
-                        // Send email notifications based on status
-                        switch ($data['status']) {
-                            case 'repaired':
-                                Mail::to($record->customer->email)->send(new RepairReadyForPickup($record));
-                                break;
-                            case 'awaiting_parts':
-                                Mail::to($record->customer->email)->send(new RepairAwaitingParts($record));
-                                break;
-                            case 'awaiting_customer':
-                                Mail::to($record->customer->email)->send(new RepairAwaitingCustomer($record));
-                                break;
-                        }
-                    }),
-
-                    
-            ])
-            ->filters([]);
+                        $record->update(['status_id' => $data['status_id']]);
+                    })
+                    ->icon('heroicon-o-pencil'),
+            ]);
     }
 
     public static function getRelations(): array
