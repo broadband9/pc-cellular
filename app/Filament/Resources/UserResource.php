@@ -5,9 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
 use Filament\Forms;
-use Filament\Resources\Form;
 use Filament\Resources\Resource;
-use Filament\Resources\Table;
 use Filament\Tables;
 use Spatie\Permission\Models\Role;
 
@@ -17,28 +15,14 @@ class UserResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
 
-
     public static function form(Forms\Form $form): Forms\Form
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->label('Name'),
-                Forms\Components\TextInput::make('email')
-                    ->required()
-                    ->email()
-                    ->label('Email'),
-                Forms\Components\TextInput::make('password')
-                    ->password()
-                    ->required(fn ($livewire) => $livewire instanceof Pages\CreateUser)
-                    ->label('Password'),
-                Forms\Components\Select::make('roles')
-                    ->multiple()
-                    ->relationship('roles', 'name')
-                    ->options(Role::all()->pluck('name', 'id')->toArray())
-                    ->label('Roles')
-                    ->required(),
+                Forms\Components\TextInput::make('name')->required()->label('Name'),
+                Forms\Components\TextInput::make('email')->required()->email()->label('Email'),
+                Forms\Components\TextInput::make('password')->password()->required(fn ($livewire) => $livewire instanceof Pages\CreateUser)->label('Password'),
+                Forms\Components\Select::make('roles')->multiple()->relationship('roles', 'name')->options(Role::all()->pluck('name', 'id')->toArray())->label('Roles')->required(),
             ]);
     }
 

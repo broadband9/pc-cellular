@@ -36,21 +36,27 @@ class RepairResource extends Resource
                             ->pluck('name', 'id')
                             ->map(function ($name, $id) {
                                 $customer = \App\Models\Customer::find($id);
-                                return "{$name} ({$customer->phone})";
+                                return "{$name} ({$customer->phone}, {$customer->email})";
                             });
                     })
                     ->getSearchResultsUsing(function (string $query) {
                         return \App\Models\Customer::where('name', 'like', "%{$query}%")
                             ->orWhere('phone', 'like', "%{$query}%")
+                            ->orWhere('email', 'like', "%{$query}%")
                             ->get()
                             ->mapWithKeys(function ($customer) {
-                                return [$customer->id => "{$customer->name} ({$customer->phone})"];
+                                return [$customer->id => "{$customer->name} ({$customer->phone}, {$customer->email})"];
                             });
                     })
                     ->getOptionLabelUsing(function ($value) {
                         $customer = \App\Models\Customer::find($value);
-                        return $customer ? "{$customer->name} ({$customer->phone})" : null;
+                        return $customer ? "{$customer->name} ({$customer->phone}, {$customer->email})" : null;
                     }),
+
+                    Forms\Components\TextInput::make('email')
+                    ->label('Customer Email')
+                    ->hidden() // Hide this field from the form
+                    ->default(fn ($state) => $state),
                 
                 Forms\Components\Select::make('device_type')
                     ->options([
@@ -162,6 +168,19 @@ class RepairResource extends Resource
                 Forms\Components\TextInput::make('finalized_price')
                     ->label('Finalized Price')
                     ->numeric(),
+
+                // Toggle for sending email
+                Forms\Components\Toggle::make('send_email')
+                    ->label('Send Email Notification')
+                    ->default(false)
+                    ->reactive(),
+
+                // Email message box
+                Forms\Components\Textarea::make('email_message')
+                    ->label('Custom Email Message')
+                    ->placeholder('Enter your message here...')
+                    ->visible(fn ($get) => $get('send_email'))
+                    ->required(fn ($get) => $get('send_email')),
             ]);
     }
 
@@ -210,5 +229,14 @@ class RepairResource extends Resource
             'create' => Pages\CreateRepair::route('/create'),
             'edit' => Pages\EditRepair::route('/{record}/edit'),
         ];
+    }
+
+    // Optionally, you can handle sending email in a custom save method
+    protected static function afterCreate($record)
+    {
+        if ($record->send_email) {
+            $message = $record->email_message;
+            Mail::to($record->customer->email)->send(new RepairReadyForPickup($message));
+        }
     }
 }

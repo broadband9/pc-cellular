@@ -1,6 +1,5 @@
 <?php
 
-// app/Mail/WelcomeEmail.php
 namespace App\Mail;
 
 use App\Models\Repair;
@@ -10,7 +9,7 @@ use Illuminate\Queue\SerializesModels;
 
 class WelcomeEmail extends Mailable
 {
-    use  SerializesModels;
+    use Queueable, SerializesModels;
 
     public $repair;
 
