@@ -21,6 +21,11 @@ class CreateUser extends CreateRecord
         $roles = $this->form->getState()['roles'] ?? [];
         $this->record->syncRoles($roles);
     }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
     
 
 }

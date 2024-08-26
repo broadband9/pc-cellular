@@ -9,4 +9,8 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateRepairStatus extends CreateRecord
 {
     protected static string $resource = RepairStatusResource::class;
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
 }

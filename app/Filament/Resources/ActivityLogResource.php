@@ -6,6 +6,7 @@ use App\Filament\Resources\ActivityLogResource\Pages;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\HtmlString;
 use Spatie\Activitylog\Models\Activity;
 
 class ActivityLogResource extends Resource
@@ -22,7 +23,6 @@ class ActivityLogResource extends Resource
     {
         return false;
     }
-
 
     public static function table(Table $table): Table
     {
@@ -49,8 +49,24 @@ class ActivityLogResource extends Resource
                 // Define filters here, if needed
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                // You can remove the EditAction if editing is not needed
+                Tables\Actions\ViewAction::make()
+                    ->modalHeading('Activity Details')
+                    ->modalContent(function ($record) {
+                        $properties = $record->properties->toArray();
+                        $formattedProperties = '';
+
+                        foreach ($properties as $key => $value) {
+                            $formattedProperties .= '<p><strong>' . ucfirst(str_replace('_', ' ', $key)) . ':</strong> ';
+                            if (is_array($value) || is_object($value)) {
+                                $formattedProperties .= '<pre>' . htmlspecialchars(json_encode($value, JSON_PRETTY_PRINT)) . '</pre>';
+                            } else {
+                                $formattedProperties .= htmlspecialchars($value);
+                            }
+                            $formattedProperties .= '</p>';
+                        }
+
+                        return new HtmlString($formattedProperties);
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
@@ -70,5 +86,4 @@ class ActivityLogResource extends Resource
     {
         return 'Logs';
     }
-    
 }

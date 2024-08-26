@@ -14,11 +14,11 @@ return new class extends Migration
         Schema::create('repairs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('customer_id')->constrained()->onDelete('cascade');
+            $table->foreignId('status_id')->constrained('repair_statuses')->onDelete('restrict');            $table->foreignId('location_id')->constrained()->onDelete('restrict'); // Ensure 'locations' table exists and has 'id' column
+            $table->foreignId('make_id')->constrained()->onDelete('restrict'); // Ensure 'makes' table exists and has 'id' column
+
             $table->string('device_type');
             $table->string('repair_number')->unique();
-            $table->unsignedBigInteger('status_id'); 
-            $table->unsignedBigInteger('location_id'); 
-            $table->string('make')->nullable();
             $table->string('model')->nullable();
             $table->string('imei')->nullable();
             $table->string('network')->nullable();
@@ -44,7 +44,10 @@ return new class extends Migration
         });
     }
 
-    public function down()
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
     {
         Schema::dropIfExists('repairs');
     }

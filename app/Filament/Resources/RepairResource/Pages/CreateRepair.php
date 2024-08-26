@@ -45,4 +45,9 @@ protected function afterCreate()
         Log::info('Email not sent as the toggle is off or the email is not set');
     }
 }
+
+protected function getRedirectUrl(): string
+{
+    return $this->getResource()::getUrl('index');
+}
 }

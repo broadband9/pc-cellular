@@ -68,7 +68,7 @@
                 @if($record->device_type === 'mobile')
                 <tr>
                     <td>Make</td>
-                    <td>{{ $record->make }}</td>
+                    <td>{{ $record->make->name }}</td>
                 </tr>
                 <tr>
                     <td>Model</td>
