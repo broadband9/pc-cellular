@@ -16,6 +16,7 @@ use App\Mail\RepairReadyForPickup;
 use App\Mail\RepairAwaitingParts;
 use App\Mail\RepairAwaitingCustomer;
 use Illuminate\Support\Collection;
+use Saade\FilamentAutograph\Forms\Components\SignaturePad;
 
 class RepairResource extends Resource
 {
@@ -27,6 +28,7 @@ class RepairResource extends Resource
     {
         return $form
             ->schema([
+                // Customer selection
                 Forms\Components\Select::make('customer_id')
                     ->label('Customer')
                     ->relationship('customer', 'name')
@@ -66,12 +68,13 @@ class RepairResource extends Resource
                         return $customer ? "{$customer->name} ({$customer->phone}, {$customer->email})" : null;
                     }),
 
-                    Forms\Components\TextInput::make('email')
-                    ->label('Customer Email')
-                    ->hidden() // Hide this field from the form
-                    ->default(fn ($state) => $state),
-                
-                    Forms\Components\Select::make('device_type')
+                Forms\Components\TextInput::make('repair_number')
+                    ->hidden()
+                    ->default(fn () => strtoupper(Str::random(3))),
+
+                // Device type selection
+                Forms\Components\Select::make('device_type')
+                    ->label('Device Type')
                     ->options([
                         'mobile' => 'Mobile Phone',
                     ])
@@ -80,38 +83,28 @@ class RepairResource extends Resource
                     ->reactive()
                     ->afterStateUpdated(fn ($state, callable $set) => $set('device_details', null)),
 
-                    Forms\Components\TextInput::make('repair_number')
-                    ->hidden()
-                    ->default(fn () => strtoupper(Str::random(3))),
-
+                // Device Details Fieldset
                 Forms\Components\Fieldset::make('Device Details')
                     ->schema([
                         Forms\Components\Select::make('make_id')
-                        ->label('Make')
-                        ->relationship('make', 'name')
-                        ->searchable()
-                        ->createOptionForm([
-                            Forms\Components\TextInput::make('name')
-                                ->label('Make Name')
-                                ->required(),
-                        ])
-                        ->options(function () {
-                            return \App\Models\Make::all()
-                                ->pluck('name', 'id')
-                                ->toArray();
-                        })
-                        ->getOptionLabelUsing(function ($value) {
-                            $make = \App\Models\Make::find($value);
-                            return $make ? $make->name : null;
-                        })
-                        ->visible(fn ($get) => $get('device_type') === 'mobile')
-                        ->nullable(), // Ensure this field is optional
+                            ->label('Make')
+                            ->relationship('make', 'name')
+                            ->searchable()
+                            ->createOptionForm([
+                                Forms\Components\TextInput::make('name')
+                                    ->label('Make Name')
+                                    ->required(),
+                            ])
+                            ->visible(fn ($get) => $get('device_type') === 'mobile'),
+
                         Forms\Components\TextInput::make('model')
                             ->label('Model')
                             ->visible(fn ($get) => $get('device_type') === 'mobile'),
+
                         Forms\Components\TextInput::make('imei')
                             ->label('IMEI')
                             ->visible(fn ($get) => $get('device_type') === 'mobile'),
+
                         Forms\Components\Select::make('network')
                             ->label('Network')
                             ->options([
@@ -127,94 +120,149 @@ class RepairResource extends Resource
                                 'Other' => 'Other',
                             ])
                             ->visible(fn ($get) => $get('device_type') === 'mobile'),
+
                         Forms\Components\TextInput::make('passcode')
                             ->label('Passcode')
                             ->visible(fn ($get) => $get('device_type') === 'mobile'),
-                        Forms\Components\Textarea::make('issue_description')
-                            ->label('Issue Description / Notes')
-                            ->visible(fn ($get) => $get('device_type') === 'mobile'),
+
+
                         Forms\Components\TextInput::make('estimated_cost')
                             ->label('Estimated Cost')
                             ->numeric()
                             ->visible(fn ($get) => $get('device_type') === 'mobile'),
-                        
-                        // Mobile-specific boolean fields
-                        Forms\Components\Checkbox::make('power_up')
+
+                            Forms\Components\Textarea::make('issue_description')
+                            ->label('Issue Description / Notes')
+                            ->visible(fn ($get) => $get('device_type') === 'mobile'),
+                    ])
+                    ->columns(2), // Grouping fields into two columns
+
+                // Mobile-specific boolean fields with inline radio buttons for Yes/No
+                Forms\Components\Fieldset::make('Device Condition')
+                    ->schema([
+                        Forms\Components\Radio::make('power_up')
                             ->label('Power Up')
+                            ->options([true => 'Yes', false => 'No'])
+                            ->inline()
                             ->visible(fn ($get) => $get('device_type') === 'mobile'),
-                        Forms\Components\Checkbox::make('lens_lcd_damage')
+
+                        Forms\Components\Radio::make('lens_lcd_damage')
                             ->label('Lens / LCD Damage')
+                            ->options([true => 'Yes', false => 'No'])
+                            ->inline()
                             ->visible(fn ($get) => $get('device_type') === 'mobile'),
-                        Forms\Components\Checkbox::make('missing_parts')
+
+                        Forms\Components\Radio::make('missing_parts')
                             ->label('Missing Parts')
+                            ->options([true => 'Yes', false => 'No'])
+                            ->inline()
                             ->visible(fn ($get) => $get('device_type') === 'mobile'),
-                        Forms\Components\Checkbox::make('liquid_damage')
+
+                        Forms\Components\Radio::make('liquid_damage')
                             ->label('Liquid Damage')
+                            ->options([true => 'Yes', false => 'No'])
+                            ->inline()
                             ->visible(fn ($get) => $get('device_type') === 'mobile'),
-                        Forms\Components\Checkbox::make('tampered')
+
+                        Forms\Components\Radio::make('tampered')
                             ->label('Tampered')
+                            ->options([true => 'Yes', false => 'No'])
+                            ->inline()
                             ->visible(fn ($get) => $get('device_type') === 'mobile'),
-                        Forms\Components\Checkbox::make('button_functions_ok')
+
+                        Forms\Components\Radio::make('button_functions_ok')
                             ->label('Button Functions OK')
+                            ->options([true => 'Yes', false => 'No'])
+                            ->inline()
                             ->visible(fn ($get) => $get('device_type') === 'mobile'),
-                        Forms\Components\Checkbox::make('camera_lens_damage')
+
+                        Forms\Components\Radio::make('camera_lens_damage')
                             ->label('Camera Lens / Back Damage')
+                            ->options([true => 'Yes', false => 'No'])
+                            ->inline()
                             ->visible(fn ($get) => $get('device_type') === 'mobile'),
-                        Forms\Components\Checkbox::make('sim_sd_removed')
+
+                        Forms\Components\Radio::make('sim_sd_removed')
                             ->label('SIM and SD Removed')
+                            ->options([true => 'Yes', false => 'No'])
+                            ->inline()
                             ->visible(fn ($get) => $get('device_type') === 'mobile'),
-                        Forms\Components\Checkbox::make('risk_to_back')
+
+                        Forms\Components\Radio::make('risk_to_back')
                             ->label('Risk to Back')
+                            ->options([true => 'Yes', false => 'No'])
+                            ->inline()
                             ->visible(fn ($get) => $get('device_type') === 'mobile'),
-                        Forms\Components\Checkbox::make('risk_to_lcd')
+
+                        Forms\Components\Radio::make('risk_to_lcd')
                             ->label('Risk to LCD')
+                            ->options([true => 'Yes', false => 'No'])
+                            ->inline()
                             ->visible(fn ($get) => $get('device_type') === 'mobile'),
-                        Forms\Components\Checkbox::make('risk_to_biometrics')
+
+                        Forms\Components\Radio::make('risk_to_biometrics')
                             ->label('Risk to Biometrics')
+                            ->options([true => 'Yes', false => 'No'])
+                            ->inline()
                             ->visible(fn ($get) => $get('device_type') === 'mobile'),
-                    ]),
-                
-                Forms\Components\Select::make('status_id')
-                    ->label('Status')
-                    ->relationship('status', 'name')
-                    ->searchable()
-                    ->required()
-                    ->createOptionForm([
-                        Forms\Components\TextInput::make('name')
-                            ->label('Status Name')
-                            ->required(),
                     ])
-                    ->options(RepairStatus::all()->pluck('name', 'id')->toArray()),
+                    ->columns(2), // Grouping fields into two columns
 
-                Forms\Components\Select::make('location_id')
-                    ->label('Location')
-                    ->relationship('location', 'name')
-                    ->searchable()
-                    ->createOptionForm([
-                        Forms\Components\TextInput::make('name')
-                            ->label('Location Name')
-                            ->required(),
+                // Status and Location Selection
+                Forms\Components\Fieldset::make('Repair Details')
+                    ->schema([
+                        Forms\Components\Select::make('status_id')
+                            ->label('Status')
+                            ->relationship('status', 'name')
+                            ->searchable()
+                            ->required()
+                            ->createOptionForm([
+                                Forms\Components\TextInput::make('name')
+                                    ->label('Status Name')
+                                    ->required(),
+                            ]),
+
+                        Forms\Components\Select::make('location_id')
+                            ->label('Location')
+                            ->relationship('location', 'name')
+                            ->searchable()
+                            ->createOptionForm([
+                                Forms\Components\TextInput::make('name')
+                                    ->label('Location Name')
+                                    ->required(),
+                            ]),
+
+                        Forms\Components\TextInput::make('finalized_price')
+                            ->label('Finalized Price')
+                            ->numeric(),
                     ])
-                    ->options(Location::all()->pluck('name', 'id')->toArray()),
+                    ->columns(1), // Align fields vertically
 
-                Forms\Components\TextInput::make('finalized_price')
-                    ->label('Finalized Price')
-                    ->numeric(),
-
-                // Toggle for sending email
+                // Email Notification Toggle and Message
                 Forms\Components\Toggle::make('send_email')
-                    ->label('Send Email Notification')
-                    ->default(false)
-                    ->reactive(),
+                ->label('Send Email Notification')
+                ->default(false)
+                ->reactive(),
 
-                // Email message box
-                Forms\Components\Textarea::make('email_message')
-                    ->label('Custom Email Message')
-                    ->placeholder('Enter your message here...')
-                    ->visible(fn ($get) => $get('send_email'))
-                    ->required(fn ($get) => $get('send_email')),
-            ]);
+            Forms\Components\Textarea::make('email_message')
+                ->label('Custom Email Message')
+                ->placeholder('Enter your message here...')
+                ->visible(fn ($get) => $get('send_email'))
+                ->required(fn ($get) => $get('send_email')),
+
+            // New Custom Signature Pad component
+            Forms\Components\TextInput::make('customer_signature')
+                ->hidden()
+                ->default(fn () => null),
+
+                SignaturePad::make('customer_signature')
+                ->clearable(true)
+                ->downloadable(true)
+                ->undoable(true)
+                ->confirmable(true)
+        ]);
     }
+
 
     public static function table(Tables\Table $table): Tables\Table
 {
@@ -223,6 +271,12 @@ class RepairResource extends Resource
             Tables\Columns\TextColumn::make('repair_number')
                 ->label('Repair Number')
                 ->searchable(),
+
+                Tables\Columns\TextColumn::make('customer_signature')
+                ->label('Customer Signature')
+                ->formatStateUsing(fn ($state) => $state ? '<img src="data:image/png;base64,' . $state . '" alt="Signature" style="max-width: 150px;"/>' : 'No Signature')
+                ->html(),
+            
 
             Tables\Columns\TextColumn::make('customer.name')
                 ->label('Customer')

@@ -40,6 +40,9 @@ return new class extends Migration
             $table->boolean('risk_to_lcd')->default(false);
             $table->boolean('risk_to_biometrics')->default(false);
 
+            $table->text('customer_signature')->nullable();
+
+
             $table->timestamps();
         });
     }

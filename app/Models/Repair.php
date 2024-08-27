@@ -17,7 +17,7 @@ class Repair extends Model
          'model', 'imei', 'network', 'passcode', 'issue_description', 'estimated_cost', 
         'power_up', 'lens_lcd_damage', 'missing_parts', 'liquid_damage', 'tampered', 
         'button_functions_ok', 'camera_lens_damage', 'sim_sd_removed', 'risk_to_back', 
-        'risk_to_lcd', 'risk_to_biometrics','make_id'
+        'risk_to_lcd', 'risk_to_biometrics','make_id','customer_signature'
     ];
 
     public function customer()
@@ -83,7 +83,7 @@ class Repair extends Model
                 'location_id', 'make_id', 'model', 'imei', 'network', 'passcode', 'issue_description', 
                 'estimated_cost', 'power_up', 'lens_lcd_damage', 'missing_parts', 'liquid_damage', 
                 'tampered', 'button_functions_ok', 'camera_lens_damage', 'sim_sd_removed', 
-                'risk_to_back', 'risk_to_lcd', 'risk_to_biometrics'
+                'risk_to_back', 'risk_to_lcd', 'risk_to_biometrics','customer_signature',
             ]) // Log changes to these attributes
             ->logOnlyDirty() // Log only when these attributes are changed
             ->useLogName('repair'); // Set a custom log name
