@@ -17,6 +17,25 @@
         .print-btn:hover {
             background-color: #2A3B5A; /* Darker Filament color */
         }
+        .signature-section {
+        display: flex;
+        align-items: flex-start; /* Align items at the start */
+        margin-top: 20px;
+    }
+    .signature-label {
+        margin-right: 20px;
+    }
+    .signature-image {
+        max-height: 150px;
+        max-width: 200px;
+        display: block; /* Ensure the image is treated as a block element */
+    }
+    .signature-line {
+        width: 200px;
+        height: 2px;
+        background-color: black;
+    }
+
     </style>
 </head>
 <body>
@@ -142,7 +161,12 @@
             </tbody>
         </table>
 
-      
+        <div class="signature-section float-right">
+            <div class="signature-label">Customer Signature:</div>
+            <div>
+                <img src="{{ $record->customer_signature }}" alt="Customer Signature" class="signature-image">
+            </div>
+        </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>

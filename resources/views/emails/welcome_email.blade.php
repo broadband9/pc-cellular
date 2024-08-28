@@ -5,6 +5,9 @@ Dear {{ $repair->customer->name }},
 
 Your repair with number **{{ $repair->repair_number }}** has been successfully created.
 
+{{ $customMessage }}
+
+
 ### Device Information
 - **Device Type:** {{ ucfirst($repair->device_type) }}
 - **Status:** {{ ucfirst($repair->status) }}

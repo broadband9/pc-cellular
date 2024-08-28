@@ -12,6 +12,7 @@ class WelcomeEmail extends Mailable
     use Queueable, SerializesModels;
 
     public $repair;
+    public $customMessage;
 
     public function __construct(Repair $repair)
     {
@@ -21,6 +22,13 @@ class WelcomeEmail extends Mailable
     public function build()
     {
         return $this->subject('Repair Created: ' . $this->repair->repair_number)
-                    ->markdown('emails.welcome_email');
+                    ->markdown('emails.welcome_email')
+                    ->with(['customMessage' => $this->customMessage]);
+    }
+
+    public function with($customMessage)
+    {
+        $this->customMessage = $customMessage;
+        return $this;
     }
 }

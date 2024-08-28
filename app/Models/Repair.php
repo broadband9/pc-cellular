@@ -17,7 +17,8 @@ class Repair extends Model
          'model', 'imei', 'network', 'passcode', 'issue_description', 'estimated_cost', 
         'power_up', 'lens_lcd_damage', 'missing_parts', 'liquid_damage', 'tampered', 
         'button_functions_ok', 'camera_lens_damage', 'sim_sd_removed', 'risk_to_back', 
-        'risk_to_lcd', 'risk_to_biometrics','make_id','customer_signature'
+        'risk_to_lcd', 'risk_to_biometrics','make_id','customer_signature','send_email,
+'
     ];
 
     public function customer()

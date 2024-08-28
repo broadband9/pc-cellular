@@ -22,7 +22,7 @@ class CustomerResource extends Resource
     public static function form(Form $form): Form {
         return $form->schema([
             Forms\Components\TextInput::make('name')->required(),
-            Forms\Components\TextInput::make('phone'),
+            Forms\Components\TextInput::make('phone')->required(),
             Forms\Components\TextInput::make('email')->email()->unique(),
             Forms\Components\TextInput::make('postcode'), 
 
