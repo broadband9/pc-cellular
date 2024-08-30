@@ -15,6 +15,7 @@
         "filament/tables": "*",
         "laravel/framework": "^11.9",
         "laravel/tinker": "^2.9",
+        "leandrocfe/filament-apex-charts": "^3.1",
         "saade/filament-autograph": "^3.1",
         "spatie/laravel-activitylog": "^4.8"
     },

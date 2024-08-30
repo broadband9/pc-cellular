@@ -1,6 +1,5 @@
 <?php
 
-// app/Providers/Filament/AdminPanelProvider.php
 namespace App\Providers\Filament;
 
 use Filament\Http\Middleware\Authenticate;
@@ -18,6 +17,11 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Filament\Facades\Filament;
+use App\Filament\Resources\CustomerResource\Widgets\CustomerOverview;
+use App\Filament\Resources\RepairResource\Widgets\RepairOverview;
+use App\Filament\Resources\RepairStatusChartResource\Widgets\RepairStatusChart;
+use Leandrocfe\FilamentApexCharts\FilamentApexChartsPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -33,6 +37,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->plugins([
                 \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
+                FilamentApexChartsPlugin::make(),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
@@ -42,7 +47,7 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
+                // Removed Widgets\FilamentInfoWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -58,5 +63,15 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ]);
+    }
+
+    public function boot()
+    {
+        // Register your custom widgets here
+        Filament::registerWidgets([
+            CustomerOverview::class,
+            RepairOverview::class,
+            RepairStatusChart::class, // Register the chart widget
+        ]);
     }
 }
