@@ -37,6 +37,18 @@ class RepairResource extends Resource
                     ->relationship('customer', 'name')
                     ->required()
                     ->searchable()
+                    ->createOptionForm([
+                        Forms\Components\TextInput::make('name')
+                            ->label('Customer Name')
+                            ->required(),
+                        Forms\Components\TextInput::make('email')
+                            ->label('Email Address')
+                            ->email(),
+                        Forms\Components\TextInput::make('phone')
+                            ->label('Phone Number'),
+                        Forms\Components\TextInput::make('postcode')
+                            ->label('Postcode'),
+                    ])
                     ->options(function () {
                         return \App\Models\Customer::all()
                             ->pluck('name', 'id')
