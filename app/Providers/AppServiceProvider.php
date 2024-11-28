@@ -3,15 +3,17 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-
+use App\Services\CupsService;
 class AppServiceProvider extends ServiceProvider
 {
     /**
      * Register any application services.
      */
-    public function register(): void
+    public function register()
     {
-        //
+        $this->app->singleton(CupsService::class, function ($app) {
+            return new CupsService();
+        });
     }
 
     /**

@@ -13,10 +13,17 @@
         "filament/filament": "^3.2",
         "filament/forms": "*",
         "filament/tables": "*",
+        "guzzlehttp/guzzle": "^7.9",
         "laravel/framework": "^11.9",
         "laravel/tinker": "^2.9",
         "leandrocfe/filament-apex-charts": "^3.1",
+        "mike42/escpos-php": "^4.0",
+        "php-http/message-factory": "^1.1",
+        "psr/http-factory": "^1.1",
+        "psr/http-message": "^2.0",
+        "rawilk/laravel-printing": "^3.0",
         "saade/filament-autograph": "^3.1",
+        "smalot/cups-ipp": "^0.5.0",
         "spatie/laravel-activitylog": "^4.8"
     },
     "require-dev": {
@@ -33,6 +40,7 @@
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
         }
+        
     },
     "autoload-dev": {
         "psr-4": {

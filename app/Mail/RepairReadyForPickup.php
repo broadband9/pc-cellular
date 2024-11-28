@@ -1,6 +1,4 @@
 <?php
-
-// app/Mail/RepairReadyForPickup.php
 namespace App\Mail;
 
 use App\Models\Repair;
@@ -21,7 +19,8 @@ class RepairReadyForPickup extends Mailable
 
     public function build()
     {
-        return $this->view('emails.repair_ready_for_pickup')
+        return $this->subject('Your Repair is Ready for Pickup')
+                    ->view('emails.repair_ready_for_pickup')
                     ->with([
                         'repair' => $this->repair,
                     ]);

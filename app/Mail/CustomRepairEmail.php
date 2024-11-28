@@ -34,7 +34,6 @@ class CustomRepairEmail extends Mailable
             ->view('emails.custom_repair_email')
             ->with([
                 'repair' => $this->repair,
-                'message' => $this->repair->email_message ?? 'No message provided.',
             ]);
     }
 }

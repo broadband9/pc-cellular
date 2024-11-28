@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Repair Ready for Pickup</title>
+    <title>Repair Awaiting Parts</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -21,21 +21,20 @@
     <div class="content">
         <h2>Hello {{ $repair->customer->name }}</h2>
         
-        <p>Great news! Your repair is now ready for pickup.</p>
+        <p>We wanted to update you on the status of your repair. Currently, we are waiting for specific parts to complete the repair.</p>
         
         <h3>Repair Details:</h3>
         <ul>
             <li><strong>Repair Number:</strong> {{ $repair->repair_number }}</li>
             <li><strong>Device Type:</strong> {{ $repair->device_type }}</li>
             <li><strong>Make/Model:</strong> {{ $repair->make->name }} {{ $repair->model }}</li>
-            <li><strong>Finalized Price:</strong> £{{ number_format($repair->finalized_price, 2) }}</li>
         </ul>
         
-        <p>Please visit our store to collect your repaired device. Don't forget to bring a valid ID.</p>
+        <p>We will notify you as soon as the parts arrive and we can proceed with the repair.</p>
         
         <p>If you have any questions, please contact us at 01234 567 898.</p>
         
-        <p>Thank you,<br>PC Cellular Team</p>
+        <p>Thank you for your patience,<br>PC Cellular Team</p>
     </div>
 </body>
 </html>

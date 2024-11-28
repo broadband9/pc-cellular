@@ -61,6 +61,9 @@ class RepairStatusChart extends ApexChartWidget
             'chart' => [
                 'type' => 'bar', // Changed to bar chart
                 'height' => 350,
+                'animations' => [ // Disable animations
+                    'enabled' => false,
+                ],
             ],
             'series' => [
                 [

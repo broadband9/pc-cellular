@@ -14,11 +14,12 @@ class Repair extends Model
 
     protected $fillable = [
         'customer_id', 'device_type', 'repair_number', 'status_id', 'finalized_price', 'location_id',
-         'model', 'imei', 'network', 'passcode', 'issue_description', 'estimated_cost', 
+        'model', 'imei', 'network', 'passcode', 'issue_description', 'estimated_cost', 
         'power_up', 'lens_lcd_damage', 'missing_parts', 'liquid_damage', 'tampered', 
         'button_functions_ok', 'camera_lens_damage', 'sim_sd_removed', 'risk_to_back', 
-        'risk_to_lcd', 'risk_to_biometrics','make_id','customer_signature','send_email,
-'
+        'risk_to_lcd', 'risk_to_biometrics', 'make_id', 'customer_signature', 'send_email',
+        'email_message', 'keyboard_functional', 'trackpad_functional', 'screen_damage', 
+        'hinge_damage', 'operating_system', 'ram', 'storage'
     ];
 
     public function customer()
