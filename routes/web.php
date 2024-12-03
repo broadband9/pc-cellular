@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PrintController;
+use App\Models\Repair; // Make sure this line is included at the top of your routes file
 
 Route::get('/', function () {
     return view('welcome');
@@ -36,3 +37,7 @@ Route::get('/check-cups', function() {
     
     return $results;
 });
+
+Route::get('repair-label/{repair}', function (Repair $repair) {
+    return view('repair_label', ['repair_number' => $repair->repair_number]);
+})->name('repair-label');  // Add this line to name the route

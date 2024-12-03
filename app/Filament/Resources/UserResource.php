@@ -11,9 +11,11 @@ use Spatie\Permission\Models\Role;
 
 class UserResource extends Resource
 {
-    protected static ?string $model = User::class;
+    protected static ?string $navigationLabel = 'Users'; // Label in the sidebar
+protected static ?string $navigationIcon = 'heroicon-o-users'; // Icon for sidebar
+protected static ?int $navigationSort = 1; // Optional, set order in sidebar
+protected static bool $shouldRegisterNavigation = true; // Ensure this is true to show in sidebar
 
-    protected static ?string $navigationIcon = 'heroicon-o-users';
 
     public static function form(Forms\Form $form): Forms\Form
     {

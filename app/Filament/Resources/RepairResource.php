@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Log;
 use App\Services\CupsService;
 use App\Mail\CustomRepairEmail;
 use Illuminate\Support\Facades\Mail;
+
 class RepairResource extends Resource
 {
 
@@ -302,6 +303,17 @@ class RepairResource extends Resource
                     ->options(RepairStatus::all()->pluck('name', 'id')->toArray()),
             ])
             ->actions([
+
+                Action::make('printLabel')
+                ->label('Print Label')
+                ->url(function ($record) {
+                    $url = route('repair-label', ['repair' => $record->id]);
+                    Log::info("Generated Print Label URL: " . $url); // Log the generated URL
+                    return $url;
+                })
+                ->icon('heroicon-o-printer')
+                ->openUrlInNewTab(),
+            
                 // View Details Action
                 Action::make('viewDetails')
                     ->label('View Details')
