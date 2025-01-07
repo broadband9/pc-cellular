@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Repairs{% endblock %}
+{% block content %}
+<h2>Repairs</h2>
+<table>
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Customer</th>
+            <th>Device Type</th>
+            <th>Status</th>
+            <th>Location</th>
+            <th>Make</th>
+            <th>Model</th>
+            <th>Issue</th>
+            <th>Estimated Cost</th>
+            <th>Finalized Price</th>
+            <th>Created At</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for repair in repairs %}
+        <tr>
+            <td>{{ repair.id }}</td>
+            <td>{{ repair.customer.name }}</td>
+            <td>{{ repair.device_type }}</td>
+            <td>{{ repair.status.name }}</td>
+            <td>{{ repair.location.name }}</td>
+            <td>{{ repair.make.name }}</td>
+            <td>{{ repair.model }}</td>
+            <td>{{ repair.issue_description }}</td>
+            <td>{{ repair.estimated_cost }}</td>
+            <td>{{ repair.finalized_price }}</td>
+            <td>{{ repair.created_at }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

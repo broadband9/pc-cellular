@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Repair Statuses{% endblock %}
+{% block content %}
+<h2>Repair Statuses</h2>
+<ul>
+    {% for status in statuses %}
+    <li>{{ status.name }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}
