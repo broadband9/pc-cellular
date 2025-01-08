@@ -1,10 +1,110 @@
 {% extends "base.html" %}
 {% block title %}Makes{% endblock %}
 {% block content %}
-<h2>Makes</h2>
-<ul>
-    {% for make in makes %}
-    <li>{{ make.name }}</li>
-    {% endfor %}
-</ul>
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Makes</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addMakeModal">
+            <i class="fas fa-plus"></i> Add New Make
+        </button>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped table-sm">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for make in makes %}
+            <tr>
+                <td>{{ make.id }}</td>
+                <td>{{ make.name }}</td>
+                <td>
+                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editMakeModal{{ make.id }}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteMakeModal{{ make.id }}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Add Make Modal -->
+<div class="modal fade" id="addMakeModal" tabindex="-1" aria-labelledby="addMakeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addMakeModalLabel">Add New Make</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'add_make' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Make</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit and Delete modals for each make -->
+{% for make in makes %}
+    <!-- Edit Make Modal -->
+    <div class="modal fade" id="editMakeModal{{ make.id }}" tabindex="-1" aria-labelledby="editMakeModalLabel{{ make.id }}" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editMakeModalLabel{{ make.id }}">Edit Make</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" action="{% url 'edit_make' make.id %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="name{{ make.id }}" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="name{{ make.id }}" name="name" value="{{ make.name }}" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Make Modal -->
+    <div class="modal fade" id="deleteMakeModal{{ make.id }}" tabindex="-1" aria-labelledby="deleteMakeModalLabel{{ make.id }}" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteMakeModalLabel{{ make.id }}">Delete Make</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this make?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form method="post" action="{% url 'delete_make' make.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endfor %}
 {% endblock %}
+

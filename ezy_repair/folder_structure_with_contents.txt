@@ -1,0 +1,576 @@
+Root Folder: 
+- File: base.html
+  Contents:
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      {% load static %}
+      <title>{% block title %}Ezy Repair{% endblock %}</title>
+      <!-- Bootstrap CSS -->
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+      <!-- Font Awesome -->
+      <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+      <!-- Custom CSS -->
+      <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+      <!-- Chart.js -->
+      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body class="bg-light" data-bs-theme="light">
+      {% include 'navbar.html' %}
+      <div class="container-fluid">
+          <div class="row">
+              <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-white sidebar collapse">
+                  {% include 'sidebar.html' %}
+              </nav>
+              <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                  {% block content %}{% endblock %}
+              </main>
+          </div>
+      </div>
+  
+      <!-- Bootstrap JS -->
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+      <!-- Custom JS -->
+      <script src="{% static 'js/main.js' %}"></script>
+  </body>
+  </html>
+- Folder: customers
+  - File: customers_list.html
+    Contents:
+    {% extends "base.html" %}
+    {% block title %}Customers{% endblock %}
+    {% block content %}
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Customers</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addCustomerModal">
+                <i class="fas fa-plus"></i> Add New Customer
+            </button>
+        </div>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table table-striped table-sm">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in customers %}
+                <tr>
+                    <td>{{ customer.id }}</td>
+                    <td>{{ customer.name }}</td>
+                    <td>{{ customer.email }}</td>
+                    <td>{{ customer.phone }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editCustomerModal{{ customer.id }}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteCustomerModal{{ customer.id }}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Add Customer Modal -->
+    <div class="modal fade" id="addCustomerModal" tabindex="-1" aria-labelledby="addCustomerModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addCustomerModalLabel">Add New Customer</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" action="{% url 'add_customer' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Phone</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Customer</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Edit and Delete modals for each customer -->
+    {% for customer in customers %}
+        <!-- Edit Customer Modal -->
+        <div class="modal fade" id="editCustomerModal{{ customer.id }}" tabindex="-1" aria-labelledby="editCustomerModalLabel{{ customer.id }}" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editCustomerModalLabel{{ customer.id }}">Edit Customer</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form method="post" action="{% url 'edit_customer' customer.id %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="name{{ customer.id }}" class="form-label">Name</label>
+                                <input type="text" class="form-control" id="name{{ customer.id }}" name="name" value="{{ customer.name }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email{{ customer.id }}" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email{{ customer.id }}" name="email" value="{{ customer.email }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="phone{{ customer.id }}" class="form-label">Phone</label>
+                                <input type="tel" class="form-control" id="phone{{ customer.id }}" name="phone" value="{{ customer.phone }}" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+        <!-- Delete Customer Modal -->
+        <div class="modal fade" id="deleteCustomerModal{{ customer.id }}" tabindex="-1" aria-labelledby="deleteCustomerModalLabel{{ customer.id }}" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteCustomerModalLabel{{ customer.id }}">Delete Customer</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to delete this customer?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <form method="post" action="{% url 'delete_customer' customer.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+    {% endblock %}
+- File: dashboard.html
+  Contents:
+  {% extends "base.html" %}
+  {% block title %}Dashboard{% endblock %}
+  {% block content %}
+  <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+      <h1 class="h2">Dashboard</h1>
+  </div>
+  
+  <div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
+      <div class="col">
+          <div class="card text-white bg-primary">
+              <div class="card-body">
+                  <h5 class="card-title">Total Repairs</h5>
+                  <p class="card-text display-4">{{ repair_count }}</p>
+              </div>
+          </div>
+      </div>
+      <div class="col">
+          <div class="card text-white bg-success">
+              <div class="card-body">
+                  <h5 class="card-title">Total Customers</h5>
+                  <p class="card-text display-4">{{ customer_count }}</p>
+              </div>
+          </div>
+      </div>
+      <div class="col">
+          <div class="card text-white bg-info">
+              <div class="card-body">
+                  <h5 class="card-title">Active Repairs</h5>
+                  <p class="card-text display-4">{{ active_repair_count }}</p>
+              </div>
+          </div>
+      </div>
+  </div>
+  
+  <div class="row">
+      <div class="col-md-8">
+          <div class="card">
+              <div class="card-body">
+                  <h5 class="card-title">Repairs Over Time</h5>
+                  <canvas id="repairsChart"></canvas>
+              </div>
+          </div>
+      </div>
+      <div class="col-md-4">
+          <div class="card">
+              <div class="card-body">
+                  <h5 class="card-title">Recent Activity</h5>
+                  <ul class="list-group list-group-flush">
+                      {% for log in activity_logs %}
+                          <li class="list-group-item">
+                              <small class="text-muted">{{ log.created_at|date:"M d, Y H:i" }}</small><br>
+                              {{ log.description }}
+                          </li>
+                      {% endfor %}
+                  </ul>
+              </div>
+          </div>
+      </div>
+  </div>
+  
+  <script>
+      document.addEventListener('DOMContentLoaded', function() {
+          var ctx = document.getElementById('repairsChart').getContext('2d');
+          var chart = new Chart(ctx, {
+              type: 'line',
+              data: {
+                  labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                  datasets: [{
+                      label: 'Repairs',
+                      data: [12, 19, 3, 5, 2, 3],
+                      borderColor: 'rgb(75, 192, 192)',
+                      tension: 0.1
+                  }]
+              },
+              options: {
+                  responsive: true,
+                  scales: {
+                      y: {
+                          beginAtZero: true
+                      }
+                  }
+              }
+          });
+      });
+  </script>
+  {% endblock %}
+- File: login.html
+  Contents:
+  {% extends "base.html" %}
+  {% block title %}Login{% endblock %}
+  {% block content %}
+  <div class="container">
+      <div class="row justify-content-center mt-5">
+          <div class="col-md-6">
+              <div class="card">
+                  <div class="card-body">
+                      <h2 class="card-title text-center mb-4">Login</h2>
+                      <form method="post">
+                          {% csrf_token %}
+                          <div class="mb-3">
+                              <label for="username" class="form-label">Username</label>
+                              <input type="text" class="form-control" id="username" name="username" required>
+                          </div>
+                          <div class="mb-3">
+                              <label for="password" class="form-label">Password</label>
+                              <input type="password" class="form-control" id="password" name="password" required>
+                          </div>
+                          <div class="d-grid">
+                              <button type="submit" class="btn btn-primary">Login</button>
+                          </div>
+                      </form>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+  {% endblock %}
+- File: navbar.html
+  Contents:
+  <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+      <div class="container-fluid">
+          <a class="navbar-brand" href="{% url 'dashboard' %}">Ezy Repair</a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+              <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                  <li class="nav-item">
+                      <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
+                  </li>
+                  <li class="nav-item">
+                      <a class="nav-link" href="{% url 'repairs_list' %}">Repairs</a>
+                  </li>
+                  <li class="nav-item">
+                      <a class="nav-link" href="{% url 'customers_list' %}">Customers</a>
+                  </li>
+              </ul>
+              <ul class="navbar-nav">
+                  <li class="nav-item">
+                      <a class="nav-link" href="#" id="themeToggle">
+                          <i class="fas fa-sun"></i>
+                      </a>
+                  </li>
+                  <li class="nav-item dropdown">
+                      <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                          <i class="fas fa-user"></i> Profile
+                      </a>
+                      <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                          <li><a class="dropdown-item" href="{% url 'profile' %}">My Profile</a></li>
+                          <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                      </ul>
+                  </li>
+              </ul>
+          </div>
+      </div>
+  </nav>
+- Folder: repairs
+  - File: activity_logs.html
+    Contents:
+    {% extends "base.html" %}
+    {% block title %}Activity Logs{% endblock %}
+    {% block content %}
+    <h2>Activity Logs</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Description</th>
+                <th>Created At</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr>
+                <td>{{ log.id }}</td>
+                <td>{{ log.description }}</td>
+                <td>{{ log.created_at }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endblock %}
+    
+  - File: locations.html
+    Contents:
+    {% extends "base.html" %}
+    {% block title %}Locations{% endblock %}
+    {% block content %}
+    <h2>Locations</h2>
+    <ul>
+        {% for location in locations %}
+        <li>{{ location.name }}</li>
+        {% endfor %}
+    </ul>
+    {% endblock %}
+    
+  - File: makes.html
+    Contents:
+    {% extends "base.html" %}
+    {% block title %}Makes{% endblock %}
+    {% block content %}
+    <h2>Makes</h2>
+    <ul>
+        {% for make in makes %}
+        <li>{{ make.name }}</li>
+        {% endfor %}
+    </ul>
+    {% endblock %}
+    
+  - File: repair_statuses.html
+    Contents:
+    {% extends "base.html" %}
+    {% block title %}Repair Statuses{% endblock %}
+    {% block content %}
+    <h2>Repair Statuses</h2>
+    <ul>
+        {% for status in statuses %}
+        <li>{{ status.name }}</li>
+        {% endfor %}
+    </ul>
+    {% endblock %}
+    
+  - File: repairs_list.html
+    Contents:
+    {% extends "base.html" %}
+    {% block title %}Repairs{% endblock %}
+    {% block content %}
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Repairs</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addRepairModal">
+                <i class="fas fa-plus"></i> Add New Repair
+            </button>
+        </div>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table table-striped table-sm">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Customer</th>
+                    <th>Device Type</th>
+                    <th>Status</th>
+                    <th>Location</th>
+                    <th>Make</th>
+                    <th>Model</th>
+                    <th>Issue</th>
+                    <th>Estimated Cost</th>
+                    <th>Finalized Price</th>
+                    <th>Created At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for repair in repairs %}
+                <tr>
+                    <td>{{ repair.id }}</td>
+                    <td>{{ repair.customer.name }}</td>
+                    <td>{{ repair.device_type }}</td>
+                    <td>{{ repair.status.name }}</td>
+                    <td>{{ repair.location.name }}</td>
+                    <td>{{ repair.make.name }}</td>
+                    <td>{{ repair.model }}</td>
+                    <td>{{ repair.issue }}</td>
+                    <td>{{ repair.estimated_cost }}</td>
+                    <td>{{ repair.finalized_price }}</td>
+                    <td>{{ repair.created_at|date:"M d, Y H:i" }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editRepairModal{{ repair.id }}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteRepairModal{{ repair.id }}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Add Repair Modal -->
+    <div class="modal fade" id="addRepairModal" tabindex="-1" aria-labelledby="addRepairModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addRepairModalLabel">Add New Repair</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" action="{% url 'add_repair' %}">
+                        {% csrf_token %}
+                        <!-- Add form fields for repair creation -->
+                        <div class="mb-3">
+                            <label for="customer" class="form-label">Customer</label>
+                            <select class="form-select" id="customer" name="customer" required>
+                                {% for customer in customers %}
+                                    <option value="{{ customer.id }}">{{ customer.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <!-- Add more form fields as needed -->
+                        <button type="submit" class="btn btn-primary">Add Repair</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Edit and Delete modals for each repair -->
+    {% for repair in repairs %}
+        <!-- Edit Repair Modal -->
+        <div class="modal fade" id="editRepairModal{{ repair.id }}" tabindex="-1" aria-labelledby="editRepairModalLabel{{ repair.id }}" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editRepairModalLabel{{ repair.id }}">Edit Repair</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form method="post" action="{% url 'edit_repair' repair.id %}">
+                            {% csrf_token %}
+                            <!-- Add form fields for repair editing -->
+                            <div class="mb-3">
+                                <label for="status{{ repair.id }}" class="form-label">Status</label>
+                                <select class="form-select" id="status{{ repair.id }}" name="status" required>
+                                    {% for status in statuses %}
+                                        <option value="{{ status.id }}" {% if status.id == repair.status.id %}selected{% endif %}>{{ status.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <!-- Add more form fields as needed -->
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+        <!-- Delete Repair Modal -->
+        <div class="modal fade" id="deleteRepairModal{{ repair.id }}" tabindex="-1" aria-labelledby="deleteRepairModalLabel{{ repair.id }}" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteRepairModalLabel{{ repair.id }}">Delete Repair</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to delete this repair?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <form method="post" action="{% url 'delete_repair' repair.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+    {% endblock %}
+- File: sidebar.html
+  Contents:
+  <div class="position-sticky pt-3">
+      <ul class="nav flex-column">
+          <li class="nav-item">
+              <a class="nav-link" href="{% url 'dashboard' %}">
+                  <i class="fas fa-tachometer-alt"></i> Dashboard
+              </a>
+          </li>
+          <li class="nav-item">
+              <a class="nav-link" href="{% url 'repairs_list' %}">
+                  <i class="fas fa-tools"></i> Repairs
+              </a>
+          </li>
+          <li class="nav-item">
+              <a class="nav-link" href="{% url 'customers_list' %}">
+                  <i class="fas fa-users"></i> Customers
+              </a>
+          </li>
+          <li class="nav-item">
+              <a class="nav-link" href="{% url 'repair_statuses' %}">
+                  <i class="fas fa-list-alt"></i> Repair Statuses
+              </a>
+          </li>
+          <li class="nav-item">
+              <a class="nav-link" href="{% url 'locations' %}">
+                  <i class="fas fa-map-marker-alt"></i> Locations
+              </a>
+          </li>
+          <li class="nav-item">
+              <a class="nav-link" href="{% url 'makes' %}">
+                  <i class="fas fa-industry"></i> Makes
+              </a>
+          </li>
+          <li class="nav-item">
+              <a class="nav-link" href="{% url 'activity_logs' %}">
+                  <i class="fas fa-history"></i> Activity Logs
+              </a>
+          </li>
+      </ul>
+  </div>

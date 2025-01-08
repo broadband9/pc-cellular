@@ -2,3 +2,5 @@
 /.idea
 .idea/misc.xml
 /.idea
+/ezy_repair/repairs/__pycache__
+/ezy_repair/ezy_repair/__pycache__

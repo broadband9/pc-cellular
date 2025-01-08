@@ -1,10 +1,120 @@
 {% extends "base.html" %}
 {% block title %}Repair Statuses{% endblock %}
 {% block content %}
-<h2>Repair Statuses</h2>
-<ul>
-    {% for status in statuses %}
-    <li>{{ status.name }}</li>
-    {% endfor %}
-</ul>
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Repair Statuses</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addStatusModal">
+            <i class="fas fa-plus"></i> Add New Status
+        </button>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped table-sm">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for status in statuses %}
+            <tr>
+                <td>{{ status.id }}</td>
+                <td>{{ status.name }}</td>
+                <td>{{ status.description }}</td>
+                <td>
+                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editStatusModal{{ status.id }}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteStatusModal{{ status.id }}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Add Status Modal -->
+<div class="modal fade" id="addStatusModal" tabindex="-1" aria-labelledby="addStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addStatusModalLabel">Add New Repair Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'add_repair_status' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Status</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit and Delete modals for each status -->
+{% for status in statuses %}
+    <!-- Edit Status Modal -->
+    <div class="modal fade" id="editStatusModal{{ status.id }}" tabindex="-1" aria-labelledby="editStatusModalLabel{{ status.id }}" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editStatusModalLabel{{ status.id }}">Edit Repair Status</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" action="{% url 'edit_repair_status' status.id %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="name{{ status.id }}" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="name{{ status.id }}" name="name" value="{{ status.name }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description{{ status.id }}" class="form-label">Description</label>
+                            <textarea class="form-control" id="description{{ status.id }}" name="description" rows="3">{{ status.description }}</textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Status Modal -->
+    <div class="modal fade" id="deleteStatusModal{{ status.id }}" tabindex="-1" aria-labelledby="deleteStatusModalLabel{{ status.id }}" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteStatusModalLabel{{ status.id }}">Delete Repair Status</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this repair status?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form method="post" action="{% url 'delete_repair_status' status.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endfor %}
 {% endblock %}
+

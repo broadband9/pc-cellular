@@ -1,13 +1,86 @@
 {% extends "base.html" %}
 {% block title %}Dashboard{% endblock %}
 {% block content %}
-<h2>Dashboard</h2>
-<p>Repairs: {{ repair_count }}</p>
-<p>Customers: {{ customer_count }}</p>
-<h3>Recent Activity</h3>
-<ul>
-    {% for log in activity_logs %}
-        <li>{{ log.description }} ({{ log.created_at }})</li>
-    {% endfor %}
-</ul>
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Dashboard</h1>
+</div>
+
+<div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
+    <div class="col">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title">Total Repairs</h5>
+                <p class="card-text display-4">{{ repair_count }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title">Total Customers</h5>
+                <p class="card-text display-4">{{ customer_count }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title">Active Repairs</h5>
+                <p class="card-text display-4">{{ active_repair_count }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Repairs Over Time</h5>
+                <canvas id="repairsChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Recent Activity</h5>
+                <ul class="list-group list-group-flush">
+                    {% for log in activity_logs %}
+                        <li class="list-group-item">
+                            <small class="text-muted">{{ log.created_at|date:"M d, Y H:i" }}</small><br>
+                            {{ log.description }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var ctx = document.getElementById('repairsChart').getContext('2d');
+        var chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Repairs',
+                    data: [12, 19, 3, 5, 2, 3],
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    });
+</script>
 {% endblock %}
