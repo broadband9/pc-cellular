@@ -73,3 +73,9 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 # Default auto field
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGIN_URL = '/'
+
+LOGIN_EXEMPT_URLS = [
+    '/',  # Exempt the login page
+]

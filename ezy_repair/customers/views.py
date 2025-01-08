@@ -2,13 +2,17 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from .models import Customer
+from repairs.models import *
+
+from repairs.models import Repair
+
 
 # Dashboard View
 @login_required
 def dashboard(request):
     customer_count = Customer.objects.count()
     # Example of fetching additional data for the dashboard
-    repair_count = 10  # Replace with actual query
+    repair_count = Repair.objects.all().count()  # Replace with actual query
     active_repair_count = 5  # Replace with actual query
     activity_logs = []  # Replace with actual logs query
 

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Repairs{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom" style="margin-top: 50px">
     <h1 class="h2">Repairs</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
         <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addRepairModal">
@@ -38,7 +38,7 @@
                 <td>{{ repair.location.name }}</td>
                 <td>{{ repair.make.name }}</td>
                 <td>{{ repair.model }}</td>
-                <td>{{ repair.issue }}</td>
+                <td>{{ repair.issue_description }}</td>
                 <td>{{ repair.estimated_cost }}</td>
                 <td>{{ repair.finalized_price }}</td>
                 <td>{{ repair.created_at|date:"M d, Y H:i" }}</td>
@@ -67,7 +67,6 @@
             <div class="modal-body">
                 <form method="post" action="{% url 'add_repair' %}">
                     {% csrf_token %}
-                    <!-- Add form fields for repair creation -->
                     <div class="mb-3">
                         <label for="customer" class="form-label">Customer</label>
                         <select class="form-select" id="customer" name="customer" required>
@@ -76,7 +75,50 @@
                             {% endfor %}
                         </select>
                     </div>
-                    <!-- Add more form fields as needed -->
+                    <div class="mb-3">
+                        <label for="device_type" class="form-label">Device Type</label>
+                        <input type="text" class="form-control" id="device_type" name="device_type" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="status" class="form-label">Status</label>
+                        <select class="form-select" id="status" name="status" required>
+                            {% for status in statuses %}
+                                <option value="{{ status.id }}">{{ status.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="location" class="form-label">Location</label>
+                        <select class="form-select" id="location" name="location" required>
+                            {% for location in locations %}
+                                <option value="{{ location.id }}">{{ location.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="make" class="form-label">Make</label>
+                        <select class="form-select" id="make" name="make" required>
+                            {% for make in makes %}
+                                <option value="{{ make.id }}">{{ make.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="model" class="form-label">Model</label>
+                        <input type="text" class="form-control" id="model" name="model" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="issue_description" class="form-label">Issue Description</label>
+                        <textarea class="form-control" id="issue_description" name="issue_description" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="estimated_cost" class="form-label">Estimated Cost</label>
+                        <input type="number" step="0.01" class="form-control" id="estimated_cost" name="estimated_cost" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="finalized_price" class="form-label">Finalized Price</label>
+                        <input type="number" step="0.01" class="form-control" id="finalized_price" name="finalized_price">
+                    </div>
                     <button type="submit" class="btn btn-primary">Add Repair</button>
                 </form>
             </div>
@@ -86,8 +128,7 @@
 
 <!-- Edit and Delete modals for each repair -->
 {% for repair in repairs %}
-    <!-- Edit Repair Modal -->
-    <div class="modal fade" id="editRepairModal{{ repair.id }}" tabindex="-1" aria-labelledby="editRepairModalLabel{{ repair.id }}" aria-hidden="true">
+     <div class="modal fade" id="editRepairModal{{ repair.id }}" tabindex="-1" aria-labelledby="editRepairModalLabel{{ repair.id }}" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -97,7 +138,21 @@
                 <div class="modal-body">
                     <form method="post" action="{% url 'edit_repair' repair.id %}">
                         {% csrf_token %}
-                        <!-- Add form fields for repair editing -->
+
+                        <div class="mb-3">
+                            <label for="customer{{ repair.id }}" class="form-label">Customer</label>
+                            <select class="form-select" id="customer{{ repair.id }}" name="customer" required>
+                                {% for customer in customers %}
+                                    <option value="{{ customer.id }}" {% if customer.id == repair.customer.id %}selected{% endif %}>{{ customer.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="device_type{{ repair.id }}" class="form-label">Device Type</label>
+                            <input type="text" class="form-control" id="device_type{{ repair.id }}" name="device_type" value="{{ repair.device_type }}" required>
+                        </div>
+
                         <div class="mb-3">
                             <label for="status{{ repair.id }}" class="form-label">Status</label>
                             <select class="form-select" id="status{{ repair.id }}" name="status" required>
@@ -106,7 +161,45 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        <!-- Add more form fields as needed -->
+
+                        <div class="mb-3">
+                            <label for="location{{ repair.id }}" class="form-label">Location</label>
+                            <select class="form-select" id="location{{ repair.id }}" name="location" required>
+                                {% for location in locations %}
+                                    <option value="{{ location.id }}" {% if location.id == repair.location.id %}selected{% endif %}>{{ location.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="make{{ repair.id }}" class="form-label">Make</label>
+                            <select class="form-select" id="make{{ repair.id }}" name="make" required>
+                                {% for make in makes %}
+                                    <option value="{{ make.id }}" {% if make.id == repair.make.id %}selected{% endif %}>{{ make.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="model{{ repair.id }}" class="form-label">Model</label>
+                            <input type="text" class="form-control" id="model{{ repair.id }}" name="model" value="{{ repair.model }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="issue_description{{ repair.id }}" class="form-label">Issue Description</label>
+                            <textarea class="form-control" id="issue_description{{ repair.id }}" name="issue_description" rows="3" required>{{ repair.issue }}</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="estimated_cost{{ repair.id }}" class="form-label">Estimated Cost</label>
+                            <input type="number" step="0.01" class="form-control" id="estimated_cost{{ repair.id }}" name="estimated_cost" value="{{ repair.estimated_cost }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="finalized_price{{ repair.id }}" class="form-label">Finalized Price</label>
+                            <input type="number" step="0.01" class="form-control" id="finalized_price{{ repair.id }}" name="finalized_price" value="{{ repair.finalized_price }}">
+                        </div>
+
                         <button type="submit" class="btn btn-primary">Save Changes</button>
                     </form>
                 </div>

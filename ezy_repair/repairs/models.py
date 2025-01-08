@@ -1,7 +1,10 @@
+from email.policy import default
+
 from django.db import models
 
 class RepairStatus(models.Model):
     name = models.CharField(max_length=50)
+    description = models.CharField(max_length=1000, default="")
 
     def __str__(self):
         return self.name
@@ -9,6 +12,7 @@ class RepairStatus(models.Model):
 
 class Location(models.Model):
     name = models.CharField(max_length=100)
+    address = models.CharField(max_length=1000, default="")
 
     def __str__(self):
         return self.name
@@ -32,9 +36,9 @@ class ActivityLog(models.Model):
 class Repair(models.Model):
     customer = models.ForeignKey('customers.Customer', on_delete=models.CASCADE)
     device_type = models.CharField(max_length=50)
-    status = models.ForeignKey(RepairStatus, on_delete=models.SET_NULL, null=True)
-    location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True)
-    make = models.ForeignKey(Make, on_delete=models.SET_NULL, null=True)
+    status = models.ForeignKey(RepairStatus, on_delete=models.SET_NULL, null=True, blank=True)
+    location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, blank=True)
+    make = models.ForeignKey(Make, on_delete=models.SET_NULL, null=True, blank=True)
     model = models.CharField(max_length=100)
     issue_description = models.TextField()
     estimated_cost = models.DecimalField(max_digits=10, decimal_places=2)

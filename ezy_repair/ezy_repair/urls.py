@@ -6,6 +6,6 @@ urlpatterns = [
 
 
     # App-specific URLs
-    path('customers/', include('customers.urls')),
+    path('', include('customers.urls')),
     path('repairs/', include('repairs.urls')),
 ]
