@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import dashboard, login_view, logout_view, customers_list, add_customer, edit_customer, delete_customer
+from .views import *
 
 urlpatterns = [
     path('customer', customers_list, name='customers_list'),
@@ -9,5 +9,7 @@ urlpatterns = [
     path('dashboard/', dashboard, name='dashboard'),
     path('', login_view, name='login'),
     path('logout/', logout_view, name='logout'),
+    path('profile/', profile_view, name='profile'),
+    path('profile/edit/', edit_profile, name='edit_profile'),
 ]
 

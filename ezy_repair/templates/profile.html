@@ -1,74 +1,57 @@
 {% extends "base.html" %}
-{% block title %}User Profile{% endblock %}
+{% block title %}My Profile{% endblock %}
 {% block content %}
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-md-6 offset-md-3">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">User Profile</h3>
-                </div>
-                <div class="card-body">
-                    <form method="post" action="{% url 'update_profile' %}">
-                        {% csrf_token %}
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Username</label>
-                            <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" readonly>
-                        </div>
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="first_name" class="form-label">First Name</label>
-                            <input type="text" class="form-control" id="first_name" name="first_name" value="{{ user.first_name }}">
-                        </div>
-                        <div class="mb-3">
-                            <label for="last_name" class="form-label">Last Name</label>
-                            <input type="text" class="form-control" id="last_name" name="last_name" value="{{ user.last_name }}">
-                        </div>
-                        <button type="submit" class="btn btn-primary">Update Profile</button>
-                    </form>
-                </div>
+<div class="container mt-50 text-light" style="margin-top:50px">
+    <h2 class="mb-4 text-center">My Profile</h2>
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <ul class="list-group bg-dark text-light">
+                <li class="list-group-item bg-dark text-light border-secondary"><strong>First Name:</strong> {{ user.first_name }}</li>
+                <li class="list-group-item bg-dark text-light border-secondary"><strong>Last Name:</strong> {{ user.last_name }}</li>
+                <li class="list-group-item bg-dark text-light border-secondary"><strong>Email:</strong> {{ user.email }}</li>
+                <li class="list-group-item bg-dark text-light border-secondary"><strong>Username:</strong> {{ user.username }}</li>
+            </ul>
+            <div class="mt-4 text-center">
+                <button class="btn btn-outline-light" data-bs-toggle="modal" data-bs-target="#editProfileModal">Edit Profile</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Change Password Modal -->
-<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
     <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form method="post" action="{% url 'change_password' %}">
-                    {% csrf_token %}
+        <div class="modal-content bg-dark text-light">
+            <form method="POST" action="{% url 'edit_profile' %}">
+                {% csrf_token %}
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title" id="editProfileModalLabel">Edit Profile</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
                     <div class="mb-3">
-                        <label for="current_password" class="form-label">Current Password</label>
-                        <input type="password" class="form-control" id="current_password" name="current_password" required>
+                        <label for="first_name" class="form-label">First Name</label>
+                        <input type="text" id="first_name" name="first_name" class="form-control bg-dark text-light border-secondary" value="{{ user.first_name }}">
                     </div>
                     <div class="mb-3">
-                        <label for="new_password" class="form-label">New Password</label>
-                        <input type="password" class="form-control" id="new_password" name="new_password" required>
+                        <label for="last_name" class="form-label">Last Name</label>
+                        <input type="text" id="last_name" name="last_name" class="form-control bg-dark text-light border-secondary" value="{{ user.last_name }}">
                     </div>
                     <div class="mb-3">
-                        <label for="confirm_password" class="form-label">Confirm New Password</label>
-                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" id="email" name="email" class="form-control bg-dark text-light border-secondary" value="{{ user.email }}">
                     </div>
-                    <button type="submit" class="btn btn-primary">Change Password</button>
-                </form>
-            </div>
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" id="username" name="username" class="form-control bg-dark text-light border-secondary" value="{{ user.username }}">
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-outline-light">Save Changes</button>
+                </div>
+            </form>
         </div>
     </div>
-</div>
-
-<div class="text-center mt-3">
-    <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
-        Change Password
-    </button>
 </div>
 {% endblock %}
-

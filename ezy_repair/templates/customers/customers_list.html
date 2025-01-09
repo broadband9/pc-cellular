@@ -4,15 +4,15 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom" style="margin-top: 50px">
     <h1 class="h2">Customers</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
-        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addCustomerModal">
+        <button type="button" class="btn btn-sm btn-outline-light" data-bs-toggle="modal" data-bs-target="#addCustomerModal">
             <i class="fas fa-plus"></i> Add New Customer
         </button>
     </div>
 </div>
 
 <div class="table-responsive">
-    <table class="table table-striped table-sm">
-        <thead>
+    <table class="table table-dark table-hover table-bordered table-striped table-sm">
+        <thead class="table-dark">
             <tr>
                 <th>#</th>
                 <th>Name</th>
@@ -41,29 +41,55 @@
         </tbody>
     </table>
 </div>
+<nav aria-label="Customers log pagination">
+    <ul class="pagination justify-content-center">
+        {% if customers.has_previous %}
+            <li class="page-item">
+                <a class="page-link bg-dark text-light border-secondary" href="?page=1">&laquo; First</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link bg-dark text-light border-secondary" href="?page={{ customers.previous_page_number }}">Previous</a>
+            </li>
+        {% endif %}
+
+        <li class="page-item disabled">
+            <span class="page-link bg-dark text-light border-secondary">Page {{ customers.number }} of {{ customers.paginator.num_pages }}</span>
+        </li>
+
+        {% if customers.has_next %}
+            <li class="page-item">
+                <a class="page-link bg-dark text-light border-secondary" href="?page={{ customers.next_page_number }}">Next</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link bg-dark text-light border-secondary" href="?page={{ customers.paginator.num_pages }}">Last &raquo;</a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+
 
 <!-- Add Customer Modal -->
 <div class="modal fade" id="addCustomerModal" tabindex="-1" aria-labelledby="addCustomerModalLabel" aria-hidden="true">
     <div class="modal-dialog">
-        <div class="modal-content">
+        <div class="modal-content bg-dark text-light">
             <div class="modal-header">
                 <h5 class="modal-title" id="addCustomerModalLabel">Add New Customer</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form method="post" action="{% url 'add_customer' %}">
                     {% csrf_token %}
                     <div class="mb-3">
                         <label for="name" class="form-label">Name</label>
-                        <input type="text" class="form-control" id="name" name="name" required>
+                        <input type="text" class="form-control bg-dark text-light border-secondary" id="name" name="name" required>
                     </div>
                     <div class="mb-3">
                         <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" name="email" required>
+                        <input type="email" class="form-control bg-dark text-light border-secondary" id="email" name="email" required>
                     </div>
                     <div class="mb-3">
                         <label for="phone" class="form-label">Phone</label>
-                        <input type="tel" class="form-control" id="phone" name="phone" required>
+                        <input type="tel" class="form-control bg-dark text-light border-secondary" id="phone" name="phone" required>
                     </div>
                     <button type="submit" class="btn btn-primary">Add Customer</button>
                 </form>
@@ -77,25 +103,25 @@
     <!-- Edit Customer Modal -->
     <div class="modal fade" id="editCustomerModal{{ customer.id }}" tabindex="-1" aria-labelledby="editCustomerModalLabel{{ customer.id }}" aria-hidden="true">
         <div class="modal-dialog">
-            <div class="modal-content">
+            <div class="modal-content bg-dark text-light">
                 <div class="modal-header">
                     <h5 class="modal-title" id="editCustomerModalLabel{{ customer.id }}">Edit Customer</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form method="post" action="{% url 'edit_customer' customer.id %}">
                         {% csrf_token %}
                         <div class="mb-3">
                             <label for="name{{ customer.id }}" class="form-label">Name</label>
-                            <input type="text" class="form-control" id="name{{ customer.id }}" name="name" value="{{ customer.name }}" required>
+                            <input type="text" class="form-control bg-dark text-light border-secondary" id="name{{ customer.id }}" name="name" value="{{ customer.name }}" required>
                         </div>
                         <div class="mb-3">
                             <label for="email{{ customer.id }}" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email{{ customer.id }}" name="email" value="{{ customer.email }}" required>
+                            <input type="email" class="form-control bg-dark text-light border-secondary" id="email{{ customer.id }}" name="email" value="{{ customer.email }}" required>
                         </div>
                         <div class="mb-3">
                             <label for="phone{{ customer.id }}" class="form-label">Phone</label>
-                            <input type="tel" class="form-control" id="phone{{ customer.id }}" name="phone" value="{{ customer.phone }}" required>
+                            <input type="tel" class="form-control bg-dark text-light border-secondary" id="phone{{ customer.id }}" name="phone" value="{{ customer.phone }}" required>
                         </div>
                         <button type="submit" class="btn btn-primary">Save Changes</button>
                     </form>
@@ -107,10 +133,10 @@
     <!-- Delete Customer Modal -->
     <div class="modal fade" id="deleteCustomerModal{{ customer.id }}" tabindex="-1" aria-labelledby="deleteCustomerModalLabel{{ customer.id }}" aria-hidden="true">
         <div class="modal-dialog">
-            <div class="modal-content">
+            <div class="modal-content bg-dark text-light">
                 <div class="modal-header">
                     <h5 class="modal-title" id="deleteCustomerModalLabel{{ customer.id }}">Delete Customer</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <p>Are you sure you want to delete this customer?</p>

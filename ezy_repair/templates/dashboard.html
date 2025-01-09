@@ -1,40 +1,43 @@
 {% extends "base.html" %}
 {% block title %}Dashboard{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom text-light" style="margin-top:50px">
     <h1 class="h2">Dashboard</h1>
 </div>
 
+<!-- First Row: Total Customers -->
 <div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
     <div class="col">
         <div class="card text-white bg-primary">
-            <div class="card-body">
-                <h5 class="card-title">Total Repairs</h5>
-                <p class="card-text display-4">{{ repair_count }}</p>
-            </div>
-        </div>
-    </div>
-    <div class="col">
-        <div class="card text-white bg-success">
             <div class="card-body">
                 <h5 class="card-title">Total Customers</h5>
                 <p class="card-text display-4">{{ customer_count }}</p>
             </div>
         </div>
     </div>
-    <div class="col">
-        <div class="card text-white bg-info">
-            <div class="card-body">
-                <h5 class="card-title">Active Repairs</h5>
-                <p class="card-text display-4">{{ active_repair_count }}</p>
-            </div>
-        </div>
-    </div>
 </div>
 
+<!-- Dynamic Status Cards -->
+<div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
+    {% for status, count in statuses.items %}
+        <div class="col">
+            <div class="card text-white bg-dark">
+                <div class="card-body">
+                    <h5 class="card-title">{{ status|title }} Repairs</h5>
+                    <p class="card-text display-4">{{ count }}</p>
+                </div>
+            </div>
+        </div>
+        {% if forloop.counter|divisibleby:3 and not forloop.last %}
+    </div><div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
+        {% endif %}
+    {% endfor %}
+</div>
+
+<!-- Charts Section -->
 <div class="row">
     <div class="col-md-8">
-        <div class="card">
+        <div class="card bg-dark text-light">
             <div class="card-body">
                 <h5 class="card-title">Repairs Over Time</h5>
                 <canvas id="repairsChart"></canvas>
@@ -42,12 +45,12 @@
         </div>
     </div>
     <div class="col-md-4">
-        <div class="card">
+        <div class="card bg-dark text-light">
             <div class="card-body">
                 <h5 class="card-title">Recent Activity</h5>
                 <ul class="list-group list-group-flush">
                     {% for log in activity_logs %}
-                        <li class="list-group-item">
+                        <li class="list-group-item bg-dark text-light">
                             <small class="text-muted">{{ log.created_at|date:"M d, Y H:i" }}</small><br>
                             {{ log.description }}
                         </li>

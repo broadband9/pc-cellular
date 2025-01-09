@@ -2,17 +2,17 @@
 {% block title %}Makes{% endblock %}
 {% block content %}
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom" style="margin-top: 50px">
-    <h1 class="h2">Makes</h1>
+    <h1 class="h2 text-light">Makes</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
-        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addMakeModal">
+        <button type="button" class="btn btn-sm btn-outline-light" data-bs-toggle="modal" data-bs-target="#addMakeModal">
             <i class="fas fa-plus"></i> Add New Make
         </button>
     </div>
 </div>
 
 <div class="table-responsive">
-    <table class="table table-striped table-sm">
-        <thead>
+    <table class="table table-dark table-hover table-bordered table-striped table-sm">
+        <thead class="table-dark">
             <tr>
                 <th>#</th>
                 <th>Name</th>
@@ -37,21 +37,47 @@
         </tbody>
     </table>
 </div>
+<nav aria-label="Make pagination">
+    <ul class="pagination justify-content-center">
+        {% if makes.has_previous %}
+            <li class="page-item">
+                <a class="page-link bg-dark text-light border-secondary" href="?page=1">&laquo; First</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link bg-dark text-light border-secondary" href="?page={{ makes.previous_page_number }}">Previous</a>
+            </li>
+        {% endif %}
+
+        <li class="page-item disabled">
+            <span class="page-link bg-dark text-light border-secondary">Page {{ makes.number }} of {{ makes.paginator.num_pages }}</span>
+        </li>
+
+        {% if makes.has_next %}
+            <li class="page-item">
+                <a class="page-link bg-dark text-light border-secondary" href="?page={{ makes.next_page_number }}">Next</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link bg-dark text-light border-secondary" href="?page={{ makes.paginator.num_pages }}">Last &raquo;</a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+
 
 <!-- Add Make Modal -->
 <div class="modal fade" id="addMakeModal" tabindex="-1" aria-labelledby="addMakeModalLabel" aria-hidden="true">
     <div class="modal-dialog">
-        <div class="modal-content">
+        <div class="modal-content bg-dark text-light">
             <div class="modal-header">
                 <h5 class="modal-title" id="addMakeModalLabel">Add New Make</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form method="post" action="{% url 'add_make' %}">
                     {% csrf_token %}
                     <div class="mb-3">
                         <label for="name" class="form-label">Name</label>
-                        <input type="text" class="form-control" id="name" name="name" required>
+                        <input type="text" class="form-control bg-dark text-light border-secondary" id="name" name="name" required>
                     </div>
                     <button type="submit" class="btn btn-primary">Add Make</button>
                 </form>
@@ -65,17 +91,17 @@
     <!-- Edit Make Modal -->
     <div class="modal fade" id="editMakeModal{{ make.id }}" tabindex="-1" aria-labelledby="editMakeModalLabel{{ make.id }}" aria-hidden="true">
         <div class="modal-dialog">
-            <div class="modal-content">
+            <div class="modal-content bg-dark text-light">
                 <div class="modal-header">
                     <h5 class="modal-title" id="editMakeModalLabel{{ make.id }}">Edit Make</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form method="post" action="{% url 'edit_make' make.id %}">
                         {% csrf_token %}
                         <div class="mb-3">
                             <label for="name{{ make.id }}" class="form-label">Name</label>
-                            <input type="text" class="form-control" id="name{{ make.id }}" name="name" value="{{ make.name }}" required>
+                            <input type="text" class="form-control bg-dark text-light border-secondary" id="name{{ make.id }}" name="name" value="{{ make.name }}" required>
                         </div>
                         <button type="submit" class="btn btn-primary">Save Changes</button>
                     </form>
@@ -87,10 +113,10 @@
     <!-- Delete Make Modal -->
     <div class="modal fade" id="deleteMakeModal{{ make.id }}" tabindex="-1" aria-labelledby="deleteMakeModalLabel{{ make.id }}" aria-hidden="true">
         <div class="modal-dialog">
-            <div class="modal-content">
+            <div class="modal-content bg-dark text-light">
                 <div class="modal-header">
                     <h5 class="modal-title" id="deleteMakeModalLabel{{ make.id }}">Delete Make</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <p>Are you sure you want to delete this make?</p>
@@ -107,4 +133,3 @@
     </div>
 {% endfor %}
 {% endblock %}
-

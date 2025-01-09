@@ -1,6 +1,7 @@
 from email.policy import default
-
 from django.db import models
+from django.contrib.auth.models import User  # Import the User model
+
 
 class RepairStatus(models.Model):
     name = models.CharField(max_length=50)
@@ -27,6 +28,11 @@ class Make(models.Model):
 
 class ActivityLog(models.Model):
     description = models.TextField()
+    user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,  # Set a default user if the associated user is deleted
+        null=True
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
