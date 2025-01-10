@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Repairs{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom" style="margin-top: 50px">
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom" style="margin-top: 60px">
     <h1 class="h2">Repairs</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
         <button type="button" class="btn btn-sm btn-outline-light" data-bs-toggle="modal" data-bs-target="#addRepairModal">
@@ -11,43 +11,51 @@
 </div>
 
 <div class="table-responsive">
-    <table class="table table-dark table-hover table-bordered table-striped table-sm">
+    <table class="table table-dark table-hover table-bordered table-striped table-sm rounded" >
         <thead class="table-dark">
             <tr>
-                <th>#</th>
-                <th>Customer</th>
-                <th>Device Type</th>
-                <th>Status</th>
-                <th>Location</th>
-                <th>Make</th>
-                <th>Model</th>
-                <th>Issue</th>
-                <th>Estimated Cost</th>
-                <th>Finalized Price</th>
-                <th>Created At</th>
-                <th>Actions</th>
+                <th style="width: 250px;">Repair Number</th>
+                <th style="width: 150px;">Customer</th>
+                <th style="width: 120px;">Device Type</th>
+                <th style="width: 150px;">Status</th>
+                <th style="width: 150px;">Signature</th>
+
+                <th style="width: 150px;">Location</th>
+                <th style="width: 150px;">Finalized Price</th>
+                <th style="width: 200px;">Created At</th>
+                <th style="width: 300px;">Actions</th>
             </tr>
         </thead>
         <tbody>
             {% for repair in repairs %}
             <tr>
-                <td>{{ repair.id }}</td>
+                <td>{{ repair.repair_number }}</td>
                 <td>{{ repair.customer.name }}</td>
                 <td>{{ repair.device_type }}</td>
                 <td>{{ repair.status.name }}</td>
+                <td>
+
+                    {% if repair.signature %}
+                        <div class="mt-2">
+                            <img src="{{ repair.signature.url }}" alt="Signature" class="img-fluid" style="max-height: 100px; max-width: 100px;">
+                        </div>
+                    {% else %}
+                        <div class="text-muted">No signature</div>
+                    {% endif %}
+                </td>
                 <td>{{ repair.location.name }}</td>
-                <td>{{ repair.make.name }}</td>
-                <td>{{ repair.model }}</td>
-                <td>{{ repair.issue_description }}</td>
-                <td>{{ repair.estimated_cost }}</td>
                 <td>{{ repair.finalized_price }}</td>
                 <td>{{ repair.created_at|date:"M d, Y H:i" }}</td>
                 <td>
+
                     <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editRepairModal{{ repair.id }}">
                         <i class="fas fa-edit"></i>
                     </button>
                     <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteRepairModal{{ repair.id }}">
                         <i class="fas fa-trash"></i>
+                    </button>
+                    <button class="btn btn-sm btn-info" onclick="printLabel('{{ repair.repair_number }}')">
+                        <i class="fas fa-print"></i>
                     </button>
                 </td>
             </tr>
@@ -80,92 +88,160 @@
         {% endif %}
     </ul>
 </nav>
+<div id="printArea" style="display: none;">
+    <div style="text-align: center; font-size: 24px; padding: 20px;">
+        <p id="repairNumberLabel"></p>
+    </div>
+</div>
+<script>
+   function printLabel(repairNumber) {
+    // Open a new tab for printing
+    const printTab = window.open('', '_blank');
 
+    // Write HTML content to the new tab
+    printTab.document.write('<html><head><title>Print Label</title>');
+    printTab.document.write('<style>');
+    printTab.document.write('body { font-family: Arial, sans-serif; font-size: 40px; margin: 0; padding: 0; height: 100%; }');
+    printTab.document.write('.content { text-align: center; page-break-before: always; margin-top: 50%; }'); // Ensure it starts on new page
+    printTab.document.write('.content p { margin: 0; padding: 0; }');
+    printTab.document.write('</style></head><body>');
+
+    // First page content
+    printTab.document.write('<div class="content">');
+    printTab.document.write('<p>R/N: ' + repairNumber + '</p>');
+    printTab.document.write('</div>');
+
+    // Second page content
+    printTab.document.write('<div class="content">');
+    printTab.document.write('<p>R/N: ' + repairNumber + '</p>');
+    printTab.document.write('</div>');
+
+    printTab.document.write('</body></html>');
+    printTab.document.close();
+
+    // Wait for the tab to load and then trigger the print action
+    printTab.onload = function() {
+        printTab.print();
+    };
+}
+</script>
 
 <!-- Add Repair Modal -->
 <div class="modal fade" id="addRepairModal" tabindex="-1" aria-labelledby="addRepairModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
         <div class="modal-content bg-dark text-light">
             <div class="modal-header">
                 <h5 class="modal-title" id="addRepairModalLabel">Add New Repair</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form method="post" action="{% url 'add_repair' %}">
+                <form method="post" action="{% url 'add_repair' %}" enctype="multipart/form-data">
                     {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="customer" class="form-label">Customer</label>
-                        <select class="form-control bg-dark text-light border-secondary" id="customer" name="customer" required>
-                            {% for customer in customers %}
-                                <option value="{{ customer.id }}">{{ customer.name }}</option>
-                            {% endfor %}
-                        </select>
+                    <!-- Form Fields -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="customer" class="form-label">Customer</label>
+                            <select class="form-control bg-dark text-light border-secondary" id="customer" name="customer" required>
+                                {% for customer in customers %}
+                                    <option value="{{ customer.id }}">{{ customer.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="device_type" class="form-label">Device Type</label>
+                            <input type="text" class="form-control bg-dark text-light border-secondary" id="device_type" name="device_type" required>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="device_type" class="form-label">Device Type</label>
-                        <input type="text" class="form-control bg-dark text-light border-secondary" id="device_type" name="device_type" required>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-control bg-dark text-light border-secondary" id="status" name="status" required>
+                                {% for status in statuses %}
+                                    <option value="{{ status.id }}">{{ status.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="location" class="form-label">Location</label>
+                            <select class="form-control bg-dark text-light border-secondary" id="location" name="location" required>
+                                {% for location in locations %}
+                                    <option value="{{ location.id }}">{{ location.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="status" class="form-label">Status</label>
-                        <select class="form-control bg-dark text-light border-secondary" id="status" name="status" required>
-                            {% for status in statuses %}
-                                <option value="{{ status.id }}">{{ status.name }}</option>
-                            {% endfor %}
-                        </select>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="make" class="form-label">Make</label>
+                            <select class="form-control bg-dark text-light border-secondary" id="make" name="make" required>
+                                {% for make in makes %}
+                                    <option value="{{ make.id }}">{{ make.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="model" class="form-label">Model</label>
+                            <input type="text" class="form-control bg-dark text-light border-secondary" id="model" name="model" required>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="location" class="form-label">Location</label>
-                        <select class="form-control bg-dark text-light border-secondary" id="location" name="location" required>
-                            {% for location in locations %}
-                                <option value="{{ location.id }}">{{ location.name }}</option>
-                            {% endfor %}
-                        </select>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="issue_description" class="form-label">Issue Description</label>
+                            <textarea class="form-control bg-dark text-light border-secondary" id="issue_description" name="issue_description" rows="3" required></textarea>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="estimated_cost" class="form-label">Estimated Cost</label>
+                            <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="estimated_cost" name="estimated_cost" required>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="make" class="form-label">Make</label>
-                        <select class="form-control bg-dark text-light border-secondary" id="make" name="make" required>
-                            {% for make in makes %}
-                                <option value="{{ make.id }}">{{ make.name }}</option>
-                            {% endfor %}
-                        </select>
+                    <!-- Estimated Cost and Signature -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="finalized_price" class="form-label">Finalized Cost</label>
+                            <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="finalized_price" name="finalized_price" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="passcode" class="form-label">Passcode</label>
+                            <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="passcode" name="passcode" required>
+                        </div>
+
                     </div>
-                    <div class="mb-3">
-                        <label for="model" class="form-label">Model</label>
-                        <input type="text" class="form-control bg-dark text-light border-secondary" id="model" name="model" required>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="signatureCanvas1" class="form-label">Signature</label>
+                            <div class="signature-container border bg-light p-3 rounded">
+                                <canvas id="signatureCanvas1" class="w-100" height="150"></canvas>
+                                <button type="button" class="btn btn-secondary btn-sm mt-2" id="clearCanvas1">Clear Signature</button>
+                                <input type="hidden" id="signatureImage1" name="signature_image1">
+                            </div>
+                        </div>
                     </div>
+                    <!-- Submit Button -->
                     <div class="mb-3">
-                        <label for="issue_description" class="form-label">Issue Description</label>
-                        <textarea class="form-control bg-dark text-light border-secondary" id="issue_description" name="issue_description" rows="3" required></textarea>
+                        <button type="submit" class="btn btn-primary w-100">Add Repair</button>
                     </div>
-                    <div class="mb-3">
-                        <label for="estimated_cost" class="form-label">Estimated Cost</label>
-                        <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="estimated_cost" name="estimated_cost" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="finalized_price" class="form-label">Finalized Price</label>
-                        <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="finalized_price" name="finalized_price">
-                    </div>
-                    <button type="submit" class="btn btn-primary">Add Repair</button>
                 </form>
             </div>
+            <div class="modal-footer" style="margin-top: auto;"></div>
         </div>
     </div>
 </div>
 
 <!-- Edit and Delete modals for each repair -->
 {% for repair in repairs %}
-     <div class="modal fade" id="editRepairModal{{ repair.id }}" tabindex="-1" aria-labelledby="editRepairModalLabel{{ repair.id }}" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content bg-dark text-light">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editRepairModalLabel{{ repair.id }}">Edit Repair</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form method="post" action="{% url 'edit_repair' repair.id %}">
-                        {% csrf_token %}
-
-                        <div class="mb-3">
+<div class="modal fade" id="editRepairModal{{ repair.id }}" tabindex="-1" aria-labelledby="editRepairModalLabel{{ repair.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+        <div class="modal-content bg-dark text-light">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editRepairModalLabel{{ repair.id }}">Edit Repair</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'edit_repair' repair.id %}">
+                    {% csrf_token %}
+                    <!-- Customer and Device Type -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
                             <label for="customer{{ repair.id }}" class="form-label">Customer</label>
                             <select class="form-control bg-dark text-light border-secondary" id="customer{{ repair.id }}" name="customer" required>
                                 {% for customer in customers %}
@@ -173,13 +249,14 @@
                                 {% endfor %}
                             </select>
                         </div>
-
-                        <div class="mb-3">
+                        <div class="col-md-6 mb-3">
                             <label for="device_type{{ repair.id }}" class="form-label">Device Type</label>
                             <input type="text" class="form-control bg-dark text-light border-secondary" id="device_type{{ repair.id }}" name="device_type" value="{{ repair.device_type }}" required>
                         </div>
-
-                        <div class="mb-3">
+                    </div>
+                    <!-- Status and Location -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
                             <label for="status{{ repair.id }}" class="form-label">Status</label>
                             <select class="form-control bg-dark text-light border-secondary" id="status{{ repair.id }}" name="status" required>
                                 {% for status in statuses %}
@@ -187,8 +264,7 @@
                                 {% endfor %}
                             </select>
                         </div>
-
-                        <div class="mb-3">
+                        <div class="col-md-6 mb-3">
                             <label for="location{{ repair.id }}" class="form-label">Location</label>
                             <select class="form-control bg-dark text-light border-secondary" id="location{{ repair.id }}" name="location" required>
                                 {% for location in locations %}
@@ -196,8 +272,10 @@
                                 {% endfor %}
                             </select>
                         </div>
-
-                        <div class="mb-3">
+                    </div>
+                    <!-- Make and Model -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
                             <label for="make{{ repair.id }}" class="form-label">Make</label>
                             <select class="form-control bg-dark text-light border-secondary" id="make{{ repair.id }}" name="make" required>
                                 {% for make in makes %}
@@ -205,33 +283,46 @@
                                 {% endfor %}
                             </select>
                         </div>
-
-                        <div class="mb-3">
+                        <div class="col-md-6 mb-3">
                             <label for="model{{ repair.id }}" class="form-label">Model</label>
                             <input type="text" class="form-control bg-dark text-light border-secondary" id="model{{ repair.id }}" name="model" value="{{ repair.model }}" required>
                         </div>
-
-                        <div class="mb-3">
+                    </div>
+                    <!-- Issue Description and Estimated Cost -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
                             <label for="issue_description{{ repair.id }}" class="form-label">Issue Description</label>
-                            <textarea class="form-control bg-dark text-light border-secondary" id="issue_description{{ repair.id }}" name="issue_description" rows="3" required>{{ repair.issue }}</textarea>
+                            <textarea class="form-control bg-dark text-light border-secondary" id="issue_description{{ repair.id }}" name="issue_description" rows="3" required>{{ repair.issue_description }}</textarea>
                         </div>
-
-                        <div class="mb-3">
+                        <div class="col-md-6 mb-3">
                             <label for="estimated_cost{{ repair.id }}" class="form-label">Estimated Cost</label>
                             <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="estimated_cost{{ repair.id }}" name="estimated_cost" value="{{ repair.estimated_cost }}" required>
                         </div>
-
-                        <div class="mb-3">
-                            <label for="finalized_price{{ repair.id }}" class="form-label">Finalized Price</label>
+                    </div>
+                    <!-- Finalized Price and Signature -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="finalized_price{{ repair.id }}" class="form-label">Finalized Cost</label>
                             <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="finalized_price{{ repair.id }}" name="finalized_price" value="{{ repair.finalized_price }}">
                         </div>
-
-                        <button type="submit" class="btn btn-primary">Save Changes</button>
-                    </form>
-                </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="signatureCanvas{{ repair.id }}" class="form-label">Signature</label>
+                            <div class="signature-container border bg-light p-3 rounded">
+                                <canvas id="signatureCanvas{{ repair.id }}" class="w-100" height="150"></canvas>
+                                <button type="button" class="btn btn-secondary btn-sm mt-2" id="clearCanvas{{ repair.id }}">Clear Signature</button>
+                                <input type="hidden" id="signatureImage{{ repair.id }}" name="signature_image" value="{{ repair.signature_image }}">
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Submit Button -->
+                    <div class="mb-3">
+                        <button type="submit" class="btn btn-primary w-100">Save Changes</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
+</div>
 
     <!-- Delete Repair Modal -->
     <div class="modal fade" id="deleteRepairModal{{ repair.id }}" tabindex="-1" aria-labelledby="deleteRepairModalLabel{{ repair.id }}" aria-hidden="true">
@@ -254,5 +345,81 @@
             </div>
         </div>
     </div>
+<script>
+     document.addEventListener('DOMContentLoaded', function() {
+        const canvas = document.getElementById('signatureCanvas1');
+const ctx = canvas.getContext('2d');
+const clearButton = document.getElementById('clearCanvas1');
+const signatureInput = document.getElementById('signatureImage1');
+
+let drawing = false;
+
+canvas.addEventListener('mousedown', (e) => {
+    drawing = true;
+    const rect = canvas.getBoundingClientRect();
+    ctx.beginPath(); // Start a new path
+    ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top); // Move to the starting point
+});
+
+canvas.addEventListener('mousemove', (e) => {
+    if (!drawing) return;
+    const rect = canvas.getBoundingClientRect();
+    ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top); // Draw a line to the new point
+    ctx.stroke();
+});
+
+canvas.addEventListener('mouseup', () => {
+    drawing = false;
+    signatureInput.value = canvas.toDataURL('image/png'); // Save the signature as a base64 image
+});
+
+canvas.addEventListener('mouseleave', () => {
+    drawing = false; // Stop drawing if the mouse leaves the canvas
+});
+
+clearButton.addEventListener('click', () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+    signatureInput.value = ''; // Reset the hidden input
+});
+{% for repair in repairs %}
+    const canvas{{ repair.id }} = document.getElementById('signatureCanvas{{ repair.id }}');
+    const ctx{{ repair.id }} = canvas{{ repair.id }}.getContext('2d');
+    const clearButton{{ repair.id }} = document.getElementById('clearCanvas{{ repair.id }}');
+    const signatureInput{{ repair.id }} = document.getElementById('signatureImage{{ repair.id }}');
+
+    let drawing{{ repair.id }} = false;
+
+    canvas{{ repair.id }}.addEventListener('mousedown', (e) => {
+        drawing{{ repair.id }} = true;
+        const rect = canvas{{ repair.id }}.getBoundingClientRect();
+        ctx{{ repair.id }}.beginPath(); // Start a new path
+        ctx{{ repair.id }}.moveTo(e.clientX - rect.left, e.clientY - rect.top); // Move to the starting point
+    });
+
+    canvas{{ repair.id }}.addEventListener('mousemove', (e) => {
+        if (!drawing{{ repair.id }}) return;
+        const rect = canvas{{ repair.id }}.getBoundingClientRect();
+        ctx{{ repair.id }}.lineTo(e.clientX - rect.left, e.clientY - rect.top); // Draw a line to the new point
+        ctx{{ repair.id }}.stroke();
+    });
+
+    canvas{{ repair.id }}.addEventListener('mouseup', () => {
+        drawing{{ repair.id }} = false;
+        signatureInput{{ repair.id }}.value = canvas{{ repair.id }}.toDataURL('image/png'); // Save the signature as a base64 image
+    });
+
+    canvas{{ repair.id }}.addEventListener('mouseleave', () => {
+        drawing{{ repair.id }} = false; // Stop drawing if the mouse leaves the canvas
+    });
+
+    clearButton{{ repair.id }}.addEventListener('click', () => {
+        ctx{{ repair.id }}.clearRect(0, 0, canvas{{ repair.id }}.width, canvas{{ repair.id }}.height); // Clear the canvas
+        signatureInput{{ repair.id }}.value = ''; // Reset the hidden input
+    });
+{% endfor %}
+     });
+   
+
+</script>
 {% endfor %}
 {% endblock %}

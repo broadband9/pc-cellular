@@ -3,7 +3,11 @@ from django.contrib.auth.decorators import login_required
 from .models import Repair, Location, Make, RepairStatus, ActivityLog
 from customers.models import Customer
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-
+from django.core.files.base import ContentFile
+import base64
+import datetime
+import random
+import string
 
 # Repairs
 @login_required
@@ -37,13 +41,23 @@ def add_repair(request):
         issue_description = request.POST.get("issue_description")
         estimated_cost = request.POST.get("estimated_cost")
         finalized_price = request.POST.get("finalized_price")
+        passcode = request.POST.get("passcode")
+        signature_data = request.POST.get("signature_image1")
+        current_date = datetime.datetime.now().strftime('%Y-%m-%d')
 
-        customer = get_object_or_404(Customer, id=customer_id)
+        # Generate a random passcode (e.g., a 6-character string of digits)
+
+        # Format the repair number as 'ezy-date-client_name-passcode'
+
         status = get_object_or_404(RepairStatus, id=status_id) if status_id else None
         location = get_object_or_404(Location, id=location_id) if location_id else None
         make = get_object_or_404(Make, id=make_id) if make_id else None
+        customer = get_object_or_404(Customer, id=customer_id)
+        repair_number = f"ezy-{current_date}-{customer.name}-{passcode}"
 
         repair = Repair.objects.create(
+            repair_number=repair_number,
+            passcode=passcode,
             customer=customer,
             device_type=device_type,
             status=status,
@@ -54,6 +68,10 @@ def add_repair(request):
             estimated_cost=estimated_cost,
             finalized_price=finalized_price,
         )
+        if signature_data:
+            format, imgstr = signature_data.split(';base64,')
+            ext = format.split('/')[-1]
+            repair.signature.save(f"repair_{repair.id}_signature.{ext}", ContentFile(base64.b64decode(imgstr)))
         ActivityLog.objects.create(description=f"Add repair with id {repair.id}", user=request.user)
 
     return redirect('repairs_list')
@@ -154,7 +172,15 @@ def edit_repair(request, pk):
         issue_description = request.POST.get("issue_description")
         estimated_cost = request.POST.get("estimated_cost")
         finalized_price = request.POST.get("finalized_price")
+        signature_image_data = request.POST.get("signature_image")  # Getting the base64 signature image data
+
         print("issue description", issue_description)
+        if signature_image_data:
+            # Decode the base64 image and save it as an image file
+
+            format, imgstr = signature_image_data.split(';base64,')
+            ext = format.split('/')[-1]
+            repair.signature.save(f"repair_{repair.id}_signature.{ext}", ContentFile(base64.b64decode(imgstr)))
         customer = get_object_or_404(Customer, id=customer_id)
         status = get_object_or_404(RepairStatus, id=status_id) if status_id else None
         location = get_object_or_404(Location, id=location_id) if location_id else None

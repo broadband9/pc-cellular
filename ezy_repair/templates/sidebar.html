@@ -1,39 +1,90 @@
-<div class="position-sticky pt-3 bg-dark text-white" style="margin-top:40px; min-height: 100vh;">
-    <ul class="nav flex-column">
-        <li class="nav-item">
-            <a class="nav-link text-white" href="{% url 'dashboard' %}">
-                <i class="fas fa-tachometer-alt"></i> Dashboard
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link text-white" href="{% url 'repairs_list' %}">
-                <i class="fas fa-tools"></i> Repairs
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link text-white" href="{% url 'customers_list' %}">
-                <i class="fas fa-users"></i> Customers
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link text-white" href="{% url 'repair_statuses' %}">
-                <i class="fas fa-list-alt"></i> Repair Statuses
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link text-white" href="{% url 'locations' %}">
-                <i class="fas fa-map-marker-alt"></i> Locations
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link text-white" href="{% url 'makes' %}">
-                <i class="fas fa-industry"></i> Makes
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link text-white" href="{% url 'activity_logs' %}">
-                <i class="fas fa-history"></i> Activity Logs
-            </a>
-        </li>
-    </ul>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sidebar Navigation</title>
+    <style>
+        /* Sidebar Styles */
+        .position-sticky {
+            position: sticky;
+            top: 0;
+        }
+
+        .nav {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .nav-item {
+            margin: 10px 0;
+        }
+
+        .nav-link {
+            color: white;
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .nav-link:hover,
+        .active {
+            background-color: #007bff;
+        }
+
+        .nav-link i {
+            margin-right: 10px;
+        }
+
+        /* Active link */
+        .active {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="position-sticky pt-3 bg-dark text-white" style="margin-top:60px; min-height: 100vh;">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link text-white {% if request.path == '/dashboard/' %}active{% endif %}" href="{% url 'dashboard' %}" id="dashboardTab">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white {% if request.path == '/repairs/' %}active{% endif %}" href="{% url 'repairs_list' %}" id="repairsTab">
+                    <i class="fas fa-tools"></i> Repairs
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white {% if request.path == '/customer' %}active{% endif %}" href="{% url 'customers_list' %}" id="customersTab">
+                    <i class="fas fa-users"></i> Customers
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white {% if request.path == '/repairs/repair_statuses/' %}active{% endif %}" href="{% url 'repair_statuses' %}" id="repairStatusesTab">
+                    <i class="fas fa-list-alt"></i> Repair Statuses
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white {% if request.path == '/repairs/locations/' %}active{% endif %}" href="{% url 'locations' %}" id="locationsTab">
+                    <i class="fas fa-map-marker-alt"></i> Locations
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white {% if request.path == '/repairs/makes/' %}active{% endif %}" href="{% url 'makes' %}" id="makesTab">
+                    <i class="fas fa-industry"></i> Makes
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white {% if request.path == '/repairs/activity_logs/' %}active{% endif %}"" href="{% url 'activity_logs' %}" id="activityLogsTab">
+                    <i class="fas fa-history"></i> Activity Logs
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    
+</body>
+</html>
