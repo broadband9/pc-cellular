@@ -8,3 +8,4 @@ venv/
 /ezy_repair/ezy_repair/__pycache__
 *.pyc
 /ezy_repair/customers/__pycache__
+/.idea
