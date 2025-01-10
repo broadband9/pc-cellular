@@ -66,7 +66,7 @@ DATABASES = {
 # Static files
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
-STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # This is where static files will be collected for deployment
 
 # Media files
 MEDIA_URL = '/media/'
