@@ -6,3 +6,5 @@ venv/
 /.idea
 /ezy_repair/repairs/__pycache__
 /ezy_repair/ezy_repair/__pycache__
+*.pyc
+/ezy_repair/customers/__pycache__
