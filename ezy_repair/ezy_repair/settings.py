@@ -1,7 +1,7 @@
 """
 Django settings for ezy_repair project.
 """
-
+import os
 from pathlib import Path
 
 # Paths
@@ -66,6 +66,7 @@ DATABASES = {
 # Static files
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
 # Media files
 MEDIA_URL = '/media/'

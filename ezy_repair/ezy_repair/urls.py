@@ -4,10 +4,10 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('ezy_repair/admin/', admin.site.urls),  # Admin under /ezy_repair/
 
 
     # App-specific URLs
-    path('', include('customers.urls')),
-    path('repairs/', include('repairs.urls')),
+    path('ezy_repair/', include('customers.urls')),
+    path('ezy_repair/repairs/', include('repairs.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
