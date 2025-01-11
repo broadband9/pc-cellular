@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Repairs{% endblock %}
 {% block content %}
+{% load custom_filters %}
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom" style="margin-top: 60px">
     <h1 class="h2">Repairs</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
@@ -149,7 +150,13 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="device_type" class="form-label">Device Type</label>
-                            <input type="text" class="form-control bg-dark text-light border-secondary" id="device_type" name="device_type" required>
+                            <select class="form-control bg-dark text-light border-secondary" id="device_type" name="device_type" required>
+                                <option value="">Select Device Type</option>
+                                <option value="Mobile">Mobile</option>
+                                <option value="Tablet">Tablet</option>
+                                <option value="Laptop">Laptop</option>
+
+                            </select>
                         </div>
                     </div>
                     <div class="row">
@@ -170,6 +177,117 @@
                             </select>
                         </div>
                     </div>
+                    <div id="mobile-tablet-fields" class="d-none">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="imei" class="form-label">IMEI</label>
+                                <input type="text" class="form-control bg-dark text-light border-secondary" id="imei" name="imei">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="network" class="form-label">Network</label>
+                                <select class="form-control bg-dark text-light border-secondary" id="network" name="network">
+                                    <option value="vodafone">Vodafone</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <!-- Mobile/Tablet Yes/No Fields -->
+                        {% for field in mob_yes %}
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">{{ field|replace_underscores }}</label>
+                                <div class="d-flex">
+                                    <div class="form-check me-3">
+                                        <input class="form-check-input" type="radio" name="{{ field }}" id="{{ field }}-yes" value="True">
+                                        <label class="form-check-label" for="{{ field }}-yes">Yes</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="{{ field }}" id="{{ field }}-no" value="False" checked>
+                                        <label class="form-check-label" for="{{ field }}-no">No</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div id="laptop-fields" style="display: none;">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="operating_system" class="form-label">Operating System</label>
+                                <input type="text" class="form-control bg-dark text-light border-secondary" id="operating_system" name="operating_system">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="ram" class="form-label">RAM</label>
+                                <input type="text" class="form-control bg-dark text-light border-secondary" id="ram" name="ram">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="storage" class="form-label">Storage</label>
+                                <input type="text" class="form-control bg-dark text-light border-secondary" id="storage" name="storage">
+                            </div>
+                        </div>
+
+                        <!-- Laptop Yes/No Fields -->
+                        {% for field in lap_yes %}
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">{{ field|replace_underscores }}</label>
+                                <div class="d-flex">
+                                    <div class="form-check me-3">
+                                        <input class="form-check-input" type="radio" name="{{ field }}" id="{{ field }}-yes" value="True">
+                                        <label class="form-check-label" for="{{ field }}-yes">Yes</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="{{ field }}" id="{{ field }}-no" value="False" checked>
+                                        <label class="form-check-label" for="{{ field }}-no">No</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- General Yes/No Fields -->
+                    {% for field in mandatory_yes %}
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">{{ field|replace_underscores }}</label>
+                            <div class="d-flex">
+                                <div class="form-check me-3">
+                                    <input class="form-check-input" type="radio" name="{{ field }}" id="{{ field }}-yes" value="True">
+                                    <label class="form-check-label" for="{{ field }}-yes">Yes</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="{{ field }}" id="{{ field }}-no" value="False" checked>
+                                    <label class="form-check-label" for="{{ field }}-no">No</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('device_type').addEventListener('change', function () {
+            const deviceType = this.value;
+            const mobileTabletFields = document.getElementById('mobile-tablet-fields');
+            const laptopFields = document.getElementById('laptop-fields');
+
+            if (mobileTabletFields) {
+                if (deviceType === 'Mobile' || deviceType === 'Tablet') {
+                mobileTabletFields.classList.remove('d-none');
+                mobileTabletFields.classList.add('d-block');
+                } else {
+                    mobileTabletFields.classList.add('d-none');
+                }
+            }
+
+            if (laptopFields) {
+                laptopFields.style.display = (deviceType === 'Laptop') ? 'block' : 'none';
+            }
+        });
+    });
+</script>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="make" class="form-label">Make</label>
@@ -251,7 +369,7 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="device_type{{ repair.id }}" class="form-label">Device Type</label>
-                            <input type="text" class="form-control bg-dark text-light border-secondary" id="device_type{{ repair.id }}" name="device_type" value="{{ repair.device_type }}" required>
+                            <input type="text" class="form-control bg-dark text-light border-secondary" id="device_type{{ repair.id }}" name="device_type" value="{{ repair.device_type }}" disabled>
                         </div>
                     </div>
                     <!-- Status and Location -->
@@ -273,6 +391,98 @@
                             </select>
                         </div>
                     </div>
+                    {% if repair.device_type == 'Mobile' or repair.device_type == 'Tablet' %}
+                    <div id="mobile-tablet{{ repair.id }}" >
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="imei{{ repair.id }}" class="form-label">IMEI</label>
+                                <input type="text" class="form-control bg-dark text-light border-secondary" id="imei{{ repair.id }}" name="imei" value="{{ repair.imei }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="network{{ repair.id }}" class="form-label">Network</label>
+                                <select class="form-control bg-dark text-light border-secondary" id="network{{ repair.id }}" name="network">
+                                    <option value="vodafone" {% if repair.network == 'vodafone' %}selected{% endif %}>Vodafone</option>
+                                    <option value="other" {% if repair.network == 'other' %}selected{% endif %}>Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <!-- Mobile/Tablet Yes/No Fields -->
+                        {% for field in mob_yes %}
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">{{ field|replace_underscores }}</label>
+                                <div class="d-flex">
+                                    <div class="form-check me-3">
+                                        <input class="form-check-input" type="radio" name="{{ field }}" id="{{ field }}-yes{{ repair.id }}" value="True" {% if repair|get_item:field == True %}checked{% endif %}>
+                                        <label class="form-check-label" for="{{ field }}-yes{{ repair.id }}">Yes</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="{{ field }}" id="{{ field }}-no{{ repair.id }}" value="False" {% if repair|get_item:field == False %}checked{% endif %}>
+                                        <label class="form-check-label" for="{{ field }}-no{{ repair.id }}">No</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% if repair.device_type == 'Laptop' %}
+                    <div id="laptop-f{{ repair.id }}">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="operating_system{{ repair.id }}" class="form-label">Operating System</label>
+                                <input type="text" class="form-control bg-dark text-light border-secondary" id="operating_system{{ repair.id }}" name="operating_system" value="{{ repair.operating_system }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="ram{{ repair.id }}" class="form-label">RAM</label>
+                                <input type="text" class="form-control bg-dark text-light border-secondary" id="ram{{ repair.id }}" name="ram" value="{{ repair.ram }}">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="storage{{ repair.id }}" class="form-label">Storage</label>
+                                <input type="text" class="form-control bg-dark text-light border-secondary" id="storage{{ repair.id }}" name="storage" value="{{ repair.storage }}">
+                            </div>
+                        </div>
+
+                        <!-- Laptop Yes/No Fields -->
+                        {% for field in lap_yes %}
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">{{ field|replace_underscores }}</label>
+                                <div class="d-flex">
+                                    <div class="form-check me-3">
+                                        <input class="form-check-input" type="radio" name="{{ field }}" id="{{ field }}-yes{{ repair.id }}" value="True" {% if repair|get_item:field == True %}checked{% endif %}>
+                                        <label class="form-check-label" for="{{ field }}-yes{{ repair.id }}">Yes</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="{{ field }}" id="{{ field }}-no{{ repair.id }}" value="False" {% if repair|get_item:field == False %}checked{% endif %}>
+                                        <label class="form-check-label" for="{{ field }}-no{{ repair.id }}">No</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <!-- General Yes/No Fields -->
+                    {% for field in mandatory_yes %}
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">{{ field|replace_underscores }}</label>
+                            <div class="d-flex">
+                                <div class="form-check me-3">
+                                    <input class="form-check-input" type="radio" name="{{ field }}" id="{{ field }}-yes{{ repair.id }}" value="True" {% if repair|get_item:field == True %}checked{% endif %}>
+                                    <label class="form-check-label" for="{{ field }}-yes{{ repair.id }}">Yes</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="{{ field }}" id="{{ field }}-no{{ repair.id }}" value="False" {% if repair|get_item:field == False %}checked{% endif %}>
+                                    <label class="form-check-label" for="{{ field }}-no{{ repair.id }}">No</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
                     <!-- Make and Model -->
                     <div class="row">
                         <div class="col-md-6 mb-3">
@@ -305,6 +515,12 @@
                             <label for="finalized_price{{ repair.id }}" class="form-label">Finalized Cost</label>
                             <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="finalized_price{{ repair.id }}" name="finalized_price" value="{{ repair.finalized_price }}">
                         </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="passcode{{ repair.id }}" class="form-label">Passcode</label>
+                            <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="passcode{{ repair.id }}" name="passcode" value="{{ repair.passcode }}" disabled>
+                        </div>
+                    </div>
+                    <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="signatureCanvas{{ repair.id }}" class="form-label">Signature</label>
                             <div class="signature-container border bg-light p-3 rounded">
