@@ -27,6 +27,7 @@ INSTALLED_APPS = [
 # Middleware
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -64,12 +65,12 @@ DATABASES = {
 }
 
 # Static files
-STATIC_URL = '/static/'
+STATIC_URL = '/ezy_repair/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / 'staticfiles'  # This is where static files will be collected for deployment
 
 # Media files
-MEDIA_URL = '/media/'
+MEDIA_URL = '/ezy_repair/media/'
 MEDIA_ROOT = BASE_DIR / "media"
 
 # Default auto field

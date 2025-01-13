@@ -62,7 +62,7 @@ def add_repair(request):
         location = get_object_or_404(Location, id=location_id) if location_id else None
         make = get_object_or_404(Make, id=make_id) if make_id else None
         customer = get_object_or_404(Customer, id=customer_id)
-        repair_number = f"ezy-{current_date}-{customer.name}-{passcode}"
+        repair_number = f"ezy-{current_date}-{customer.first_name}-{passcode}"
 
         repair = Repair.objects.create(
             repair_number=repair_number,
@@ -221,6 +221,7 @@ def edit_repair(request, pk):
         estimated_cost = request.POST.get("estimated_cost")
         finalized_price = request.POST.get("finalized_price")
         liquid_damage = request.POST.get("liquid_damage")
+        technician_notes = request.POST.get("technician_notes")
         power_up = request.POST.get("power_up")
         missing_part = request.POST.get("missing_part")
         tampered = request.POST.get("tampered")
@@ -251,6 +252,8 @@ def edit_repair(request, pk):
         repair.power_up = power_up
         repair.missing_part = missing_part
         repair.tampered = tampered
+        if technician_notes:
+            repair.technician_notes = technician_notes
         if repair.device_type == "Mobile" or "Tablet":
             imei = request.POST.get("imei")
             lens_lcd_damage = request.POST.get("lens_lcd_damage")

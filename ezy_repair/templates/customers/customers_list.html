@@ -15,9 +15,11 @@
         <thead class="table-dark">
             <tr>
                 <th>#</th>
-                <th>Name</th>
+                <th>First Name</th>
+                <th>Last Name</th>
                 <th>Email</th>
                 <th>Phone</th>
+                <th>PostCode</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -25,9 +27,11 @@
             {% for customer in customers %}
             <tr>
                 <td>{{ customer.id }}</td>
-                <td>{{ customer.name }}</td>
+                <td>{{ customer.first_name }}</td>
+                <td>{{ customer.last_name }}</td>
                 <td>{{ customer.email }}</td>
                 <td>{{ customer.phone }}</td>
+                <td>{{ customer.postcode }}</td>
                 <td>
                     <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editCustomerModal{{ customer.id }}">
                         <i class="fas fa-edit"></i>
@@ -80,16 +84,24 @@
                 <form method="post" action="{% url 'add_customer' %}">
                     {% csrf_token %}
                     <div class="mb-3">
-                        <label for="name" class="form-label">Name</label>
-                        <input type="text" class="form-control bg-dark text-light border-secondary" id="name" name="name" required>
+                        <label for="first_name" class="form-label">First Name</label>
+                        <input type="text" class="form-control bg-dark text-light border-secondary" id="first_name" name="first_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="last_name" class="form-label">Last Name</label>
+                        <input type="text" class="form-control bg-dark text-light border-secondary" id="last_name" name="last_name" required>
                     </div>
                     <div class="mb-3">
                         <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control bg-dark text-light border-secondary" id="email" name="email" required>
+                        <input type="email" class="form-control bg-dark text-light border-secondary" id="email" name="email">
                     </div>
                     <div class="mb-3">
                         <label for="phone" class="form-label">Phone</label>
                         <input type="tel" class="form-control bg-dark text-light border-secondary" id="phone" name="phone" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="postcode" class="form-label">Post Code</label>
+                        <input type="tel" class="form-control bg-dark text-light border-secondary" id="postcode" name="postcode" required>
                     </div>
                     <button type="submit" class="btn btn-primary">Add Customer</button>
                 </form>
@@ -112,16 +124,24 @@
                     <form method="post" action="{% url 'edit_customer' customer.id %}">
                         {% csrf_token %}
                         <div class="mb-3">
-                            <label for="name{{ customer.id }}" class="form-label">Name</label>
-                            <input type="text" class="form-control bg-dark text-light border-secondary" id="name{{ customer.id }}" name="name" value="{{ customer.name }}" required>
+                            <label for="first_name{{ customer.id }}" class="form-label">First Name</label>
+                            <input type="text" class="form-control bg-dark text-light border-secondary" id="first_name{{ customer.id }}" name="first_name" value="{{ customer.first_name }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="last_name{{ customer.id }}" class="form-label">Last Name</label>
+                            <input type="text" class="form-control bg-dark text-light border-secondary" id="last_name{{ customer.id }}" name="last_name" value="{{ customer.last_name }}" required>
                         </div>
                         <div class="mb-3">
                             <label for="email{{ customer.id }}" class="form-label">Email</label>
-                            <input type="email" class="form-control bg-dark text-light border-secondary" id="email{{ customer.id }}" name="email" value="{{ customer.email }}" required>
+                            <input type="email" class="form-control bg-dark text-light border-secondary" id="email{{ customer.id }}" name="email" value="{{ customer.email }}" >
                         </div>
                         <div class="mb-3">
                             <label for="phone{{ customer.id }}" class="form-label">Phone</label>
                             <input type="tel" class="form-control bg-dark text-light border-secondary" id="phone{{ customer.id }}" name="phone" value="{{ customer.phone }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="postcode{{ customer.id }}" class="form-label">Phone</label>
+                            <input type="tel" class="form-control bg-dark text-light border-secondary" id="postcode{{ customer.id }}" name="postcode" value="{{ customer.postcode }}" required>
                         </div>
                         <button type="submit" class="btn btn-primary">Save Changes</button>
                     </form>

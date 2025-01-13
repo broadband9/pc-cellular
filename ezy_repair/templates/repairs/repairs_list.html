@@ -31,7 +31,7 @@
             {% for repair in repairs %}
             <tr>
                 <td>{{ repair.repair_number }}</td>
-                <td>{{ repair.customer.name }}</td>
+                <td>{{ repair.customer.first_name }} {{ repair.customer.last_name }}</td>
                 <td>{{ repair.device_type }}</td>
                 <td>{{ repair.status.name }}</td>
                 <td>
@@ -126,7 +126,45 @@
     };
 }
 </script>
+{% for customer in customers %}
+    <!-- View Customer Modal -->
+    <div class="modal fade" id="editCustomerModal1{{ customer.id }}" tabindex="-1" style="z-index: 1100" aria-labelledby="editCustomerModalLabel{{ customer.id }}" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark text-light">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editCustomerModalLabel{{ customer.id }}">View Customer</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form >
 
+                        <div class="mb-3">
+                            <label for="first_name{{ customer.id }}" class="form-label">First Name</label>
+                            <input type="text" class="form-control bg-dark text-light border-secondary" id="first_name{{ customer.id }}" name="first_name" value="{{ customer.first_name }}" disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label for="last_name{{ customer.id }}" class="form-label">Last Name</label>
+                            <input type="text" class="form-control bg-dark text-light border-secondary" id="last_name{{ customer.id }}" name="last_name" value="{{ customer.last_name }}" disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email{{ customer.id }}" class="form-label">Email</label>
+                            <input type="email" class="form-control bg-dark text-light border-secondary" id="email{{ customer.id }}" name="email" value="{{ customer.email }}" disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone{{ customer.id }}" class="form-label">Phone</label>
+                            <input type="tel" class="form-control bg-dark text-light border-secondary" id="phone{{ customer.id }}" name="phone" value="{{ customer.phone }}" disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label for="postcode{{ customer.id }}" class="form-label">Phone</label>
+                            <input type="tel" class="form-control bg-dark text-light border-secondary" id="postcode{{ customer.id }}" name="postcode" value="{{ customer.postcode }}" disabled>
+                        </div>
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Done</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endfor %}
 <!-- Add Repair Modal -->
 <div class="modal fade" id="addRepairModal" tabindex="-1" aria-labelledby="addRepairModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-scrollable modal-lg">
@@ -143,11 +181,26 @@
                         <div class="col-md-6 mb-3">
                             <label for="customer" class="form-label">Customer</label>
                             <select class="form-control bg-dark text-light border-secondary" id="customer" name="customer" required>
+                                <option value="">Select Customer</option>
                                 {% for customer in customers %}
-                                    <option value="{{ customer.id }}">{{ customer.name }}</option>
+                                    <option value="{{ customer.id }}">{{ customer.first_name }} {{ customer.last_name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
+                        <script>
+
+        const customerDropdown = document.getElementById('customer');
+        customerDropdown.addEventListener('change', function () {
+            const selectedCustomerId = this.value;
+            if (selectedCustomerId) {
+                const modalId = `editCustomerModal1${selectedCustomerId}`;
+                const modalElement = document.getElementById(modalId);
+                const modalInstance = new bootstrap.Modal(modalElement);
+                modalInstance.show();
+            }
+        });
+
+</script>
                         <div class="col-md-6 mb-3">
                             <label for="device_type" class="form-label">Device Type</label>
                             <select class="form-control bg-dark text-light border-secondary" id="device_type" name="device_type" required>
@@ -361,12 +414,25 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="customer{{ repair.id }}" class="form-label">Customer</label>
-                            <select class="form-control bg-dark text-light border-secondary" id="customer{{ repair.id }}" name="customer" required>
+                            <select class="form-control bg-dark text-light border-secondary" id="customer{{ repair.id }}" name="customer" onchange="openCustomerModal({{repair.customer.id}})" required>
                                 {% for customer in customers %}
-                                    <option value="{{ customer.id }}" {% if customer.id == repair.customer.id %}selected{% endif %}>{{ customer.name }}</option>
+                                    <option value="{{ customer.id }}" {% if customer.id == repair.customer.id %}selected{% endif %}>{{ customer.first_name }} {{customer.last_name}}</option>
                                 {% endfor %}
                             </select>
                         </div>
+                        <script>
+                        
+        function openCustomerModal(id){
+            console.log("id", id)
+            if (id) {
+                const modalId1 = `editCustomerModal1${id}`;
+                const modalElement1 = document.getElementById(modalId1);
+                const modalInstance1 = new bootstrap.Modal(modalElement1);
+                modalInstance1.show();
+            }
+        }
+        </script>
+
                         <div class="col-md-6 mb-3">
                             <label for="device_type{{ repair.id }}" class="form-label">Device Type</label>
                             <input type="text" class="form-control bg-dark text-light border-secondary" id="device_type{{ repair.id }}" name="device_type" value="{{ repair.device_type }}" disabled>
@@ -529,6 +595,10 @@
                                 <input type="hidden" id="signatureImage{{ repair.id }}" name="signature_image" value="{{ repair.signature_image }}">
                             </div>
                         </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="technician_notes{{ repair.id }}" class="form-label">Technician Notes</label>
+                            <textarea class="form-control bg-dark text-light border-secondary" id="technician_notes{{ repair.id }}" name="technician_notes" rows="3" required>{{ repair.technician_notes }}</textarea>
+                        </div>
                     </div>
                     <!-- Submit Button -->
                     <div class="mb-3">
@@ -539,6 +609,8 @@
         </div>
     </div>
 </div>
+
+
 
     <!-- Delete Repair Modal -->
     <div class="modal fade" id="deleteRepairModal{{ repair.id }}" tabindex="-1" aria-labelledby="deleteRepairModalLabel{{ repair.id }}" aria-hidden="true">

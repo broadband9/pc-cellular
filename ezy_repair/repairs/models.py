@@ -81,6 +81,7 @@ class Repair(models.Model):
     model = models.CharField(max_length=100)
     issue_description = models.TextField()
     passcode = models.CharField(default="", max_length=20)
+    technician_notes = models.TextField()
     estimated_cost = models.DecimalField(max_digits=10, decimal_places=2)
     finalized_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
