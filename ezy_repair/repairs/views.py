@@ -6,6 +6,8 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.files.base import ContentFile
 import base64
 import datetime
+from django.http import JsonResponse
+from django.db.models import Q
 import random
 import string
 
@@ -384,3 +386,61 @@ def activity_logs(request):
         logs = paginator.page(paginator.num_pages)  # If page is out of range, show the last page
 
     return render(request, 'repairs/activity_logs.html', {'logs': logs})
+
+@login_required
+def global_search(request):
+    query = request.GET.get('q', '').strip()
+    if not query:
+        return JsonResponse({"results": []})
+
+    # Search in different tables
+    customer_results = Customer.objects.filter(
+        Q(first_name__icontains=query) |
+        Q(last_name__icontains=query) |
+        Q(email__icontains=query) |
+        Q(phone__icontains=query) |
+        Q(postcode__icontains=query)
+    ).values('id', 'first_name', 'last_name', 'email', 'phone', 'postcode')
+
+    repair_results = Repair.objects.filter(
+        Q(customer__first_name__icontains=query) |
+        Q(customer__last_name__icontains=query) |
+        Q(customer__email__icontains=query) |
+        Q(customer__phone__icontains=query) |
+        Q(customer__postcode__icontains=query) |
+        Q(passcode__icontains=query) |
+        Q(model__icontains=query) |
+        Q(imei__icontains=query) |
+        Q(device_type__icontains=query) |
+        Q(repair_number__icontains=query)
+    ).values(
+        'id', 'repair_number', 'model', 'imei', 'device_type',
+        'customer__first_name', 'customer__last_name', 'status__name', 'make__name', 'status__name',
+        'location__name', 'finalized_price', 'estimated_cost', 'lens_lcd_damage', 'camera_lens_back_damage',
+        'camera_lens_back_damage', 'risk_back', 'risk_biometric', 'button_function_ok', 'sim_removed', 'risk_lcd',
+        'trackpad_functional', 'keyboard_functional', 'hinge_damage', 'screen_damage', 'liquid_damage', 'power_up',
+        'missing_part', 'tampered', 'operating_system', 'ram', 'storage', 'network', 'passcode', 'issue_description'
+    )
+
+    make_results = Make.objects.filter(
+        Q(name__icontains=query)
+    ).values('id', 'name')
+
+    status_results = RepairStatus.objects.filter(
+        Q(name__icontains=query)
+    ).values('id', 'name', 'description')
+
+    location_results = Location.objects.filter(
+        Q(name__icontains=query)
+    ).values('id', 'name', 'address')
+
+    # Combine all results
+    results = {
+        "customers": list(customer_results),
+        "repairs": list(repair_results),
+        "makes": list(make_results),
+        "statuses": list(status_results),
+        "locations": list(location_results),
+    }
+
+    return JsonResponse({"results": results})

@@ -64,6 +64,9 @@ DATABASES = {
     }
 }
 
+
+
+
 # Static files
 STATIC_URL = '/ezy_repair/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
