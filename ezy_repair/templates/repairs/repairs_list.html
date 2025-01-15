@@ -379,11 +379,11 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="signatureCanvas1" class="form-label">Signature</label>
+                            <label for="signatureCanvas_add" class="form-label">Signature</label>
                             <div class="signature-container border bg-light p-3 rounded">
-                                <canvas id="signatureCanvas1" class="w-100" height="150"></canvas>
-                                <button type="button" class="btn btn-secondary btn-sm mt-2" id="clearCanvas1">Clear Signature</button>
-                                <input type="hidden" id="signatureImage1" name="signature_image1">
+                                <canvas id="signatureCanvas_add" class="w-100" height="150"></canvas>
+                                <button type="button" class="btn btn-secondary btn-sm mt-2" id="clearCanvas_add">Clear Signature</button>
+                                <input type="hidden" id="signatureImage_add" name="signature_image">
                             </div>
                         </div>
                     </div>
@@ -597,7 +597,7 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="technician_notes{{ repair.id }}" class="form-label">Technician Notes</label>
-                            <textarea class="form-control bg-dark text-light border-secondary" id="technician_notes{{ repair.id }}" name="technician_notes" rows="3" required>{{ repair.technician_notes }}</textarea>
+                            <textarea class="form-control bg-dark text-light border-secondary" id="technician_notes{{ repair.id }}" name="technician_notes" rows="3" >{{ repair.technician_notes }}</textarea>
                         </div>
                     </div>
                     <!-- Submit Button -->
@@ -635,10 +635,10 @@
     </div>
 <script>
      document.addEventListener('DOMContentLoaded', function() {
-        const canvas = document.getElementById('signatureCanvas1');
+        const canvas = document.getElementById('signatureCanvas_add');
 const ctx = canvas.getContext('2d');
-const clearButton = document.getElementById('clearCanvas1');
-const signatureInput = document.getElementById('signatureImage1');
+const clearButton = document.getElementById('clearCanvas_add');
+const signatureInput = document.getElementById('signatureImage_add');
 
 let drawing = false;
 

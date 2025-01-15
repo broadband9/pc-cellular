@@ -168,11 +168,12 @@ document.addEventListener('click', (event) => {
         document.getElementById('status').value = data.status__name || '';
         document.getElementById('location').value = data.location__name || '';
         document.getElementById('make').value = data.make__name || '';
-        document.getElementById('model').value = data.make__name || '';
+        document.getElementById('model').value = data.model || '';
         document.getElementById('issue_description').value = data.issue_description || '';
         document.getElementById('estimated_cost').value = data.estimated_cost || '';
         document.getElementById('finalized_price').value = data.finalized_price || '';
         document.getElementById('passcode').value = data.passcode || '';
+        document.getElementById('technician_notes').value = data.technician_notes || '';
         if (data.tampered){
             document.getElementById('tampered-yes').checked = true
         }
@@ -288,6 +289,7 @@ document.addEventListener('click', (event) => {
         // Disable the fields
         document.getElementById('location').disabled = true;
         document.getElementById('status').disabled = true;
+        document.getElementById('technician_notes').disabled = true;
         document.getElementById('device_type').disabled = true;
         document.getElementById('customer').disabled = true;
         document.getElementById('make').disabled = true;
@@ -756,8 +758,8 @@ document.addEventListener('click', (event) => {
                             <textarea class="form-control bg-dark text-light border-secondary" id="issue_description" name="issue_description" rows="3" required></textarea>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="estimated_cost" class="form-label">Estimated Cost</label>
-                            <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="estimated_cost" name="estimated_cost" required>
+                            <label for="technician_notes" class="form-label">Technician Notes</label>
+                            <textarea class="form-control bg-dark text-light border-secondary" id="technician_notes" name="technician_notes" rows="3" required></textarea>
                         </div>
                     </div>
                     <!-- Estimated Cost and Signature -->
@@ -771,6 +773,12 @@ document.addEventListener('click', (event) => {
                             <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="passcode" name="passcode" required>
                         </div>
 
+                    </div>
+                    <div>
+                        <div class="col-md-6 mb-3">
+                            <label for="estimated_cost" class="form-label">Estimated Cost</label>
+                            <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="estimated_cost" name="estimated_cost" required>
+                        </div>
                     </div>
 
                     <!-- Submit Button -->

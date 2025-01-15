@@ -57,10 +57,20 @@ TEMPLATES = [
 WSGI_APPLICATION = 'ezy_repair.wsgi.application'
 
 # Database
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "ezy_repair",
+        "USER": "postgres",
+        "PASSWORD": "8O,fcGWSf:Kf75lZ",
+        "HOST": "10.1.102.10",
+        "PORT": "5000",
     }
 }
 

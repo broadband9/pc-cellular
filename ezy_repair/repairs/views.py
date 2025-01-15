@@ -419,7 +419,7 @@ def global_search(request):
         'location__name', 'finalized_price', 'estimated_cost', 'lens_lcd_damage', 'camera_lens_back_damage',
         'camera_lens_back_damage', 'risk_back', 'risk_biometric', 'button_function_ok', 'sim_removed', 'risk_lcd',
         'trackpad_functional', 'keyboard_functional', 'hinge_damage', 'screen_damage', 'liquid_damage', 'power_up',
-        'missing_part', 'tampered', 'operating_system', 'ram', 'storage', 'network', 'passcode', 'issue_description'
+        'missing_part', 'tampered', 'operating_system', 'ram', 'storage', 'network', 'passcode', 'issue_description', 'technician_notes'
     )
 
     make_results = Make.objects.filter(
