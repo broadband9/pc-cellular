@@ -27,6 +27,7 @@ INSTALLED_APPS = [
 # Middleware
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -56,27 +57,40 @@ TEMPLATES = [
 WSGI_APPLICATION = 'ezy_repair.wsgi.application'
 
 # Database
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "ezy_repair",
+        "USER": "postgres",
+        "PASSWORD": "8O,fcGWSf:Kf75lZ",
+        "HOST": "10.1.102.10",
+        "PORT": "5000",
     }
 }
 
+
+
+
 # Static files
-STATIC_URL = '/static/'
+STATIC_URL = '/ezy_repair/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / 'staticfiles'  # This is where static files will be collected for deployment
 
 # Media files
-MEDIA_URL = '/media/'
+MEDIA_URL = '/ezy_repair/media/'
 MEDIA_ROOT = BASE_DIR / "media"
 
 # Default auto field
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-LOGIN_URL = '/'
+LOGIN_URL = '/ezy_repair/'
 
 LOGIN_EXEMPT_URLS = [
-    '/',  # Exempt the login page
+    '/ezy_repair/',  # Exempt the login page
 ]

@@ -6,6 +6,8 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.files.base import ContentFile
 import base64
 import datetime
+from django.http import JsonResponse
+from django.db.models import Q
 import random
 import string
 
@@ -25,8 +27,13 @@ def repairs_list(request):
     statuses = RepairStatus.objects.all()
     customers = Customer.objects.all()
     locations = Location.objects.all()
+    mob_yes = ['lens_lcd_damage', 'camera_lens_back_damage', 'risk_back', 'risk_biometric', 'button_function_ok', 'sim_removed', 'risk_lcd']
+    lap_yes = ['keyboard_functional', 'screen_damage', 'hinge_damage', 'trackpad_functional']
+    mandatory_yes = ['tampered', 'missing_part', 'power_up', 'liquid_damage']
     makes = Make.objects.all()
-    return render(request, 'repairs/repairs_list.html', {'repairs': repairs, "statuses": statuses, "customers": customers, "locations": locations, "makes": makes})
+    return render(request, 'repairs/repairs_list.html', {'repairs': repairs, "statuses": statuses,
+                                                         "customers": customers, "locations": locations,
+                                                         "makes": makes, "mob_yes": mob_yes, "lap_yes": lap_yes, "mandatory_yes": mandatory_yes})
 
 @login_required
 def add_repair(request):
@@ -44,6 +51,10 @@ def add_repair(request):
         passcode = request.POST.get("passcode")
         signature_data = request.POST.get("signature_image1")
         current_date = datetime.datetime.now().strftime('%Y-%m-%d')
+        liquid_damage = request.POST.get("liquid_damage")
+        power_up = request.POST.get("power_up")
+        missing_part = request.POST.get("missing_part")
+        tampered = request.POST.get("tampered")
 
         # Generate a random passcode (e.g., a 6-character string of digits)
 
@@ -53,7 +64,7 @@ def add_repair(request):
         location = get_object_or_404(Location, id=location_id) if location_id else None
         make = get_object_or_404(Make, id=make_id) if make_id else None
         customer = get_object_or_404(Customer, id=customer_id)
-        repair_number = f"ezy-{current_date}-{customer.name}-{passcode}"
+        repair_number = f"ezy-{current_date}-{customer.first_name}-{passcode}"
 
         repair = Repair.objects.create(
             repair_number=repair_number,
@@ -67,7 +78,46 @@ def add_repair(request):
             issue_description=issue_description,
             estimated_cost=estimated_cost,
             finalized_price=finalized_price,
+            liquid_damage=liquid_damage,
+            power_up=power_up,
+            missing_part=missing_part,
+            tampered=tampered
         )
+        if device_type == "Mobile" or "Tablet":
+            imei = request.POST.get("imei")
+            lens_lcd_damage = request.POST.get("lens_lcd_damage")
+            camera_lens_back_damage = request.POST.get("camera_lens_back_damage")
+            risk_back = request.POST.get("risk_back")
+            risk_biometric = request.POST.get("risk_biometric")
+            button_function_ok = request.POST.get("button_function_ok")
+            sim_removed = request.POST.get("sim_removed")
+            risk_lcd = request.POST.get("risk_lcd")
+            network = request.POST.get("network")
+            repair.imei = imei
+            repair.network = network
+            repair.lens_lcd_damage = lens_lcd_damage
+            repair.camera_lens_back_damage = camera_lens_back_damage
+            repair.risk_back = risk_back
+            repair.risk_biometric = risk_biometric
+            repair.button_function_ok = button_function_ok
+            repair.sim_removed = sim_removed
+            repair.risk_lcd = risk_lcd
+        if device_type == "Laptop":
+            storage = request.POST.get("storage")
+            ram = request.POST.get("ram")
+            operating_system = request.POST.get("operating_system")
+            trackpad_functional = request.POST.get("trackpad_functional")
+            keyboard_functional = request.POST.get("keyboard_functional")
+            hinge_damage = request.POST.get("hinge_damage")
+            screen_damage = request.POST.get("screen_damage")
+            repair.trackpad_functional = trackpad_functional
+            repair.keyboard_functional = keyboard_functional
+            repair.hinge_damage = hinge_damage
+            repair.screen_damage = screen_damage
+            repair.storage = storage
+            repair.ram = ram
+            repair.operating_system = operating_system
+        repair.save()
         if signature_data:
             format, imgstr = signature_data.split(';base64,')
             ext = format.split('/')[-1]
@@ -172,6 +222,11 @@ def edit_repair(request, pk):
         issue_description = request.POST.get("issue_description")
         estimated_cost = request.POST.get("estimated_cost")
         finalized_price = request.POST.get("finalized_price")
+        liquid_damage = request.POST.get("liquid_damage")
+        technician_notes = request.POST.get("technician_notes")
+        power_up = request.POST.get("power_up")
+        missing_part = request.POST.get("missing_part")
+        tampered = request.POST.get("tampered")
         signature_image_data = request.POST.get("signature_image")  # Getting the base64 signature image data
 
         print("issue description", issue_description)
@@ -185,15 +240,58 @@ def edit_repair(request, pk):
         status = get_object_or_404(RepairStatus, id=status_id) if status_id else None
         location = get_object_or_404(Location, id=location_id) if location_id else None
         make = get_object_or_404(Make, id=make_id) if make_id else None
+
         repair.customer = customer
         repair.status = status
         repair.location = location
         repair.make = make
         repair.model = model
-        repair.device_type = device_type
+        # repair.device_type = device_type
         repair.issue_description = issue_description
         repair.estimated_cost = estimated_cost
         repair.finalized_price = finalized_price
+        repair.liquid_damage = liquid_damage
+        repair.power_up = power_up
+        repair.missing_part = missing_part
+        repair.tampered = tampered
+        if technician_notes:
+            repair.technician_notes = technician_notes
+        if repair.device_type == "Mobile" or "Tablet":
+            imei = request.POST.get("imei")
+            lens_lcd_damage = request.POST.get("lens_lcd_damage")
+            camera_lens_back_damage = request.POST.get("camera_lens_back_damage")
+            risk_back = request.POST.get("risk_back")
+            risk_biometric = request.POST.get("risk_biometric")
+            button_function_ok = request.POST.get("button_function_ok")
+            sim_removed = request.POST.get("sim_removed")
+            risk_lcd = request.POST.get("risk_lcd")
+            network = request.POST.get("network")
+            repair.imei = imei
+            repair.network = network
+            repair.lens_lcd_damage = lens_lcd_damage
+            repair.camera_lens_back_damage = camera_lens_back_damage
+            repair.risk_back = risk_back
+            repair.risk_biometric = risk_biometric
+            repair.button_function_ok = button_function_ok
+            repair.sim_removed = sim_removed
+            repair.risk_lcd = risk_lcd
+        if repair.device_type == "Laptop":
+            storage = request.POST.get("storage")
+            ram = request.POST.get("ram")
+            operating_system = request.POST.get("operating_system")
+            trackpad_functional = request.POST.get("trackpad_functional")
+            keyboard_functional = request.POST.get("keyboard_functional")
+            hinge_damage = request.POST.get("hinge_damage")
+            screen_damage = request.POST.get("screen_damage")
+            print("aaa", operating_system, trackpad_functional, keyboard_functional, ram, storage)
+            repair.trackpad_functional = trackpad_functional
+            repair.keyboard_functional = keyboard_functional
+            repair.hinge_damage = hinge_damage
+            repair.screen_damage = screen_damage
+            repair.storage = storage
+            repair.ram = ram
+            repair.operating_system = operating_system
+
         repair.save()
         ActivityLog.objects.create(description=f"Edit repair with id {repair.id}", user=request.user)
     return redirect('repairs_list')
@@ -288,3 +386,61 @@ def activity_logs(request):
         logs = paginator.page(paginator.num_pages)  # If page is out of range, show the last page
 
     return render(request, 'repairs/activity_logs.html', {'logs': logs})
+
+@login_required
+def global_search(request):
+    query = request.GET.get('q', '').strip()
+    if not query:
+        return JsonResponse({"results": []})
+
+    # Search in different tables
+    customer_results = Customer.objects.filter(
+        Q(first_name__icontains=query) |
+        Q(last_name__icontains=query) |
+        Q(email__icontains=query) |
+        Q(phone__icontains=query) |
+        Q(postcode__icontains=query)
+    ).values('id', 'first_name', 'last_name', 'email', 'phone', 'postcode')
+
+    repair_results = Repair.objects.filter(
+        Q(customer__first_name__icontains=query) |
+        Q(customer__last_name__icontains=query) |
+        Q(customer__email__icontains=query) |
+        Q(customer__phone__icontains=query) |
+        Q(customer__postcode__icontains=query) |
+        Q(passcode__icontains=query) |
+        Q(model__icontains=query) |
+        Q(imei__icontains=query) |
+        Q(device_type__icontains=query) |
+        Q(repair_number__icontains=query)
+    ).values(
+        'id', 'repair_number', 'model', 'imei', 'device_type',
+        'customer__first_name', 'customer__last_name', 'status__name', 'make__name', 'status__name',
+        'location__name', 'finalized_price', 'estimated_cost', 'lens_lcd_damage', 'camera_lens_back_damage',
+        'camera_lens_back_damage', 'risk_back', 'risk_biometric', 'button_function_ok', 'sim_removed', 'risk_lcd',
+        'trackpad_functional', 'keyboard_functional', 'hinge_damage', 'screen_damage', 'liquid_damage', 'power_up',
+        'missing_part', 'tampered', 'operating_system', 'ram', 'storage', 'network', 'passcode', 'issue_description', 'technician_notes'
+    )
+
+    make_results = Make.objects.filter(
+        Q(name__icontains=query)
+    ).values('id', 'name')
+
+    status_results = RepairStatus.objects.filter(
+        Q(name__icontains=query)
+    ).values('id', 'name', 'description')
+
+    location_results = Location.objects.filter(
+        Q(name__icontains=query)
+    ).values('id', 'name', 'address')
+
+    # Combine all results
+    results = {
+        "customers": list(customer_results),
+        "repairs": list(repair_results),
+        "makes": list(make_results),
+        "statuses": list(status_results),
+        "locations": list(location_results),
+    }
+
+    return JsonResponse({"results": results})

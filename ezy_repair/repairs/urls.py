@@ -19,4 +19,5 @@ urlpatterns = [
     path('makes_delete/<int:pk>/', views.delete_make, name='delete_make'),
     path('repair_statuses/', views.repair_statuses, name='repair_statuses'),
     path('activity_logs/', views.activity_logs, name='activity_logs'),
+    path('api/global-search/', views.global_search, name='global_search'),
 ]

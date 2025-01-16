@@ -3,6 +3,18 @@
 {% block content %}
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom text-light" style="margin-top:60px">
     <h1 class="h2">Dashboard</h1>
+    <div class="row " >
+    <div class="col-md-12">
+        <div class="input-group">
+            <input type="text" id="globalSearchInput" class="form-control bg-dark text-light border-secondary" placeholder="Search..." aria-label="Search" aria-describedby="searchButton">
+            <button class="btn btn-primary" type="button" id="searchButton">Search</button>
+        </div>
+        <ul class="list-group mt-2" id="searchResults" style="display: none; z-index:1000; position: absolute; max-height: 200px;
+        overflow-y: auto; ">
+            <!-- Dynamic search results will appear here -->
+        </ul>
+    </div>
+</div>
 </div>
 
 <!-- First Row: Total Customers -->
@@ -33,6 +45,265 @@
         {% endif %}
     {% endfor %}
 </div>
+<script>
+    document.getElementById('searchButton').addEventListener('click', function() {
+        const query = document.getElementById('globalSearchInput').value.trim();
+
+        if (!query){
+            searchResults.style.display = 'none';
+        }
+
+        fetch(`/ezy_repair/repairs/api/global-search/?q=${encodeURIComponent(query)}`)
+    .then(response => response.json())
+    .then(data => {
+        const searchResults = document.getElementById('searchResults');
+        searchResults.innerHTML = ''; // Clear previous results
+        searchResults.style.display = 'none';
+
+        const results = data.results;
+        if (Object.keys(results).length === 0){
+        }
+
+        for (const [category, items] of Object.entries(results)) {
+            if (items.length === 0) continue;
+
+            // Add a category heading
+            const categoryItem = document.createElement('li');
+            categoryItem.className = 'list-group-item bg-secondary text-light';
+            categoryItem.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+            searchResults.appendChild(categoryItem);
+
+            // Add individual items (limit to 5)
+            items.slice(0, 5).forEach(item => {
+                const listItem = document.createElement('li');
+                listItem.className = 'list-group-item';
+                listItem.textContent = item.first_name ? `${item.first_name} ${item.last_name}` : item.name || item.repair_number;
+                listItem.style.cursor = 'pointer';
+
+                // Attach event listener to open modal
+                listItem.addEventListener('click', () => {
+                    openModal(category, item);
+                });
+
+                searchResults.appendChild(listItem);
+            });
+        }
+
+        searchResults.style.display = 'block';
+    })
+    .catch(error => console.error('Error fetching search results:', error));
+    });
+const globalSearchInput = document.getElementById('globalSearchInput');
+const searchResults = document.getElementById('searchResults');
+
+// Hide search results when clicking outside
+document.addEventListener('click', (event) => {
+    if (!globalSearchInput.contains(event.target) && !searchResults.contains(event.target)) {
+        searchResults.style.display = 'none';
+    }
+});
+    function openModal(category, data) {
+        if (category === "statuses") {
+        // Populate modal fields with the data
+        document.getElementById('name').value = data.name || '';
+        document.getElementById('description').value = data.description || '';
+
+        // Disable the fields
+        document.getElementById('name').disabled = true;
+        document.getElementById('description').disabled = true;
+
+        // Open the "statuses" modal
+        const modalInstance = new bootstrap.Modal(document.getElementById('ViewStatusModal'));
+        modalInstance.show();
+        }
+        if (category === "makes") {
+        // Populate modal fields with the data
+        document.getElementById('make_name').value = data.name || '';
+
+
+        // Disable the fields
+        document.getElementById('make_name').disabled = true;
+
+
+        // Open the "statuses" modal
+        const modalInstance = new bootstrap.Modal(document.getElementById('ViewMakeModal'));
+        modalInstance.show();
+        }
+        if (category === "locations") {
+        // Populate modal fields with the data
+        document.getElementById('location_name').value = data.name || '';
+        document.getElementById('address').value = data.address || '';
+
+        // Disable the fields
+        document.getElementById('location_name').disabled = true;
+        document.getElementById('address').disabled = true;
+
+        // Open the "statuses" modal
+        const modalInstance = new bootstrap.Modal(document.getElementById('ViewLocationModal'));
+        modalInstance.show();
+        }
+        if (category === "customers") {
+        // Populate modal fields with the data
+        document.getElementById('first_name').value = data.first_name || '';
+        document.getElementById('last_name').value = data.last_name || '';
+        document.getElementById('phone').value = data.phone || '';
+        document.getElementById('postcode').value = data.postcode || '';
+        document.getElementById('email').value = data.email || '';
+
+        // Disable the fields
+        document.getElementById('first_name').disabled = true;
+        document.getElementById('email').disabled = true;
+        document.getElementById('postcode').disabled = true;
+        document.getElementById('phone').disabled = true;
+        document.getElementById('last_name').disabled = true;
+
+        // Open the "statuses" modal
+        const modalInstance = new bootstrap.Modal(document.getElementById('ViewCustomerModal'));
+        modalInstance.show();
+        }
+        if (category === "repairs") {
+        // Populate modal fields with the data
+        document.getElementById('customer').value = data.customer__first_name + " " + data.customer__last_name || '';
+        document.getElementById('device_type').value = data.device_type || '';
+        document.getElementById('status').value = data.status__name || '';
+        document.getElementById('location').value = data.location__name || '';
+        document.getElementById('make').value = data.make__name || '';
+        document.getElementById('model').value = data.model || '';
+        document.getElementById('issue_description').value = data.issue_description || '';
+        document.getElementById('estimated_cost').value = data.estimated_cost || '';
+        document.getElementById('finalized_price').value = data.finalized_price || '';
+        document.getElementById('passcode').value = data.passcode || '';
+        document.getElementById('technician_notes').value = data.technician_notes || '';
+        if (data.tampered){
+            document.getElementById('tampered-yes').checked = true
+        }
+        else{
+            document.getElementById('tampered-no').checked = true
+        }
+        if (data.missing_part){
+            document.getElementById('missing_part-yes').checked = true
+        }
+        else{
+            document.getElementById('missing_part-no').checked = true
+        }
+        if (data.power_up){
+            document.getElementById('power_up-yes').checked = true
+        }
+        else{
+            document.getElementById('power_up-no').checked = true
+        }
+        if (data.liquid_damage){
+            document.getElementById('liquid_damage-yes').checked = true
+        }
+        else{
+            document.getElementById('liquid_damage-no').checked = true
+        }
+        if(data.device_type === "Laptop"){
+            const laptopFields = document.getElementById('laptop-fields');
+            laptopFields.style.display = (data.device_type === 'Laptop') ? 'block' : 'none';
+            document.getElementById('operating_system').value = data.operating_system || '';
+            document.getElementById('ram').value = data.ram || '';
+            document.getElementById('storage').value = data.storage || '';
+            document.getElementById('operating_system').disabled = true;
+            document.getElementById('ram').disabled = true;
+            document.getElementById('storage').disabled = true;
+            if (data.trackpad_functional){
+            document.getElementById('trackpad_functional-yes').checked = true
+            }
+            else{
+                document.getElementById('trackpad_functional-no').checked = true
+            }
+            if (data.keyboard_functional){
+                document.getElementById('keyboard_functional-yes').checked = true
+            }
+            else{
+                document.getElementById('keyboard_functional-no').checked = true
+            }
+            if (data.hinge_damage){
+                document.getElementById('hinge_damage-yes').checked = true
+            }
+            else{
+                document.getElementById('hinge_damage-no').checked = true
+            }
+            if (data.screen_damage){
+                document.getElementById('screen_damage-yes').checked = true
+            }
+            else{
+                document.getElementById('screen_damage-no').checked = true
+            }
+        }
+        if(data.device_type === "Mobile" || data.device_type === "Tablet"){
+            const mobileTabletFields = document.getElementById('mobile-tablet-fields');
+            mobileTabletFields.classList.remove('d-none');
+            mobileTabletFields.classList.add('d-block');
+            document.getElementById('network').value = data.network || '';
+            document.getElementById('imei').value = data.imei || '';
+            document.getElementById('imei').disabled = true;
+            document.getElementById('network').disabled = true;
+            if (data.risk_lcd){
+            document.getElementById('risk_lcd-yes').checked = true
+            }
+            else{
+                document.getElementById('risk_lcd-no').checked = true
+            }
+            if (data.sim_removed){
+                document.getElementById('sim_removed-yes').checked = true
+            }
+            else{
+                document.getElementById('sim_removed-no').checked = true
+            }
+            if (data.button_function_ok){
+                document.getElementById('button_function_ok-yes').checked = true
+            }
+            else{
+                document.getElementById('button_function_ok-no').checked = true
+            }
+            if (data.risk_biometric){
+                document.getElementById('risk_biometric-yes').checked = true
+            }
+            else{
+                document.getElementById('risk_biometric-no').checked = true
+            }
+            if (data.risk_back){
+                document.getElementById('risk_back-yes').checked = true
+            }
+            else{
+                document.getElementById('risk_back-no').checked = true
+            }
+            if (data.camera_lens_back_damage){
+                document.getElementById('camera_lens_back_damage-yes').checked = true
+            }
+            else{
+                document.getElementById('camera_lens_back_damage-no').checked = true
+            }
+            if (data.lens_lcd_damage){
+                document.getElementById('lens_lcd_damage-yes').checked = true
+            }
+            else{
+                document.getElementById('lens_lcd_damage-no').checked = true
+            }
+        }else {
+                mobileTabletFields.classList.add('d-none');
+                }
+
+        // Disable the fields
+        document.getElementById('location').disabled = true;
+        document.getElementById('status').disabled = true;
+        document.getElementById('technician_notes').disabled = true;
+        document.getElementById('device_type').disabled = true;
+        document.getElementById('customer').disabled = true;
+        document.getElementById('make').disabled = true;
+        document.getElementById('issue_description').disabled = true
+        document.getElementById('estimated_cost').disabled = true
+        document.getElementById('finalized_price').disabled = true
+        document.getElementById('passcode').disabled = true
+
+        // Open the "statuses" modal
+        const modalInstance = new bootstrap.Modal(document.getElementById('ViewRepairModal'));
+        modalInstance.show();
+        }
+    }
+</script>
 
 <!-- Charts Section -->
 <div class="row">
@@ -61,6 +332,465 @@
     </div>
 </div>
 
+<!-- View status modal -->
+<div class="modal fade" id="ViewStatusModal" tabindex="-1" aria-labelledby="viewStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-light">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addStatusModalLabel">View Repair Status</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control bg-dark text-light border-secondary" id="name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control bg-dark text-light border-secondary" id="description" name="description" rows="3"></textarea>
+                    </div>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Make Modal -->
+<div class="modal fade" id="ViewMakeModal" tabindex="-1" aria-labelledby="viewMakeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-light">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addMakeModalLabel">View Make</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-3">
+                        <label for="make_name" class="form-label">Name</label>
+                        <input type="text" class="form-control bg-dark text-light border-secondary" id="make_name" name="make_name" disabled>
+                    </div>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Location Modal -->
+<div class="modal fade" id="ViewLocationModal" tabindex="-1" aria-labelledby="viewLocationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-light">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addLocationModalLabel">View Location</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+
+                    <div class="mb-3">
+                        <label for="location_name" class="form-label">Name</label>
+                        <input type="text" class="form-control bg-dark text-light border-secondary" id="location_name" name="location_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Address</label>
+                        <textarea class="form-control bg-dark text-light border-secondary" id="address" name="address" rows="3" required></textarea>
+                    </div>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Customer Modal -->
+<div class="modal fade" id="ViewCustomerModal" tabindex="-1" aria-labelledby="viewCustomerModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-light">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addCustomerModalLabel">View Customer</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+
+                    <div class="mb-3">
+                        <label for="first_name" class="form-label">First Name</label>
+                        <input type="text" class="form-control bg-dark text-light border-secondary" id="first_name" name="first_name" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label for="last_name" class="form-label">Last Name</label>
+                        <input type="text" class="form-control bg-dark text-light border-secondary" id="last_name" name="last_name" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control bg-dark text-light border-secondary" id="email" name="email" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Phone</label>
+                        <input type="tel" class="form-control bg-dark text-light border-secondary" id="phone" name="phone" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label for="postcode" class="form-label">Post Code</label>
+                        <input type="tel" class="form-control bg-dark text-light border-secondary" id="postcode" name="postcode" disabled>
+                    </div>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="ViewRepairModal" tabindex="-1" aria-labelledby="vddRepairModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+        <div class="modal-content bg-dark text-light">
+            <div class="modal-header">
+                <h5 class="modal-title" id="ViewRepairModalLabel">View Repair</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <!-- Form Fields -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="customer" class="form-label">Customer</label>
+                            <input type="text" class="form-control bg-dark text-light border-secondary" id="customer" name="customer">
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="device_type" class="form-label">Device Type</label>
+                            <input type="text" class="form-control bg-dark text-light border-secondary" id="device_type" name="device_type">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="status" class="form-label">Status</label>
+                            <input type="text" class="form-control bg-dark text-light border-secondary" id="status" name="status">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="location" class="form-label">Location</label>
+                            <input type="text" class="form-control bg-dark text-light border-secondary" id="location" name="location">
+                        </div>
+                    </div>
+                    <div id="mobile-tablet-fields" class="d-none">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="imei" class="form-label">IMEI</label>
+                                <input type="text" class="form-control bg-dark text-light border-secondary" id="imei" name="imei">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="network" class="form-label">Network</label>
+                                <input type="text" class="form-control bg-dark text-light border-secondary" id="network" name="network">
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Risk Lcd</label>
+                                <div class="d-flex">
+                                    <div class="form-check me-3">
+                                        <input class="form-check-input" type="radio" name="risk_lcd" id="risk_lcd-yes" disabled>
+                                        <label class="form-check-label" for="risk_lcd-yes">Yes</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="risk_lcd" id="risk_lcd-no" value="False" disabled>
+                                        <label class="form-check-label" for="{{ field }}-no">No</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Sim Removed</label>
+                                <div class="d-flex">
+                                    <div class="form-check me-3">
+                                        <input class="form-check-input" type="radio" name="sim_removed" id="sim_removed-yes" disabled>
+                                        <label class="form-check-label" for="sim_removed-yes">Yes</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="sim_removed" id="sim_removed-no" value="False" disabled>
+                                        <label class="form-check-label" for="sim_removed-no">No</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Button Function Ok</label>
+                                <div class="d-flex">
+                                    <div class="form-check me-3">
+                                        <input class="form-check-input" type="radio" name="button_function_ok" id="button_function_ok-yes" disabled>
+                                        <label class="form-check-label" for="button_function_ok-yes">Yes</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="button_function_ok" id="button_function_ok-no" value="False" disabled>
+                                        <label class="form-check-label" for="button_function_ok-no">No</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Risk Biometric</label>
+                                <div class="d-flex">
+                                    <div class="form-check me-3">
+                                        <input class="form-check-input" type="radio" name="risk_biometric" id="risk_biometric-yes" disabled>
+                                        <label class="form-check-label" for="risk_biometric-yes">Yes</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="risk_biometric" id="risk_biometric-no" disabled>
+                                        <label class="form-check-label" for="risk_biometric-no">No</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Risk Back</label>
+                                <div class="d-flex">
+                                    <div class="form-check me-3">
+                                        <input class="form-check-input" type="radio" name="risk_back" id="risk_back-yes" disabled>
+                                        <label class="form-check-label" for="risk_back-yes">Yes</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="risk_back" id="risk_back-no" value="False" disabled>
+                                        <label class="form-check-label" for="risk_back-no">No</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Camera Lens/Back Damage</label>
+                                <div class="d-flex">
+                                    <div class="form-check me-3">
+                                        <input class="form-check-input" type="radio" name="camera_lens_back_damage" id="camera_lens_back_damage-yes" disabled>
+                                        <label class="form-check-label" for="camera_lens_back_damage-yes">Yes</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="risk_lcd" id="camera_lens_back_damage-no" value="False" disabled>
+                                        <label class="form-check-label" for="camera_lens_back_damage-no">No</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Lens Lcd Damage</label>
+                                <div class="d-flex">
+                                    <div class="form-check me-3">
+                                        <input class="form-check-input" type="radio" name="lens_lcd_damage" id="lens_lcd_damage-yes" disabled>
+                                        <label class="form-check-label" for="lens_lcd_damage-yes">Yes</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="lens_lcd_damage" id="lens_lcd_damage-no" value="False" disabled>
+                                        <label class="form-check-label" for="lens_lcd_damage-no">No</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+
+
+
+                    </div>
+                    <div id="laptop-fields" style="display: none;">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="operating_system" class="form-label">Operating System</label>
+                                <input type="text" class="form-control bg-dark text-light border-secondary" id="operating_system" name="operating_system">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="ram" class="form-label">RAM</label>
+                                <input type="text" class="form-control bg-dark text-light border-secondary" id="ram" name="ram">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="storage" class="form-label">Storage</label>
+                                <input type="text" class="form-control bg-dark text-light border-secondary" id="storage" name="storage">
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Screen Damage</label>
+                                <div class="d-flex">
+                                    <div class="form-check me-3">
+                                        <input class="form-check-input" type="radio" name="screen_damage" id="screen_damage-yes" value="True" disabled>
+                                        <label class="form-check-label" for="screen_damage-yes">Yes</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="screen_damage" id="screen_damage-no" value="False" disabled>
+                                        <label class="form-check-label" for="screen_damage-no">No</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+    <div class="col-md-6">
+        <label class="form-label">Hinge Damage</label>
+        <div class="d-flex">
+            <div class="form-check me-3">
+                <input class="form-check-input" type="radio" name="hinge_damage" id="hinge_damage-yes" value="True" disabled>
+                <label class="form-check-label" for="hinge_damage-yes">Yes</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="hinge_damage" id="hinge_damage-no" value="False" disabled>
+                <label class="form-check-label" for="hinge_damage-no">No</label>
+            </div>
+        </div>
+    </div>
+</div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Keyboard Functional</label>
+                                <div class="d-flex">
+                                    <div class="form-check me-3">
+                                        <input class="form-check-input" type="radio" name="keyboard_functional" id="keyboard_functional-yes" value="True" disabled>
+                                        <label class="form-check-label" for="keyboard_functional-yes">Yes</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="keyboard_functional" id="keyboard_functional-no" value="False" disabled>
+                                        <label class="form-check-label" for="keyboard_functional-no">No</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                         <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Trackpad Working</label>
+                                <div class="d-flex">
+                                    <div class="form-check me-3">
+                                        <input class="form-check-input" type="radio" name="trackpad_functional" id="trackpad_functional-yes" value="True" disabled>
+                                        <label class="form-check-label" for="trackpad_functional-yes">Yes</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="trackpad_functional" id="trackpad_functional-no" value="False" disabled>
+                                        <label class="form-check-label" for="trackpad_functional-no">No</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Tampered</label>
+                            <div class="d-flex">
+                                <div class="form-check me-3">
+                                    <input class="form-check-input" type="radio" name="tampered" id="tampered-yes" value="True" disabled>
+                                    <label class="form-check-label" for="tampered-yes">Yes</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="tampered" id="tampered-no" value="False" disabled>
+                                    <label class="form-check-label" for="tampered-no">No</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+    <div class="col-md-6">
+        <label class="form-label">Missing Parts</label>
+        <div class="d-flex">
+            <div class="form-check me-3">
+                <input class="form-check-input" type="radio" name="missing_part" id="missing_part-yes" value="True" disabled>
+                <label class="form-check-label" for="missing_part-yes">Yes</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="missing_part" id="missing_part-no" value="False" disabled>
+                <label class="form-check-label" for="missing_part-no">No</label>
+            </div>
+        </div>
+    </div>
+</div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Power Up</label>
+                            <div class="d-flex">
+                                <div class="form-check me-3">
+                                    <input class="form-check-input" type="radio" name="power_up" id="power_up-yes" value="True" disabled>
+                                    <label class="form-check-label" for="{{ field }}-yes">Yes</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="power_up" id="power_up-no" value="False" disabled>
+                                    <label class="form-check-label" for="power_up-no">No</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Liquid Damage</label>
+                            <div class="d-flex">
+                                <div class="form-check me-3">
+                                    <input class="form-check-input" type="radio" name="liquid_damage" id="liquid_damage-yes" value="True" disabled>
+                                    <label class="form-check-label" for="liquid_damage-yes">Yes</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="liquid_damage" id="liquid_damage-no" value="False" disabled>
+                                    <label class="form-check-label" for="liquid_damage-no">No</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="make" class="form-label">Make</label>
+                            <input type="text" class="form-control bg-dark text-light border-secondary" id="make" name="make" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="model" class="form-label">Model</label>
+                            <input type="text" class="form-control bg-dark text-light border-secondary" id="model" name="model" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="issue_description" class="form-label">Issue Description</label>
+                            <textarea class="form-control bg-dark text-light border-secondary" id="issue_description" name="issue_description" rows="3" required></textarea>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="technician_notes" class="form-label">Technician Notes</label>
+                            <textarea class="form-control bg-dark text-light border-secondary" id="technician_notes" name="technician_notes" rows="3" required></textarea>
+                        </div>
+                    </div>
+                    <!-- Estimated Cost and Signature -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="finalized_price" class="form-label">Finalized Cost</label>
+                            <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="finalized_price" name="finalized_price" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="passcode" class="form-label">Passcode</label>
+                            <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="passcode" name="passcode" required>
+                        </div>
+
+                    </div>
+                    <div>
+                        <div class="col-md-6 mb-3">
+                            <label for="estimated_cost" class="form-label">Estimated Cost</label>
+                            <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="estimated_cost" name="estimated_cost" required>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="mb-3">
+                        <button type="button" class="btn btn-primary w-100" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer" style="margin-top: auto;"></div>
+        </div>
+    </div>
+</div>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         var ctx = document.getElementById('repairsChart').getContext('2d');

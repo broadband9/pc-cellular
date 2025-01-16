@@ -73,11 +73,13 @@ def customers_list(request):
 @login_required
 def add_customer(request):
     if request.method == 'POST':
-        name = request.POST.get('name')
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
         email = request.POST.get('email')
         phone = request.POST.get('phone')
-        customer = Customer.objects.create(name=name, email=email, phone=phone)
-        ActivityLog.objects.create(description=f"Add new customer {customer.name}", user=request.user)
+        postcode = request.POST.get('postcode')
+        customer = Customer.objects.create(first_name=first_name, last_name=last_name, email=email, phone=phone, postcode=postcode)
+        ActivityLog.objects.create(description=f"Add new customer {customer.first_name} {customer.last_name}", user=request.user)
         return redirect('customers_list')
     return redirect('customers_list')
 
@@ -86,11 +88,13 @@ def add_customer(request):
 def edit_customer(request, pk):
     customer = Customer.objects.get(pk=pk)
     if request.method == 'POST':
-        customer.name = request.POST.get('name')
+        customer.first_name = request.POST.get('first_name')
+        customer.last_name = request.POST.get('last_name')
         customer.email = request.POST.get('email')
         customer.phone = request.POST.get('phone')
+        customer.postcode = request.POST.get('postcode')
         customer.save()
-        ActivityLog.objects.create(description=f"Edit customer {customer.name}", user=request.user)
+        ActivityLog.objects.create(description=f"Edit customer {customer.first_name} {customer.last_name}", user=request.user)
 
         return redirect('customers_list')
     return redirect('customers_list')
@@ -100,8 +104,7 @@ def edit_customer(request, pk):
 def delete_customer(request, pk):
     customer = Customer.objects.get(pk=pk)
     if request.method == 'POST':
-        ActivityLog.objects.create(description=f"Delete customer {customer.name}", user=request.user)
-
+        ActivityLog.objects.create(description=f"Delete customer {customer.first_name} {customer.last_name}", user=request.user)
         customer.delete()
         return redirect('customers_list')
     return redirect('customers_list')

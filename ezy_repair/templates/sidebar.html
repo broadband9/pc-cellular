@@ -48,37 +48,37 @@
     <div class="position-sticky pt-3 bg-dark text-white" style="margin-top:60px; min-height: 100vh;">
         <ul class="nav flex-column">
             <li class="nav-item">
-                <a class="nav-link text-white {% if request.path == '/dashboard/' %}active{% endif %}" href="{% url 'dashboard' %}" id="dashboardTab">
+                <a class="nav-link text-white {% if request.path == '/ezy_repair/dashboard/' %}active{% endif %}" href="{% url 'dashboard' %}" id="dashboardTab">
                     <i class="fas fa-tachometer-alt"></i> Dashboard
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-white {% if request.path == '/repairs/' %}active{% endif %}" href="{% url 'repairs_list' %}" id="repairsTab">
+                <a class="nav-link text-white {% if request.path == '/ezy_repair/repairs/' %}active{% endif %}" href="{% url 'repairs_list' %}" id="repairsTab">
                     <i class="fas fa-tools"></i> Repairs
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-white {% if request.path == '/customer' %}active{% endif %}" href="{% url 'customers_list' %}" id="customersTab">
+                <a class="nav-link text-white {% if request.path == '/ezy_repair/customer' %}active{% endif %}" href="{% url 'customers_list' %}" id="customersTab">
                     <i class="fas fa-users"></i> Customers
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-white {% if request.path == '/repairs/repair_statuses/' %}active{% endif %}" href="{% url 'repair_statuses' %}" id="repairStatusesTab">
+                <a class="nav-link text-white {% if request.path == '/ezy_repair/repairs/repair_statuses/' %}active{% endif %}" href="{% url 'repair_statuses' %}" id="repairStatusesTab">
                     <i class="fas fa-list-alt"></i> Repair Statuses
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-white {% if request.path == '/repairs/locations/' %}active{% endif %}" href="{% url 'locations' %}" id="locationsTab">
+                <a class="nav-link text-white {% if request.path == '/ezy_repair/repairs/locations/' %}active{% endif %}" href="{% url 'locations' %}" id="locationsTab">
                     <i class="fas fa-map-marker-alt"></i> Locations
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-white {% if request.path == '/repairs/makes/' %}active{% endif %}" href="{% url 'makes' %}" id="makesTab">
+                <a class="nav-link text-white {% if request.path == '/ezy_repair/repairs/makes/' %}active{% endif %}" href="{% url 'makes' %}" id="makesTab">
                     <i class="fas fa-industry"></i> Makes
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-white {% if request.path == '/repairs/activity_logs/' %}active{% endif %}"" href="{% url 'activity_logs' %}" id="activityLogsTab">
+                <a class="nav-link text-white {% if request.path == '/ezy_repair/repairs/activity_logs/' %}active{% endif %}"" href="{% url 'activity_logs' %}" id="activityLogsTab">
                     <i class="fas fa-history"></i> Activity Logs
                 </a>
             </li>

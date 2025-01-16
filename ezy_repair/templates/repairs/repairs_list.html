@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Repairs{% endblock %}
 {% block content %}
+{% load custom_filters %}
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom" style="margin-top: 60px">
     <h1 class="h2">Repairs</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
@@ -30,7 +31,7 @@
             {% for repair in repairs %}
             <tr>
                 <td>{{ repair.repair_number }}</td>
-                <td>{{ repair.customer.name }}</td>
+                <td>{{ repair.customer.first_name }} {{ repair.customer.last_name }}</td>
                 <td>{{ repair.device_type }}</td>
                 <td>{{ repair.status.name }}</td>
                 <td>
@@ -125,7 +126,45 @@
     };
 }
 </script>
+{% for customer in customers %}
+    <!-- View Customer Modal -->
+    <div class="modal fade" id="editCustomerModal1{{ customer.id }}" tabindex="-1" style="z-index: 1100" aria-labelledby="editCustomerModalLabel{{ customer.id }}" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark text-light">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editCustomerModalLabel{{ customer.id }}">View Customer</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form >
 
+                        <div class="mb-3">
+                            <label for="first_name{{ customer.id }}" class="form-label">First Name</label>
+                            <input type="text" class="form-control bg-dark text-light border-secondary" id="first_name{{ customer.id }}" name="first_name" value="{{ customer.first_name }}" disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label for="last_name{{ customer.id }}" class="form-label">Last Name</label>
+                            <input type="text" class="form-control bg-dark text-light border-secondary" id="last_name{{ customer.id }}" name="last_name" value="{{ customer.last_name }}" disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email{{ customer.id }}" class="form-label">Email</label>
+                            <input type="email" class="form-control bg-dark text-light border-secondary" id="email{{ customer.id }}" name="email" value="{{ customer.email }}" disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone{{ customer.id }}" class="form-label">Phone</label>
+                            <input type="tel" class="form-control bg-dark text-light border-secondary" id="phone{{ customer.id }}" name="phone" value="{{ customer.phone }}" disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label for="postcode{{ customer.id }}" class="form-label">Phone</label>
+                            <input type="tel" class="form-control bg-dark text-light border-secondary" id="postcode{{ customer.id }}" name="postcode" value="{{ customer.postcode }}" disabled>
+                        </div>
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Done</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endfor %}
 <!-- Add Repair Modal -->
 <div class="modal fade" id="addRepairModal" tabindex="-1" aria-labelledby="addRepairModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-scrollable modal-lg">
@@ -142,14 +181,35 @@
                         <div class="col-md-6 mb-3">
                             <label for="customer" class="form-label">Customer</label>
                             <select class="form-control bg-dark text-light border-secondary" id="customer" name="customer" required>
+                                <option value="">Select Customer</option>
                                 {% for customer in customers %}
-                                    <option value="{{ customer.id }}">{{ customer.name }}</option>
+                                    <option value="{{ customer.id }}">{{ customer.first_name }} {{ customer.last_name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
+                        <script>
+
+        const customerDropdown = document.getElementById('customer');
+        customerDropdown.addEventListener('change', function () {
+            const selectedCustomerId = this.value;
+            if (selectedCustomerId) {
+                const modalId = `editCustomerModal1${selectedCustomerId}`;
+                const modalElement = document.getElementById(modalId);
+                const modalInstance = new bootstrap.Modal(modalElement);
+                modalInstance.show();
+            }
+        });
+
+</script>
                         <div class="col-md-6 mb-3">
                             <label for="device_type" class="form-label">Device Type</label>
-                            <input type="text" class="form-control bg-dark text-light border-secondary" id="device_type" name="device_type" required>
+                            <select class="form-control bg-dark text-light border-secondary" id="device_type" name="device_type" required>
+                                <option value="">Select Device Type</option>
+                                <option value="Mobile">Mobile</option>
+                                <option value="Tablet">Tablet</option>
+                                <option value="Laptop">Laptop</option>
+
+                            </select>
                         </div>
                     </div>
                     <div class="row">
@@ -170,6 +230,117 @@
                             </select>
                         </div>
                     </div>
+                    <div id="mobile-tablet-fields" class="d-none">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="imei" class="form-label">IMEI</label>
+                                <input type="text" class="form-control bg-dark text-light border-secondary" id="imei" name="imei">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="network" class="form-label">Network</label>
+                                <select class="form-control bg-dark text-light border-secondary" id="network" name="network">
+                                    <option value="vodafone">Vodafone</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <!-- Mobile/Tablet Yes/No Fields -->
+                        {% for field in mob_yes %}
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">{{ field|replace_underscores }}</label>
+                                <div class="d-flex">
+                                    <div class="form-check me-3">
+                                        <input class="form-check-input" type="radio" name="{{ field }}" id="{{ field }}-yes" value="True">
+                                        <label class="form-check-label" for="{{ field }}-yes">Yes</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="{{ field }}" id="{{ field }}-no" value="False" checked>
+                                        <label class="form-check-label" for="{{ field }}-no">No</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div id="laptop-fields" style="display: none;">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="operating_system" class="form-label">Operating System</label>
+                                <input type="text" class="form-control bg-dark text-light border-secondary" id="operating_system" name="operating_system">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="ram" class="form-label">RAM</label>
+                                <input type="text" class="form-control bg-dark text-light border-secondary" id="ram" name="ram">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="storage" class="form-label">Storage</label>
+                                <input type="text" class="form-control bg-dark text-light border-secondary" id="storage" name="storage">
+                            </div>
+                        </div>
+
+                        <!-- Laptop Yes/No Fields -->
+                        {% for field in lap_yes %}
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">{{ field|replace_underscores }}</label>
+                                <div class="d-flex">
+                                    <div class="form-check me-3">
+                                        <input class="form-check-input" type="radio" name="{{ field }}" id="{{ field }}-yes" value="True">
+                                        <label class="form-check-label" for="{{ field }}-yes">Yes</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="{{ field }}" id="{{ field }}-no" value="False" checked>
+                                        <label class="form-check-label" for="{{ field }}-no">No</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- General Yes/No Fields -->
+                    {% for field in mandatory_yes %}
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">{{ field|replace_underscores }}</label>
+                            <div class="d-flex">
+                                <div class="form-check me-3">
+                                    <input class="form-check-input" type="radio" name="{{ field }}" id="{{ field }}-yes" value="True">
+                                    <label class="form-check-label" for="{{ field }}-yes">Yes</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="{{ field }}" id="{{ field }}-no" value="False" checked>
+                                    <label class="form-check-label" for="{{ field }}-no">No</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('device_type').addEventListener('change', function () {
+            const deviceType = this.value;
+            const mobileTabletFields = document.getElementById('mobile-tablet-fields');
+            const laptopFields = document.getElementById('laptop-fields');
+
+            if (mobileTabletFields) {
+                if (deviceType === 'Mobile' || deviceType === 'Tablet') {
+                mobileTabletFields.classList.remove('d-none');
+                mobileTabletFields.classList.add('d-block');
+                } else {
+                    mobileTabletFields.classList.add('d-none');
+                }
+            }
+
+            if (laptopFields) {
+                laptopFields.style.display = (deviceType === 'Laptop') ? 'block' : 'none';
+            }
+        });
+    });
+</script>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="make" class="form-label">Make</label>
@@ -208,11 +379,11 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="signatureCanvas1" class="form-label">Signature</label>
+                            <label for="signatureCanvas_add" class="form-label">Signature</label>
                             <div class="signature-container border bg-light p-3 rounded">
-                                <canvas id="signatureCanvas1" class="w-100" height="150"></canvas>
-                                <button type="button" class="btn btn-secondary btn-sm mt-2" id="clearCanvas1">Clear Signature</button>
-                                <input type="hidden" id="signatureImage1" name="signature_image1">
+                                <canvas id="signatureCanvas_add" class="w-100" height="150"></canvas>
+                                <button type="button" class="btn btn-secondary btn-sm mt-2" id="clearCanvas_add">Clear Signature</button>
+                                <input type="hidden" id="signatureImage_add" name="signature_image">
                             </div>
                         </div>
                     </div>
@@ -243,15 +414,28 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="customer{{ repair.id }}" class="form-label">Customer</label>
-                            <select class="form-control bg-dark text-light border-secondary" id="customer{{ repair.id }}" name="customer" required>
+                            <select class="form-control bg-dark text-light border-secondary" id="customer{{ repair.id }}" name="customer" onchange="openCustomerModal(this.value)" required>
                                 {% for customer in customers %}
-                                    <option value="{{ customer.id }}" {% if customer.id == repair.customer.id %}selected{% endif %}>{{ customer.name }}</option>
+                                    <option value="{{ customer.id }}" {% if customer.id == repair.customer.id %}selected{% endif %}>{{ customer.first_name }} {{customer.last_name}}</option>
                                 {% endfor %}
                             </select>
                         </div>
+                        <script>
+                        
+        function openCustomerModal(id){
+            console.log("id", id)
+            if (id) {
+                const modalId1 = `editCustomerModal1${id}`;
+                const modalElement1 = document.getElementById(modalId1);
+                const modalInstance1 = new bootstrap.Modal(modalElement1);
+                modalInstance1.show();
+            }
+        }
+        </script>
+
                         <div class="col-md-6 mb-3">
                             <label for="device_type{{ repair.id }}" class="form-label">Device Type</label>
-                            <input type="text" class="form-control bg-dark text-light border-secondary" id="device_type{{ repair.id }}" name="device_type" value="{{ repair.device_type }}" required>
+                            <input type="text" class="form-control bg-dark text-light border-secondary" id="device_type{{ repair.id }}" name="device_type" value="{{ repair.device_type }}" disabled>
                         </div>
                     </div>
                     <!-- Status and Location -->
@@ -273,6 +457,98 @@
                             </select>
                         </div>
                     </div>
+                    {% if repair.device_type == 'Mobile' or repair.device_type == 'Tablet' %}
+                    <div id="mobile-tablet{{ repair.id }}" >
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="imei{{ repair.id }}" class="form-label">IMEI</label>
+                                <input type="text" class="form-control bg-dark text-light border-secondary" id="imei{{ repair.id }}" name="imei" value="{{ repair.imei }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="network{{ repair.id }}" class="form-label">Network</label>
+                                <select class="form-control bg-dark text-light border-secondary" id="network{{ repair.id }}" name="network">
+                                    <option value="vodafone" {% if repair.network == 'vodafone' %}selected{% endif %}>Vodafone</option>
+                                    <option value="other" {% if repair.network == 'other' %}selected{% endif %}>Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <!-- Mobile/Tablet Yes/No Fields -->
+                        {% for field in mob_yes %}
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">{{ field|replace_underscores }}</label>
+                                <div class="d-flex">
+                                    <div class="form-check me-3">
+                                        <input class="form-check-input" type="radio" name="{{ field }}" id="{{ field }}-yes{{ repair.id }}" value="True" {% if repair|get_item:field == True %}checked{% endif %}>
+                                        <label class="form-check-label" for="{{ field }}-yes{{ repair.id }}">Yes</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="{{ field }}" id="{{ field }}-no{{ repair.id }}" value="False" {% if repair|get_item:field == False %}checked{% endif %}>
+                                        <label class="form-check-label" for="{{ field }}-no{{ repair.id }}">No</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% if repair.device_type == 'Laptop' %}
+                    <div id="laptop-f{{ repair.id }}">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="operating_system{{ repair.id }}" class="form-label">Operating System</label>
+                                <input type="text" class="form-control bg-dark text-light border-secondary" id="operating_system{{ repair.id }}" name="operating_system" value="{{ repair.operating_system }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="ram{{ repair.id }}" class="form-label">RAM</label>
+                                <input type="text" class="form-control bg-dark text-light border-secondary" id="ram{{ repair.id }}" name="ram" value="{{ repair.ram }}">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="storage{{ repair.id }}" class="form-label">Storage</label>
+                                <input type="text" class="form-control bg-dark text-light border-secondary" id="storage{{ repair.id }}" name="storage" value="{{ repair.storage }}">
+                            </div>
+                        </div>
+
+                        <!-- Laptop Yes/No Fields -->
+                        {% for field in lap_yes %}
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">{{ field|replace_underscores }}</label>
+                                <div class="d-flex">
+                                    <div class="form-check me-3">
+                                        <input class="form-check-input" type="radio" name="{{ field }}" id="{{ field }}-yes{{ repair.id }}" value="True" {% if repair|get_item:field == True %}checked{% endif %}>
+                                        <label class="form-check-label" for="{{ field }}-yes{{ repair.id }}">Yes</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="{{ field }}" id="{{ field }}-no{{ repair.id }}" value="False" {% if repair|get_item:field == False %}checked{% endif %}>
+                                        <label class="form-check-label" for="{{ field }}-no{{ repair.id }}">No</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <!-- General Yes/No Fields -->
+                    {% for field in mandatory_yes %}
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">{{ field|replace_underscores }}</label>
+                            <div class="d-flex">
+                                <div class="form-check me-3">
+                                    <input class="form-check-input" type="radio" name="{{ field }}" id="{{ field }}-yes{{ repair.id }}" value="True" {% if repair|get_item:field == True %}checked{% endif %}>
+                                    <label class="form-check-label" for="{{ field }}-yes{{ repair.id }}">Yes</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="{{ field }}" id="{{ field }}-no{{ repair.id }}" value="False" {% if repair|get_item:field == False %}checked{% endif %}>
+                                    <label class="form-check-label" for="{{ field }}-no{{ repair.id }}">No</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
                     <!-- Make and Model -->
                     <div class="row">
                         <div class="col-md-6 mb-3">
@@ -306,12 +582,22 @@
                             <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="finalized_price{{ repair.id }}" name="finalized_price" value="{{ repair.finalized_price }}">
                         </div>
                         <div class="col-md-6 mb-3">
+                            <label for="passcode{{ repair.id }}" class="form-label">Passcode</label>
+                            <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="passcode{{ repair.id }}" name="passcode" value="{{ repair.passcode }}" disabled>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
                             <label for="signatureCanvas{{ repair.id }}" class="form-label">Signature</label>
                             <div class="signature-container border bg-light p-3 rounded">
                                 <canvas id="signatureCanvas{{ repair.id }}" class="w-100" height="150"></canvas>
                                 <button type="button" class="btn btn-secondary btn-sm mt-2" id="clearCanvas{{ repair.id }}">Clear Signature</button>
                                 <input type="hidden" id="signatureImage{{ repair.id }}" name="signature_image" value="{{ repair.signature_image }}">
                             </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="technician_notes{{ repair.id }}" class="form-label">Technician Notes</label>
+                            <textarea class="form-control bg-dark text-light border-secondary" id="technician_notes{{ repair.id }}" name="technician_notes" rows="3" >{{ repair.technician_notes }}</textarea>
                         </div>
                     </div>
                     <!-- Submit Button -->
@@ -323,6 +609,8 @@
         </div>
     </div>
 </div>
+
+
 
     <!-- Delete Repair Modal -->
     <div class="modal fade" id="deleteRepairModal{{ repair.id }}" tabindex="-1" aria-labelledby="deleteRepairModalLabel{{ repair.id }}" aria-hidden="true">
@@ -347,10 +635,10 @@
     </div>
 <script>
      document.addEventListener('DOMContentLoaded', function() {
-        const canvas = document.getElementById('signatureCanvas1');
+        const canvas = document.getElementById('signatureCanvas_add');
 const ctx = canvas.getContext('2d');
-const clearButton = document.getElementById('clearCanvas1');
-const signatureInput = document.getElementById('signatureImage1');
+const clearButton = document.getElementById('clearCanvas_add');
+const signatureInput = document.getElementById('signatureImage_add');
 
 let drawing = false;
 
