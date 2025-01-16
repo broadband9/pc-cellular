@@ -95,24 +95,29 @@
     </div>
 </div>
 <script>
-   function printLabel(repairNumber) {
+function printLabel(repairNumber) {
     // Open a new tab for printing
     const printTab = window.open('', '_blank');
 
     // Write HTML content to the new tab
     printTab.document.write('<html><head><title>Print Label</title>');
     printTab.document.write('<style>');
-    printTab.document.write('body { font-family: Arial, sans-serif; font-size: 40px; margin: 0; padding: 0; height: 100%; }');
-    printTab.document.write('.content { text-align: center; page-break-before: always; margin-top: 50%; }'); // Ensure it starts on new page
-    printTab.document.write('.content p { margin: 0; padding: 0; }');
+
+    // Define the page size (38mm x 90mm) and remove margins
+    printTab.document.write('@page { size: 38mm 90mm; margin: 0; page-break-after: always; }');
+    printTab.document.write('body { font-family: Arial, sans-serif; font-size: 10px; margin: 0; padding: 0; height: 100%; }');
+
+    // Label content style - Adjusted for better fit
+    printTab.document.write('.content { display: flex; justify-content: center; align-items: center; height: 100%; width: 100%; }');
+    printTab.document.write('.content p { margin: 0; padding: 0; white-space: nowrap; overflow: hidden; text-overflow: clip; }');
     printTab.document.write('</style></head><body>');
 
-    // First page content
+    // First page content (Label 1) - Repair Number in the same line
     printTab.document.write('<div class="content">');
     printTab.document.write('<p>R/N: ' + repairNumber + '</p>');
     printTab.document.write('</div>');
 
-    // Second page content
+    // Second page content (Label 2) - Repair Number in the same line
     printTab.document.write('<div class="content">');
     printTab.document.write('<p>R/N: ' + repairNumber + '</p>');
     printTab.document.write('</div>');
@@ -125,48 +130,48 @@
         printTab.print();
     };
 }
-</script>
-{% for customer in customers %}
-    <!-- View Customer Modal -->
-    <div class="modal fade" id="editCustomerModal1{{ customer.id }}" tabindex="-1" style="z-index: 1100" aria-labelledby="editCustomerModalLabel{{ customer.id }}" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content bg-dark text-light">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editCustomerModalLabel{{ customer.id }}">View Customer</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form >
 
-                        <div class="mb-3">
-                            <label for="first_name{{ customer.id }}" class="form-label">First Name</label>
-                            <input type="text" class="form-control bg-dark text-light border-secondary" id="first_name{{ customer.id }}" name="first_name" value="{{ customer.first_name }}" disabled>
-                        </div>
-                        <div class="mb-3">
-                            <label for="last_name{{ customer.id }}" class="form-label">Last Name</label>
-                            <input type="text" class="form-control bg-dark text-light border-secondary" id="last_name{{ customer.id }}" name="last_name" value="{{ customer.last_name }}" disabled>
-                        </div>
-                        <div class="mb-3">
-                            <label for="email{{ customer.id }}" class="form-label">Email</label>
-                            <input type="email" class="form-control bg-dark text-light border-secondary" id="email{{ customer.id }}" name="email" value="{{ customer.email }}" disabled>
-                        </div>
-                        <div class="mb-3">
-                            <label for="phone{{ customer.id }}" class="form-label">Phone</label>
-                            <input type="tel" class="form-control bg-dark text-light border-secondary" id="phone{{ customer.id }}" name="phone" value="{{ customer.phone }}" disabled>
-                        </div>
-                        <div class="mb-3">
-                            <label for="postcode{{ customer.id }}" class="form-label">Phone</label>
-                            <input type="tel" class="form-control bg-dark text-light border-secondary" id="postcode{{ customer.id }}" name="postcode" value="{{ customer.postcode }}" disabled>
-                        </div>
-                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Done</button>
-                    </form>
-                </div>
+</script>
+
+   <!-- Add Customer Modal -->
+<div class="modal fade" id="addCustomerModal" tabindex="-1" aria-labelledby="addCustomerModalLabel" aria-hidden="true" style="z-index: 1100">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-light">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addCustomerModalLabel">Add New Customer</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addCustomerForm">
+                    <div class="mb-3">
+                        <label for="first_name" class="form-label">First Name</label>
+                        <input type="text" class="form-control bg-dark text-light border-secondary" id="first_name" name="first_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="last_name" class="form-label">Last Name</label>
+                        <input type="text" class="form-control bg-dark text-light border-secondary" id="last_name" name="last_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control bg-dark text-light border-secondary" id="email" name="email">
+                    </div>
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Phone</label>
+                        <input type="tel" class="form-control bg-dark text-light border-secondary" id="phone" name="phone" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="postcode" class="form-label">Post Code</label>
+                        <input type="tel" class="form-control bg-dark text-light border-secondary" id="postcode" name="postcode" >
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Customer</button>
+                </form>
             </div>
         </div>
     </div>
-{% endfor %}
+</div>
+
 <!-- Add Repair Modal -->
-<div class="modal fade" id="addRepairModal" tabindex="-1" aria-labelledby="addRepairModalLabel" aria-hidden="true">
+<div class="modal fade" id="addRepairModal" tabindex="-1" aria-labelledby="addRepairModalLabel" aria-hidden="true" >
     <div class="modal-dialog modal-dialog-scrollable modal-lg">
         <div class="modal-content bg-dark text-light">
             <div class="modal-header">
@@ -182,6 +187,7 @@
                             <label for="customer" class="form-label">Customer</label>
                             <select class="form-control bg-dark text-light border-secondary" id="customer" name="customer" required>
                                 <option value="">Select Customer</option>
+                                <option value="add-new">Add New Customer</option>
                                 {% for customer in customers %}
                                     <option value="{{ customer.id }}">{{ customer.first_name }} {{ customer.last_name }}</option>
                                 {% endfor %}
@@ -190,15 +196,67 @@
                         <script>
 
         const customerDropdown = document.getElementById('customer');
+        const parentModalElement = document.getElementById('addRepairModal');
+<!--        const addCustomerModal = new bootstrap.Modal(document.getElementById('addCustomerModal'));-->
         customerDropdown.addEventListener('change', function () {
-            const selectedCustomerId = this.value;
-            if (selectedCustomerId) {
-                const modalId = `editCustomerModal1${selectedCustomerId}`;
+            const selectedValue = this.value;
+            if (selectedValue === "add-new") {
+            // Show "Add New Customer" modal
+            const modalId = "addCustomerModal";
                 const modalElement = document.getElementById(modalId);
                 const modalInstance = new bootstrap.Modal(modalElement);
                 modalInstance.show();
-            }
+                parentModalElement.classList.remove('show');
+    parentModalElement.setAttribute('aria-hidden', 'true');
+    parentModalElement.style.display = 'none';
+<!--            addCustomerModal.show();-->
+        }
         });
+        const addCustomerForm = document.getElementById('addCustomerForm');
+    addCustomerForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // Gather form data
+        const formData = new FormData(this);
+
+        // Save customer via API or backend
+        fetch('/repairs/add-customer/', {
+            method: 'POST',
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Add new customer to the dropdown
+                const newOption = document.createElement('option');
+                newOption.value = data.customer.id;
+                newOption.textContent = `${data.customer.first_name} ${data.customer.last_name}`;
+                customerDropdown.appendChild(newOption);
+
+                // Auto-select the new customer
+                customerDropdown.value = data.customer.id;
+
+                // Hide the modal
+                addCustomerModal.hide();
+                parentModalElement.classList.add('show');
+                parentModalElement.removeAttribute('aria-hidden');
+                parentModalElement.style.display = 'block';
+
+                // Focus back on parent modal
+                parentModalElement.focus();
+
+                // Optionally clear the form
+                addCustomerForm.reset();
+            } else {
+                alert('Failed to add customer. Please try again.');
+            }
+        })
+        .catch(error => {
+            console.error('Error adding customer:', error);
+            alert('An error occurred. Please try again.');
+        });
+    });
+
 
 </script>
                         <div class="col-md-6 mb-3">

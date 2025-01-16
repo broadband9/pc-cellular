@@ -5,9 +5,12 @@ from customers.models import Customer
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.files.base import ContentFile
 import base64
+from django.views.decorators.csrf import csrf_exempt
+
 import datetime
 from django.http import JsonResponse
 from django.db.models import Q
+import json
 import random
 import string
 
@@ -444,3 +447,42 @@ def global_search(request):
     }
 
     return JsonResponse({"results": results})
+
+@csrf_exempt
+def add_customer(request):
+    if request.method == 'POST':
+        print("request.body", request.body)
+        try:
+            # Parse the incoming JSON data
+            first_name = request.POST.get('first_name', '').strip()
+            last_name = request.POST.get('last_name', '').strip()
+            email = request.POST.get('email', '').strip()
+            phone = request.POST.get('phone', '').strip()
+            postcode = request.POST.get('postcode', '').strip()
+
+            if not first_name or not last_name:
+                return JsonResponse({'success': False, 'error': 'First name and last name are required.'}, status=400)
+
+            # Save customer in the database
+            customer = Customer(first_name=first_name, last_name=last_name, phone=phone)
+            if email:
+                customer.email = email
+            if postcode:
+                customer.postcode = postcode
+            customer.save()
+            # Return success response with customer details
+            return JsonResponse({
+                'success': True,
+                'customer': {
+                    'id': customer.id,
+                    'first_name': customer.first_name,
+                    'last_name': customer.last_name,
+                }
+            })
+
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'error': 'Invalid JSON data.'}, status=400)
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)
