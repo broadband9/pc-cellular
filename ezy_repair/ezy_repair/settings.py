@@ -12,6 +12,13 @@ SECRET_KEY = 'django-insecure-key-here'
 DEBUG = True
 ALLOWED_HOSTS = ["*"]
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://ezyrepair.9.technology",
+    "http://ezyrepair.9.technology",
+    "https://pccellular.9.technology",
+    "http://pccellular.9.technology"
+]
+
 # Applications
 INSTALLED_APPS = [
     'django.contrib.admin',
