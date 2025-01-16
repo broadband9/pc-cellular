@@ -197,7 +197,7 @@ function printLabel(repairNumber) {
 
         const customerDropdown = document.getElementById('customer');
         const parentModalElement = document.getElementById('addRepairModal');
-<!--        const addCustomerModal = new bootstrap.Modal(document.getElementById('addCustomerModal'));-->
+  const addCustomerModal = new bootstrap.Modal(document.getElementById('addCustomerModal'));
         customerDropdown.addEventListener('change', function () {
             const selectedValue = this.value;
             if (selectedValue === "add-new") {
@@ -209,7 +209,7 @@ function printLabel(repairNumber) {
                 parentModalElement.classList.remove('show');
     parentModalElement.setAttribute('aria-hidden', 'true');
     parentModalElement.style.display = 'none';
-<!--            addCustomerModal.show();-->
+       addCustomerModal.show();
         }
         });
         const addCustomerForm = document.getElementById('addCustomerForm');
