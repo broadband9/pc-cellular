@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import Repair, Location, Make, RepairStatus, ActivityLog
+from .models import Repair, Location, Make, RepairStatus, ActivityLog, TechnicianNotes
 from customers.models import Customer
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.files.base import ContentFile
@@ -33,6 +33,7 @@ def repairs_list(request):
     mob_yes = ['lens_lcd_damage', 'camera_lens_back_damage', 'risk_back', 'risk_biometric', 'button_function_ok', 'sim_removed', 'risk_lcd']
     lap_yes = ['keyboard_functional', 'screen_damage', 'hinge_damage', 'trackpad_functional']
     mandatory_yes = ['tampered', 'missing_part', 'power_up', 'liquid_damage']
+    print("repairs", repairs)
     makes = Make.objects.all()
     return render(request, 'repairs/repairs_list.html', {'repairs': repairs, "statuses": statuses,
                                                          "customers": customers, "locations": locations,
@@ -52,12 +53,13 @@ def add_repair(request):
         estimated_cost = request.POST.get("estimated_cost")
         finalized_price = request.POST.get("finalized_price")
         passcode = request.POST.get("passcode")
-        signature_data = request.POST.get("signature_image1")
+        signature_data = request.POST.get("signatureImage_add")
         current_date = datetime.datetime.now().strftime('%Y-%m-%d')
         liquid_damage = request.POST.get("liquid_damage")
         power_up = request.POST.get("power_up")
         missing_part = request.POST.get("missing_part")
         tampered = request.POST.get("tampered")
+        print("signature", signature_data)
 
         # Generate a random passcode (e.g., a 6-character string of digits)
 
@@ -226,7 +228,6 @@ def edit_repair(request, pk):
         estimated_cost = request.POST.get("estimated_cost")
         finalized_price = request.POST.get("finalized_price")
         liquid_damage = request.POST.get("liquid_damage")
-        technician_notes = request.POST.get("technician_notes")
         power_up = request.POST.get("power_up")
         missing_part = request.POST.get("missing_part")
         tampered = request.POST.get("tampered")
@@ -257,8 +258,7 @@ def edit_repair(request, pk):
         repair.power_up = power_up
         repair.missing_part = missing_part
         repair.tampered = tampered
-        if technician_notes:
-            repair.technician_notes = technician_notes
+
         if repair.device_type == "Mobile" or "Tablet":
             imei = request.POST.get("imei")
             lens_lcd_damage = request.POST.get("lens_lcd_damage")
@@ -422,7 +422,7 @@ def global_search(request):
         'location__name', 'finalized_price', 'estimated_cost', 'lens_lcd_damage', 'camera_lens_back_damage',
         'camera_lens_back_damage', 'risk_back', 'risk_biometric', 'button_function_ok', 'sim_removed', 'risk_lcd',
         'trackpad_functional', 'keyboard_functional', 'hinge_damage', 'screen_damage', 'liquid_damage', 'power_up',
-        'missing_part', 'tampered', 'operating_system', 'ram', 'storage', 'network', 'passcode', 'issue_description', 'technician_notes'
+        'missing_part', 'tampered', 'operating_system', 'ram', 'storage', 'network', 'passcode', 'issue_description', 'technicianNotes__notes'
     )
 
     make_results = Make.objects.filter(
@@ -486,3 +486,45 @@ def add_customer(request):
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
     else:
         return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)
+
+
+@csrf_exempt  # Use only if you need to bypass CSRF protection (you can use Django CSRF middleware in production for security)
+def save_notes(request):
+    if request.method == 'POST':
+        try:
+            # Get data from the request body
+            data = json.loads(request.body)
+            repair_id = data.get('repair_id')
+            location = data.get('location1', [])
+            status = data.get('status', [])
+            notes = data.get('notes', [])
+            print("notes", notes)
+            # Fetch the repair object by id
+            repair = Repair.objects.get(id=repair_id)
+            status = get_object_or_404(RepairStatus, id=status) if status else None
+            location = get_object_or_404(Location, id=location) if location else None
+            repair.status = status
+            repair.location = location
+            repair.save()
+            # Optionally, you can clear existing notes and save new ones or append the new notes
+            # Clear existing notes (if desired) and create new ones
+            if repair.technicianNotes:
+                already_notes = repair.technicianNotes.notes
+                for a in notes:
+                    already_notes.append(a)
+                repair.technicianNotes.notes = already_notes
+                repair.technicianNotes.save()
+            # Create new notes for the repair
+            if not repair.technicianNotes:
+                tech_notes = TechnicianNotes.objects.create(notes=notes)
+                repair.technicianNotes = tech_notes
+                repair.save()
+
+            # Return a success response
+            return JsonResponse({'success': True})
+        except Repair.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Repair not found.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})

@@ -55,6 +55,9 @@
                     <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteRepairModal{{ repair.id }}">
                         <i class="fas fa-trash"></i>
                     </button>
+                    <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#viewRepairModal{{ repair.id }}">
+                        <i class="fas fa-eye"></i>
+                    </button>
                     <button class="btn btn-sm btn-info" onclick="printLabel('{{ repair.repair_number }}')">
                         <i class="fas fa-print"></i>
                     </button>
@@ -139,7 +142,7 @@ function printLabel(repairNumber) {
         <div class="modal-content bg-dark text-light">
             <div class="modal-header">
                 <h5 class="modal-title" id="addCustomerModalLabel">Add New Customer</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" onclick="close_customer_modal()"></button>
             </div>
             <div class="modal-body">
                 <form id="addCustomerForm">
@@ -256,7 +259,16 @@ function printLabel(repairNumber) {
             alert('An error occurred. Please try again.');
         });
     });
+function close_customer_modal(){
+                document.getElementById("customer").value = ""
+                addCustomerModal.hide();
+                parentModalElement.classList.add('show');
+                parentModalElement.removeAttribute('aria-hidden');
+                parentModalElement.style.display = 'block';
 
+                // Focus back on parent modal
+                parentModalElement.focus();
+}
 
 </script>
                         <div class="col-md-6 mb-3">
@@ -441,7 +453,7 @@ function printLabel(repairNumber) {
                             <div class="signature-container border bg-light p-3 rounded">
                                 <canvas id="signatureCanvas_add" class="w-100" height="150"></canvas>
                                 <button type="button" class="btn btn-secondary btn-sm mt-2" id="clearCanvas_add">Clear Signature</button>
-                                <input type="hidden" id="signatureImage_add" name="signature_image">
+                                <input type="hidden" id="signatureImage_add" name="signatureImage_add">
                             </div>
                         </div>
                     </div>
@@ -456,6 +468,224 @@ function printLabel(repairNumber) {
     </div>
 </div>
 
+
+<!-- View modals for each repair -->
+{% for repair in repairs %}
+<div class="modal fade" id="viewRepairModal{{ repair.id }}" tabindex="-1" aria-labelledby="viewRepairModal{{ repair.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+        <div class="modal-content bg-dark text-light">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewRepairModalLabel{{ repair.id }}">Edit Repair</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+
+                    <!-- Customer and Device Type -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="customer{{ repair.id }}" class="form-label">Customer</label>
+                            <input type="text" class="form-control bg-dark text-light border-secondary" id="customer{{ repair.id }}" name="customer" value="{{ repair.customer.first_name }} {{ repair.customer.last_name }}" disabled>
+                        </div>
+
+
+                        <div class="col-md-6 mb-3">
+                            <label for="device_type{{ repair.id }}" class="form-label">Device Type</label>
+                            <input type="text" class="form-control bg-dark text-light border-secondary" id="device_type{{ repair.id }}" name="device_type" value="{{ repair.device_type }}" disabled>
+                        </div>
+                    </div>
+                    <!-- Status and Location -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="status{{ repair.id }}" class="form-label">Status</label>
+                            <select class="form-control bg-dark text-light border-secondary" id="statusview{{ repair.id }}" name="statusview" required>
+                                {% for status in statuses %}
+                                    <option value="{{ status.id }}" {% if status.id == repair.status.id %}selected{% endif %}>{{ status.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="location{{ repair.id }}" class="form-label">Location</label>
+                            <select class="form-control bg-dark text-light border-secondary" id="locationview{{ repair.id }}" name="locationview" required>
+                                {% for location in locations %}
+                                    <option value="{{ location.id }}" {% if location.id == repair.location.id %}selected{% endif %}>{{ location.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    {% if repair.device_type == 'Mobile' or repair.device_type == 'Tablet' %}
+                    <div id="mobile-tablet1{{ repair.id }}" >
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="imei{{ repair.id }}" class="form-label">IMEI</label>
+                                <input type="text" class="form-control bg-dark text-light border-secondary" id="imei1{{ repair.id }}" name="imei" value="{{ repair.imei }}" disabled>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="network{{ repair.id }}" class="form-label">Network</label>
+                                <select class="form-control bg-dark text-light border-secondary" id="network1{{ repair.id }}" name="network" disabled>
+                                    <option value="vodafone" {% if repair.network == 'vodafone' %}selected{% endif %}>Vodafone</option>
+                                    <option value="other" {% if repair.network == 'other' %}selected{% endif %}>Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <!-- Mobile/Tablet Yes/No Fields -->
+                        {% for field in mob_yes %}
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">{{ field|replace_underscores }}</label>
+                                <div class="d-flex">
+                                    <div class="form-check me-3">
+                                        <input class="form-check-input" type="radio" name="{{ field }}" id="{{ field }}1-yes{{ repair.id }}" value="True" {% if repair|get_item:field == True %}checked{% endif %} disabled>
+                                        <label class="form-check-label" for="{{ field }}-yes{{ repair.id }}">Yes</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="{{ field }}" id="{{ field }}1-no{{ repair.id }}" value="False" {% if repair|get_item:field == False %}checked{% endif %} disabled>
+                                        <label class="form-check-label" for="{{ field }}-no{{ repair.id }}">No</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% if repair.device_type == 'Laptop' %}
+                    <div id="laptop1{{ repair.id }}">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="operating_system{{ repair.id }}" class="form-label">Operating System</label>
+                                <input type="text" class="form-control bg-dark text-light border-secondary" id="operating_system1{{ repair.id }}" name="operating_system" value="{{ repair.operating_system }}" disabled>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="ram{{ repair.id }}" class="form-label">RAM</label>
+                                <input type="text" class="form-control bg-dark text-light border-secondary" id="ram1{{ repair.id }}" name="ram" value="{{ repair.ram }}" disabled>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="storage{{ repair.id }}" class="form-label">Storage</label>
+                                <input type="text" class="form-control bg-dark text-light border-secondary" id="storage1{{ repair.id }}" name="storage" value="{{ repair.storage }}" disabled>
+                            </div>
+                        </div>
+
+                        <!-- Laptop Yes/No Fields -->
+                        {% for field in lap_yes %}
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">{{ field|replace_underscores }}</label>
+                                <div class="d-flex">
+                                    <div class="form-check me-3">
+                                        <input class="form-check-input" type="radio" name="{{ field }}" id="{{ field }}1-yes{{ repair.id }}" value="True" {% if repair|get_item:field == True %}checked{% endif %} disabled>
+                                        <label class="form-check-label" for="{{ field }}-yes{{ repair.id }}">Yes</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="{{ field }}" id="{{ field }}1-no{{ repair.id }}" value="False" {% if repair|get_item:field == False %}checked{% endif %} disabled>
+                                        <label class="form-check-label" for="{{ field }}-no{{ repair.id }}">No</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <!-- General Yes/No Fields -->
+                    {% for field in mandatory_yes %}
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">{{ field|replace_underscores }}</label>
+                            <div class="d-flex">
+                                <div class="form-check me-3">
+                                    <input class="form-check-input" type="radio" name="{{ field }}" id="{{ field }}1-yes{{ repair.id }}" value="True" {% if repair|get_item:field == True %}checked{% endif %} disabled>
+                                    <label class="form-check-label" for="{{ field }}-yes{{ repair.id }}">Yes</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="{{ field }}" id="{{ field }}1-no{{ repair.id }}" value="False" {% if repair|get_item:field == False %}checked{% endif %} disabled>
+                                    <label class="form-check-label" for="{{ field }}-no{{ repair.id }}">No</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <!-- Make and Model -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="make{{ repair.id }}" class="form-label">Make</label>
+                            <select class="form-control bg-dark text-light border-secondary" id="make1{{ repair.id }}" name="make" disabled>
+                                {% for make in makes %}
+                                    <option value="{{ make.id }}" {% if make.id == repair.make.id %}selected{% endif %}>{{ make.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="model{{ repair.id }}" class="form-label">Model</label>
+                            <input type="text" class="form-control bg-dark text-light border-secondary" id="model1{{ repair.id }}" name="model" value="{{ repair.model }}" disabled>
+                        </div>
+                    </div>
+                    <!-- Issue Description and Estimated Cost -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="issue_description{{ repair.id }}" class="form-label">Issue Description</label>
+                            <textarea class="form-control bg-dark text-light border-secondary" id="issue_description1{{ repair.id }}" name="issue_description" rows="3" disabled>{{ repair.issue_description }}</textarea>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="estimated_cost{{ repair.id }}" class="form-label">Estimated Cost</label>
+                            <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="estimated_cost1{{ repair.id }}" name="estimated_cost" value="{{ repair.estimated_cost }}" disabled>
+                        </div>
+                    </div>
+                    <!-- Finalized Price and Signature -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="finalized_price{{ repair.id }}" class="form-label">Finalized Cost</label>
+                            <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="finalized_price1{{ repair.id }}" name="finalized_price" value="{{ repair.finalized_price }}" disabled>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="passcode{{ repair.id }}" class="form-label">Passcode</label>
+                            <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="passcode1{{ repair.id }}" name="passcode" value="{{ repair.passcode }}" disabled>
+                        </div>
+                    </div>
+<div class="row">
+    <div class="col-md-12 mb-3">
+        <label for="notes" class="form-label">Technician Notes
+            <button type="button" class="btn btn-sm btn-primary ms-2" id="add-note-btn-{{ repair.id }}" onclick="showNoteInput({{ repair.id }})">Add</button>
+        </label>
+
+        <!-- Loop to display existing notes for each repair -->
+        {% for note in repair.technicianNotes.notes %}
+            <div id="note{{ repair.id }}-{{ forloop.counter }}" class="note-container">
+                <p class="form-control bg-dark text-light border-secondary mb-2" id="note-text{{ repair.id }}-{{ forloop.counter }}">
+                    {{ note }}
+                </p>
+            </div>
+        {% empty %}
+            <p id="no-notes-message" class="form-control bg-dark text-light border-secondary mb-2">
+                No notes available.
+            </p>
+        {% endfor %}
+
+        <!-- Text area for adding a new note, scoped to repair.id -->
+        <div id="note-input-container-{{ repair.id }}" class="d-none">
+            <textarea class="form-control bg-dark text-light border-secondary mb-2" id="new-note-{{ repair.id }}" placeholder="Write your note here"></textarea>
+            <button type="button" class="btn btn-success btn-sm mt-1" onclick="addNote({{ repair.id }})">Done</button>
+        </div>
+
+        <!-- Dynamic notes list for each repair -->
+        <div id="dynamic-notes-{{ repair.id }}"></div>
+    </div>
+</div>
+
+<!-- Save Changes button -->
+<div class="row">
+    <div class="col-12">
+        <button type="button" class="btn btn-primary" onclick="saveChanges({{ repair.id }})">Save Changes</button>
+    </div>
+</div>
+
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
 <!-- Edit and Delete modals for each repair -->
 {% for repair in repairs %}
 <div class="modal fade" id="editRepairModal{{ repair.id }}" tabindex="-1" aria-labelledby="editRepairModalLabel{{ repair.id }}" aria-hidden="true">
@@ -472,24 +702,13 @@ function printLabel(repairNumber) {
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="customer{{ repair.id }}" class="form-label">Customer</label>
-                            <select class="form-control bg-dark text-light border-secondary" id="customer{{ repair.id }}" name="customer" onchange="openCustomerModal(this.value)" required>
+                            <select class="form-control bg-dark text-light border-secondary" id="customer{{ repair.id }}" name="customer"  required>
                                 {% for customer in customers %}
                                     <option value="{{ customer.id }}" {% if customer.id == repair.customer.id %}selected{% endif %}>{{ customer.first_name }} {{customer.last_name}}</option>
                                 {% endfor %}
                             </select>
                         </div>
-                        <script>
-                        
-        function openCustomerModal(id){
-            console.log("id", id)
-            if (id) {
-                const modalId1 = `editCustomerModal1${id}`;
-                const modalElement1 = document.getElementById(modalId1);
-                const modalInstance1 = new bootstrap.Modal(modalElement1);
-                modalInstance1.show();
-            }
-        }
-        </script>
+
 
                         <div class="col-md-6 mb-3">
                             <label for="device_type{{ repair.id }}" class="form-label">Device Type</label>
@@ -653,10 +872,7 @@ function printLabel(repairNumber) {
                                 <input type="hidden" id="signatureImage{{ repair.id }}" name="signature_image" value="{{ repair.signature_image }}">
                             </div>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="technician_notes{{ repair.id }}" class="form-label">Technician Notes</label>
-                            <textarea class="form-control bg-dark text-light border-secondary" id="technician_notes{{ repair.id }}" name="technician_notes" rows="3" >{{ repair.technician_notes }}</textarea>
-                        </div>
+
                     </div>
                     <!-- Submit Button -->
                     <div class="mb-3">
@@ -768,4 +984,170 @@ clearButton.addEventListener('click', () => {
 
 </script>
 {% endfor %}
+<script>
+    // Store the new notes
+    let repairNotes = {}; // Store notes per repairId
+
+// Show the text area for adding a note for a specific repair
+function showNoteInput(repairId) {
+    console.log("in add note for repair", repairId);
+    document.getElementById("note-input-container-" + repairId).classList.remove("d-none");
+}
+
+// Add the note to the list for a specific repair
+function addNote(repairId) {
+    const newNote = document.getElementById("new-note-" + repairId).value.trim();
+    if (newNote) {
+        // Add the note to the repair's notes array
+        if (!repairNotes[repairId]) {
+            repairNotes[repairId] = [];
+        }
+        repairNotes[repairId].push(newNote);
+
+        // Create a new note container with Edit and Delete buttons
+        const dynamicNotesDiv = document.getElementById("dynamic-notes-" + repairId);
+        const noteElement = document.createElement("div");
+        noteElement.className = "note-container";
+        noteElement.innerHTML = `
+            <p class="form-control bg-dark text-light border-secondary mb-2">${newNote}</p>
+            <button type="button" class="btn btn-sm btn-warning" onclick="editNewNote(${repairId})">Edit</button>
+            <button type="button" class="btn btn-sm btn-danger" onclick="deleteNewNote(${repairId})">Delete</button>
+        `;
+        dynamicNotesDiv.appendChild(noteElement);
+
+        // Hide the input area and clear it
+        document.getElementById("new-note-" + repairId).value = "";
+        document.getElementById("note-input-container-" + repairId).classList.add("d-none");
+
+        // Hide the "No notes available" message if new notes are added
+        document.getElementById("no-notes-message-" + repairId)?.classList.add("d-none");
+    } else {
+        alert("Please write a note before clicking Done.");
+    }
+}
+
+// Edit a new note for a specific repair
+function editNewNote(repairId) {
+    const noteElement = event.target.parentElement.querySelector("p");
+    if (!noteElement) {
+        console.error("Note element not found!");
+        return;
+    }
+
+    const noteText = noteElement.textContent;
+    const noteContainer = noteElement.parentElement;
+
+    // Change the note to an input field with the current note value
+    noteElement.outerHTML = `
+        <input type="text" class="form-control bg-dark text-light border-secondary mb-2" value="${noteText}" id="edit-new-note-${repairId}" />
+    `;
+
+    // Hide the "Edit" button and show "Done"
+    const editButton = event.target;
+    editButton.style.display = 'none';
+
+    const doneButton = document.createElement("button");
+    doneButton.type = "button";
+    doneButton.className = "btn btn-sm btn-success";
+    doneButton.textContent = "Done";
+    doneButton.onclick = () => saveNewNote(repairId, noteContainer);
+
+    noteContainer.appendChild(doneButton);
+}
+
+// Save the edited new note for a specific repair
+function saveNewNote(repairId, noteContainer) {
+    const editedNote = document.getElementById("edit-new-note-" + repairId).value.trim();
+    if (editedNote) {
+        const noteElement = document.querySelector("#edit-new-note-" + repairId);
+        if (!noteElement) {
+            console.error("Input element not found!");
+            return;
+        }
+
+        noteElement.outerHTML = `
+            <p class="form-control bg-dark text-light border-secondary mb-2">${editedNote}</p>
+        `;
+
+        // Update the repair's notes array with the edited note
+        const index = Array.from(document.querySelectorAll("#dynamic-notes-" + repairId + " .note-container")).indexOf(noteContainer);
+        if (index !== -1) {
+            repairNotes[repairId][index] = editedNote; // Update the array with the edited note
+        } else {
+            console.error("Index for repairNotes not found!");
+        }
+
+        // Remove the "Done" button and enable the "Edit" button again
+        const doneButton = noteContainer.querySelector(".btn-success");
+        doneButton.remove();
+
+        const editButton = document.createElement("button");
+        editButton.type = "button";
+        editButton.className = "btn btn-sm btn-warning";
+        editButton.textContent = "Edit";
+        editButton.onclick = () => editNewNote(repairId);
+        noteContainer.appendChild(editButton);
+    }
+}
+
+// Delete a new note for a specific repair
+function deleteNewNote(repairId) {
+    const noteElement = event.target.parentElement;
+    noteElement.remove();
+
+    // If no dynamic notes exist, show "No notes available" message
+    if (document.getElementById("dynamic-notes-" + repairId).children.length === 0) {
+        document.getElementById("no-notes-message-" + repairId)?.classList.remove("d-none");
+    }
+}
+
+// Save changes (send notes to the backend) for a specific repair
+function saveChanges(repairId) {
+const status = document.getElementById(`statusview${repairId}`).value;
+    const locationElement  = document.getElementById(`locationview${repairId}`).value;
+    console.log("location_ element", locationElement)
+    let allNotes = [...(repairNotes[repairId] || [])]; // Start with the new notes
+
+    // Get existing notes from the DOM that are not part of newNotes
+    const existingNotes = [...document.querySelectorAll(`#dynamic-notes-${repairId} p`)].map(p => p.textContent);
+
+    // Filter out notes that are already in newNotes (to prevent duplicates)
+    const filteredExistingNotes = existingNotes.filter(note => !repairNotes[repairId]?.includes(note));
+
+    // Combine new notes with filtered existing notes
+    allNotes = allNotes.concat(filteredExistingNotes);
+
+    console.log("all notes", allNotes);
+    if (allNotes.length > 0) {
+        // Send the notes to the backend
+        fetch('/repairs/save-notes/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: JSON.stringify({
+                repair_id: repairId, // Send the repair id
+                notes: allNotes,
+                status: status, // Include selected status
+                location1: locationElement // Include selected location
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert("Notes saved successfully!");
+                location.reload(); // Reload the page to fetch the updated notes
+            } else {
+                alert("Failed to save notes. Please try again.");
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    } else {
+        alert("No notes to save.");
+    }
+}
+
+    </script>
+
 {% endblock %}

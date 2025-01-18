@@ -8,4 +8,4 @@ class RepairAdmin(admin.ModelAdmin):
     list_filter = ['device_type', 'status']
 
 
-admin.site.register([ActivityLog, Make, Location, RepairStatus])
+admin.site.register([ActivityLog, Make, Location, RepairStatus, TechnicianNotes])

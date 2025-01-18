@@ -3,7 +3,7 @@ from random import choices
 
 from django.db import models
 from django.contrib.auth.models import User  # Import the User model
-
+from django.contrib.postgres.fields import JSONField
 
 class RepairStatus(models.Model):
     name = models.CharField(max_length=50)
@@ -39,6 +39,13 @@ class ActivityLog(models.Model):
 
     def __str__(self):
         return f"{self.description} - {self.created_at}"
+
+
+class TechnicianNotes(models.Model):
+    notes = models.JSONField(default=list)  # List of notes
+
+    def __str__(self):
+        return f"{self.id}"
 
 
 class Repair(models.Model):
@@ -81,10 +88,13 @@ class Repair(models.Model):
     model = models.CharField(max_length=100)
     issue_description = models.TextField()
     passcode = models.CharField(default="", max_length=20)
-    technician_notes = models.TextField()
+    technicianNotes = models.ForeignKey(TechnicianNotes, null=True, blank=True, on_delete=models.SET_NULL)
     estimated_cost = models.DecimalField(max_digits=10, decimal_places=2)
     finalized_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Repair #{self.pk} - {self.device_type}"
+
+
+
