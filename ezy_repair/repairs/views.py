@@ -5,8 +5,13 @@ from customers.models import Customer
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.files.base import ContentFile
 import base64
-from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
 
+from django.views.decorators.csrf import csrf_exempt
+from django.core.mail import send_mail
+from twilio.rest import Client
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 import datetime
 from django.http import JsonResponse
 from django.db.models import Q
@@ -497,8 +502,10 @@ def save_notes(request):
             repair_id = data.get('repair_id')
             location = data.get('location1', [])
             status = data.get('status', [])
+            send_email = data.get('send_email', False)
+            send_sms = data.get('send_sms', False)
             notes = data.get('notes', [])
-            print("notes", notes)
+            print("notes", notes, send_email, send_sms)
             # Fetch the repair object by id
             repair = Repair.objects.get(id=repair_id)
             status = get_object_or_404(RepairStatus, id=status) if status else None
@@ -508,17 +515,49 @@ def save_notes(request):
             repair.save()
             # Optionally, you can clear existing notes and save new ones or append the new notes
             # Clear existing notes (if desired) and create new ones
-            if repair.technicianNotes:
-                already_notes = repair.technicianNotes.notes
-                for a in notes:
-                    already_notes.append(a)
-                repair.technicianNotes.notes = already_notes
-                repair.technicianNotes.save()
-            # Create new notes for the repair
-            if not repair.technicianNotes:
-                tech_notes = TechnicianNotes.objects.create(notes=notes)
-                repair.technicianNotes = tech_notes
-                repair.save()
+            if len(notes) > 0:
+                if repair.technicianNotes:
+                    already_notes = repair.technicianNotes.notes
+                    for a in notes:
+                        already_notes.append(a)
+                    repair.technicianNotes.notes = already_notes
+                    repair.technicianNotes.save()
+                # Create new notes for the repair
+                if not repair.technicianNotes:
+                    tech_notes = TechnicianNotes.objects.create(notes=notes)
+                    repair.technicianNotes = tech_notes
+                    repair.save()
+
+            if send_email and repair.customer.email:
+                subject = f"Repair Update: {repair.repair_number}"
+                repair_data = {
+                    'repair_number': repair.repair_number,
+                    'device_type': repair.device_type,
+                    'status': repair.status.name if repair.status else 'N/A',
+                    'location': repair.location.name if repair.location else 'N/A',
+                    'technician_notes': repair.technicianNotes.notes if repair.technicianNotes else [],
+                }
+                email_html_message = render_to_string('email_template.html', repair_data)
+                email_plain_message = strip_tags(email_html_message)
+                send_mail(
+                    subject,
+                    email_plain_message,
+                    settings.EMAIL_HOST_USER,  # Fetch sender email from settings
+                    [repair.customer.email],  # Recipient email
+                    html_message=email_html_message,
+                )
+
+                    # Send SMS if requested
+            if send_sms:
+                account_sid = settings.TWILIO_ACCOUNT_SID  # Fetch Twilio SID from settings
+                auth_token = settings.TWILIO_AUTH_TOKEN  # Fetch Twilio Auth Token from settings
+                client = Client(account_sid, auth_token)
+                sms_message = render_to_string('sms_template.txt', repair)
+                client.messages.create(
+                    body=sms_message,
+                    from_='+1234567890',  # Replace with your Twilio phone number
+                    to='+0987654321'  # Replace with the customer's phone number
+                )
 
             # Return a success response
             return JsonResponse({'success': True})

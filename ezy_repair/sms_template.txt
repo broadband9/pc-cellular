@@ -1,0 +1,8 @@
+Repair Update: {{ repair_number }}
+Device Type: {{ device_type }}
+Status: {{ status }}
+Location: {{ location }}
+Notes:
+{% for note in technician_notes %}
+- {{ note }}
+{% endfor %}

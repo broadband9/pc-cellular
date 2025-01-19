@@ -70,6 +70,7 @@ WSGI_APPLICATION = 'ezy_repair.wsgi.application'
 #         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -80,8 +81,6 @@ DATABASES = {
         "PORT": "5000",
     }
 }
-
-
 
 
 # Static files
@@ -101,3 +100,14 @@ LOGIN_URL = '/'
 LOGIN_EXEMPT_URLS = [
     '/',  # Exempt the login page
 ]
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "aoonsyed72@gmail.com"
+EMAIL_HOST_PASSWORD = "wiovunzhlgclkjlw"
+
+# Twilio configuration (optional, if needed for SMS)
+TWILIO_ACCOUNT_SID = 'your_twilio_account_sid'
+TWILIO_AUTH_TOKEN = 'your_twilio_auth_token'

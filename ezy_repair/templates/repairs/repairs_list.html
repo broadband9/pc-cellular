@@ -457,6 +457,7 @@ function close_customer_modal(){
                             </div>
                         </div>
                     </div>
+
                     <!-- Submit Button -->
                     <div class="mb-3">
                         <button type="submit" class="btn btn-primary w-100">Add Repair</button>
@@ -475,7 +476,7 @@ function close_customer_modal(){
     <div class="modal-dialog modal-dialog-scrollable modal-lg">
         <div class="modal-content bg-dark text-light">
             <div class="modal-header">
-                <h5 class="modal-title" id="viewRepairModalLabel{{ repair.id }}">Edit Repair</h5>
+                <h5 class="modal-title" id="viewRepairModalLabel{{ repair.id }}">View Repair</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -669,6 +670,16 @@ function close_customer_modal(){
 
         <!-- Dynamic notes list for each repair -->
         <div id="dynamic-notes-{{ repair.id }}"></div>
+        <div class="row">
+                        <div class=" mb-3 col-md-6">
+                            <input type="checkbox" class="form-check-input" id="sendAsSms-{{repair.id}}" name="sendAsSms">
+                            <label for="sendAsSms-{{repair.id}}" class="form-check-label">Send as SMS</label>
+                        </div>
+                        <div class=" mb-3 col-md-6">
+                            <input type="checkbox" class="form-check-input" id="sendAsEmail-{{repair.id}}" name="sendAsEmail">
+                            <label for="sendAsEmail-{{repair.id}}" class="form-check-label">Send as Email</label>
+                        </div>
+                    </div>
     </div>
 </div>
 
@@ -1093,8 +1104,21 @@ function saveNewNote(repairId, noteContainer) {
 // Delete a new note for a specific repair
 function deleteNewNote(repairId) {
     const noteElement = event.target.parentElement;
+
+    let noteText = noteElement.textContent
+        .replace(/Edit/g, '') // Remove "Edit"
+        .replace(/Delete/g, '') // Remove "Delete"
+        .trim(); // Trim extra spaces
+
+    console.log("Cleaned Note Text to Delete:", noteText); // Debugging
+
+    // Remove the note element from the UI
     noteElement.remove();
 
+    // Remove the note from the repairNotes dictionary
+    if (repairNotes[repairId]) {
+        repairNotes[repairId] = repairNotes[repairId].filter(note => note !== noteText);
+    }
     // If no dynamic notes exist, show "No notes available" message
     if (document.getElementById("dynamic-notes-" + repairId).children.length === 0) {
         document.getElementById("no-notes-message-" + repairId)?.classList.remove("d-none");
@@ -1105,7 +1129,9 @@ function deleteNewNote(repairId) {
 function saveChanges(repairId) {
 const status = document.getElementById(`statusview${repairId}`).value;
     const locationElement  = document.getElementById(`locationview${repairId}`).value;
-    console.log("location_ element", locationElement)
+    const send_sms  = document.getElementById(`sendAsSms-${repairId}`).checked;
+    const send_email  = document.getElementById(`sendAsEmail-${repairId}`).checked;
+    console.log("location_ element", locationElement, send_sms, send_email)
     let allNotes = [...(repairNotes[repairId] || [])]; // Start with the new notes
 
     // Get existing notes from the DOM that are not part of newNotes
@@ -1118,7 +1144,7 @@ const status = document.getElementById(`statusview${repairId}`).value;
     allNotes = allNotes.concat(filteredExistingNotes);
 
     console.log("all notes", allNotes);
-    if (allNotes.length > 0) {
+
         // Send the notes to the backend
         fetch('/repairs/save-notes/', {
             method: 'POST',
@@ -1130,7 +1156,9 @@ const status = document.getElementById(`statusview${repairId}`).value;
                 repair_id: repairId, // Send the repair id
                 notes: allNotes,
                 status: status, // Include selected status
-                location1: locationElement // Include selected location
+                location1: locationElement, // Include selected location
+                send_sms: send_sms,
+                send_email: send_email
             }),
         })
         .then(response => response.json())
@@ -1143,9 +1171,7 @@ const status = document.getElementById(`statusview${repairId}`).value;
             }
         })
         .catch(error => console.error('Error:', error));
-    } else {
-        alert("No notes to save.");
-    }
+
 }
 
     </script>
