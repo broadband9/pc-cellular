@@ -527,16 +527,16 @@ def save_notes(request):
                     tech_notes = TechnicianNotes.objects.create(notes=notes)
                     repair.technicianNotes = tech_notes
                     repair.save()
-
+            repair_data = {
+                'repair_number': repair.repair_number,
+                'device_type': repair.device_type,
+                'status': repair.status.name if repair.status else 'N/A',
+                'location': repair.location.name if repair.location else 'N/A',
+                'technician_notes': repair.technicianNotes.notes if repair.technicianNotes else [],
+            }
             if send_email and repair.customer.email:
                 subject = f"Repair Update: {repair.repair_number}"
-                repair_data = {
-                    'repair_number': repair.repair_number,
-                    'device_type': repair.device_type,
-                    'status': repair.status.name if repair.status else 'N/A',
-                    'location': repair.location.name if repair.location else 'N/A',
-                    'technician_notes': repair.technicianNotes.notes if repair.technicianNotes else [],
-                }
+
                 email_html_message = render_to_string('email_template.html', repair_data)
                 email_plain_message = strip_tags(email_html_message)
                 send_mail(
@@ -552,12 +552,15 @@ def save_notes(request):
                 account_sid = settings.TWILIO_ACCOUNT_SID  # Fetch Twilio SID from settings
                 auth_token = settings.TWILIO_AUTH_TOKEN  # Fetch Twilio Auth Token from settings
                 client = Client(account_sid, auth_token)
-                sms_message = render_to_string('sms_template.txt', repair)
-                client.messages.create(
-                    body=sms_message,
-                    from_='+1234567890',  # Replace with your Twilio phone number
-                    to='+0987654321'  # Replace with the customer's phone number
-                )
+                sms_message = render_to_string('sms_template.txt', repair_data)
+                try:
+                    client.messages.create(
+                        body=sms_message,
+                        from_='+1234567890',  # Replace with your Twilio phone number
+                        to='+0987654321'  # Replace with the customer's phone number
+                    )
+                except:
+                    print("Error in twillio")
 
             # Return a success response
             return JsonResponse({'success': True})
