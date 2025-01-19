@@ -556,8 +556,8 @@ def save_notes(request):
                 try:
                     client.messages.create(
                         body=sms_message,
-                        from_='+1234567890',  # Replace with your Twilio phone number
-                        to='+0987654321'  # Replace with the customer's phone number
+                        from_=settings.TWILIO_PHONE_NUMBER,  # Replace with your Twilio phone number
+                        to=repair.customer.phone  # Replace with the customer's phone number
                     )
                 except:
                     print("Error in twillio")

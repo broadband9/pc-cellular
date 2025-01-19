@@ -111,3 +111,4 @@ EMAIL_HOST_PASSWORD = "wiovunzhlgclkjlw"
 # Twilio configuration (optional, if needed for SMS)
 TWILIO_ACCOUNT_SID = 'your_twilio_account_sid'
 TWILIO_AUTH_TOKEN = 'your_twilio_auth_token'
+TWILIO_PHONE_NUMBER = 'your_phone_number'
