@@ -20,6 +20,9 @@ import json
 import random
 import string
 
+from .utils import send_email_with_smtp_go
+
+
 # Repairs
 @login_required
 def repairs_list(request):
@@ -582,12 +585,11 @@ def save_notes(request):
                 subject = f"Repair Update: {repair.repair_number}"
                 email_html_message = render_to_string('email_template.html', repair_data)
                 email_plain_message = strip_tags(email_html_message)
-                send_mail(
+                send_email_with_smtp_go(
                     subject,
                     email_plain_message,
-                    settings.EMAIL_HOST_USER,  # Sender email from settings
-                    [repair.customer.email],  # Recipient email
-                    html_message=email_html_message,
+                    email_html_message,
+                    repair.customer.email,  # Recipient email
                 )
 
             # Send SMS if requested

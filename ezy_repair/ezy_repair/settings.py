@@ -101,12 +101,16 @@ LOGIN_EXEMPT_URLS = [
     '/',  # Exempt the login page
 ]
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "aoonsyed72@gmail.com"
-EMAIL_HOST_PASSWORD = "wiovunzhlgclkjlw"
+# SMTP2GO Email Configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'mail.smtp2go.com'  # SMTP2GO SMTP server
+EMAIL_PORT = 587  # Use 587 for TLS
+EMAIL_USE_TLS = True  # Enable TLS
+EMAIL_USE_SSL = False  # Ensure this is False if TLS is True
+EMAIL_HOST_USER = ''  # Leave this empty
+EMAIL_HOST_PASSWORD = 'api-54537706B572476C853CED555A9EC29D'
+DEFAULT_FROM_EMAIL = 'noreply@9.technology'  # Default sender email
+
 
 # Twilio configuration (optional, if needed for SMS)
 TWILIO_ACCOUNT_SID = 'your_twilio_account_sid'
