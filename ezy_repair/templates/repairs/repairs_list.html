@@ -111,18 +111,21 @@ function printLabel(repairNumber) {
     printTab.document.write('body { font-family: Arial, sans-serif; font-size: 10px; margin: 0; padding: 0; height: 100%; }');
 
     // Label content style - Adjusted for better fit
-    printTab.document.write('.content { display: flex; justify-content: center; align-items: center; height: 100%; width: 100%; }');
-    printTab.document.write('.content p { margin: 0; padding: 0; white-space: nowrap; overflow: hidden; text-overflow: clip; }');
+    printTab.document.write('.content { display: flex; justify-content: center; align-items: center; height: 100%; width: 100%; text-align: center; overflow: hidden; }');
+    printTab.document.write('.content p { margin: 0; padding: 0; white-space: nowrap; overflow: hidden; text-overflow: clip; word-wrap: break-word; max-width: 100%; }');
     printTab.document.write('</style></head><body>');
+
+    // Adjust font size dynamically based on the length of the repair number
+    const fontSize = repairNumber.length > 10 ? '8px' : '10px'; // Smaller font for longer text
 
     // First page content (Label 1) - Repair Number in the same line
     printTab.document.write('<div class="content">');
-    printTab.document.write('<p>R/N: ' + repairNumber + '</p>');
+    printTab.document.write('<p style="font-size:' + fontSize + '">R/N: ' + repairNumber + '</p>');
     printTab.document.write('</div>');
 
     // Second page content (Label 2) - Repair Number in the same line
     printTab.document.write('<div class="content">');
-    printTab.document.write('<p>R/N: ' + repairNumber + '</p>');
+    printTab.document.write('<p style="font-size:' + fontSize + '">R/N: ' + repairNumber + '</p>');
     printTab.document.write('</div>');
 
     printTab.document.write('</body></html>');
@@ -200,6 +203,7 @@ function printLabel(repairNumber) {
 
         const customerDropdown = document.getElementById('customer');
         const parentModalElement = document.getElementById('addRepairModal');
+        const childModalElement = document.getElementById('addCustomerModal');
   const addCustomerModal = new bootstrap.Modal(document.getElementById('addCustomerModal'));
         customerDropdown.addEventListener('change', function () {
             const selectedValue = this.value;
@@ -209,10 +213,11 @@ function printLabel(repairNumber) {
                 const modalElement = document.getElementById(modalId);
                 const modalInstance = new bootstrap.Modal(modalElement);
                 modalInstance.show();
-                parentModalElement.classList.remove('show');
+<!--                parentModalElement.classList.remove('show');-->
     parentModalElement.setAttribute('aria-hidden', 'true');
     parentModalElement.style.display = 'none';
        addCustomerModal.show();
+       childModalElement.focus();
         }
         });
         const addCustomerForm = document.getElementById('addCustomerForm');
@@ -650,12 +655,53 @@ function close_customer_modal(){
         </label>
 
         <!-- Loop to display existing notes for each repair -->
-        {% for note in repair.technicianNotes.notes %}
-            <div id="note{{ repair.id }}-{{ forloop.counter }}" class="note-container">
-                <p class="form-control bg-dark text-light border-secondary mb-2" id="note-text{{ repair.id }}-{{ forloop.counter }}">
-                    {{ note }}
-                </p>
-            </div>
+        {% for note_data in repair.technicianNotes.notes %}
+    <div id="note{{ repair.id }}-{{ forloop.counter }}" class="card mb-1 border-dark bg-dark text-light">
+        <div class="card-body">
+            <p class="text-light-50 mb-2">
+                <strong>Note #{{ forloop.counter }}:</strong>
+            </p>
+            <!-- Display the note -->
+            <p class="form-control bg-dark text-light border-secondary mb-2" id="note-text{{ repair.id }}-{{ forloop.counter }}">
+                {{ note_data.note }}
+            </p>
+
+            <!-- Display the date and time -->
+            <p class="text-light-50 mb-2">
+                <small><i class="fa fa-clock"></i> Date and Time: {{ note_data.time|slice:":16" }}</small>
+            </p>
+
+            <!-- Display the delivery method -->
+            <p class="text-light-50 mb-2">
+                <small>
+                    <i class="fa fa-envelope"></i>
+                    {% if note_data.send_email and note_data.send_sms %}
+                        Sent as Email and SMS
+                    {% elif note_data.send_email %}
+                        Sent as Email
+                    {% elif note_data.send_sms %}
+                        Sent as SMS
+                    {% else %}
+                        Not Sent
+                    {% endif %}
+                </small>
+            </p>
+
+            <!-- Display the changes -->
+            {% if note_data.changes %}
+                <div class="mt-2">
+                    <p class="mb-1"><strong>Changes:</strong></p>
+                    <ul class="list-unstyled">
+                        {% for change in note_data.changes %}
+                            <li>
+                                <strong>{{ change.field }}:</strong> {{ change.before }} → {{ change.after }}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+    </div>
         {% empty %}
             <p id="no-notes-message" class="form-control bg-dark text-light border-secondary mb-2">
                 No notes available.
@@ -670,7 +716,7 @@ function close_customer_modal(){
 
         <!-- Dynamic notes list for each repair -->
         <div id="dynamic-notes-{{ repair.id }}"></div>
-        <div class="row">
+        <div id="actions-container-{{ repair.id }}" class="row d-none">
                         <div class=" mb-3 col-md-6">
                             <input type="checkbox" class="form-check-input" id="sendAsSms-{{repair.id}}" name="sendAsSms">
                             <label for="sendAsSms-{{repair.id}}" class="form-check-label">Send as SMS</label>
@@ -686,7 +732,7 @@ function close_customer_modal(){
 <!-- Save Changes button -->
 <div class="row">
     <div class="col-12">
-        <button type="button" class="btn btn-primary" onclick="saveChanges({{ repair.id }})">Save Changes</button>
+        <button type="button" id="save-changes-{{ repair.id }}" class="btn btn-primary d-none" onclick="saveChanges({{ repair.id }})">Save Changes</button>
     </div>
 </div>
 
@@ -1029,7 +1075,7 @@ function addNote(repairId) {
         // Hide the input area and clear it
         document.getElementById("new-note-" + repairId).value = "";
         document.getElementById("note-input-container-" + repairId).classList.add("d-none");
-
+        toggleActionButtons(repairId, true);
         // Hide the "No notes available" message if new notes are added
         document.getElementById("no-notes-message-" + repairId)?.classList.add("d-none");
     } else {
@@ -1123,6 +1169,9 @@ function deleteNewNote(repairId) {
     if (document.getElementById("dynamic-notes-" + repairId).children.length === 0) {
         document.getElementById("no-notes-message-" + repairId)?.classList.remove("d-none");
     }
+    if (!repairNotes[repairId] || repairNotes[repairId].length === 0) {
+        toggleActionButtons(repairId, false);
+    }
 }
 
 // Save changes (send notes to the backend) for a specific repair
@@ -1173,7 +1222,35 @@ const status = document.getElementById(`statusview${repairId}`).value;
         .catch(error => console.error('Error:', error));
 
 }
+    function toggleActionButtons(repairId, show) {
+    const actionsContainer = document.getElementById(`actions-container-${repairId}`);
+    const saveButton = document.getElementById(`save-changes-${repairId}`);
 
+    if (show) {
+        actionsContainer.classList.remove('d-none');
+        saveButton.classList.remove('d-none');
+    } else {
+        actionsContainer.classList.add('d-none');
+        saveButton.classList.add('d-none');
+    }
+
+}
+function handleOutsideClick(event) {
+    const modal = document.getElementById('addRepairModal');
+    const secondmodal = document.getElementById('addCustomerModal');
+    // Check if the modal is open and if the click is outside the modal
+    console.log("test", modal.classList.contains('show'))
+    if (modal.classList.contains('show') && !modal.contains(event.target)) {
+        console.log("in condition", !secondmodal.contains(event.target))
+         if (!secondmodal.contains(event.target)){
+            console.log("in second modal")
+            close_customer_modal();
+        }
+    }
+}
+
+// Add event listener to the document to listen for clicks outside the modal
+document.addEventListener('click', handleOutsideClick);
     </script>
 
 {% endblock %}

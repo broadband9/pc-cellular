@@ -1,50 +1,79 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
             font-family: Arial, sans-serif;
             line-height: 1.6;
         }
         .container {
-            padding: 20px;
-            background-color: #f9f9f9;
-            border: 1px solid #ddd;
-            border-radius: 8px;
+            width: 100%;
             max-width: 600px;
             margin: auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
         }
         .header {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        .section {
+            text-align: center;
             margin-bottom: 20px;
+        }
+        .header h1 {
+            color: #333;
+        }
+        .content {
+            margin-bottom: 20px;
+        }
+        .content p {
+            margin: 0 0 10px;
+        }
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #666;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">Repair Update: {{ repair_number }}</div>
-        <div class="section">
-            <strong>Device Type:</strong> {{ device_type }}
+        <div class="header">
+            <h1>Repair Update</h1>
         </div>
-        <div class="section">
-            <strong>Status:</strong> {{ status }}
-        </div>
-        <div class="section">
-            <strong>Location:</strong> {{ location }}
-        </div>
-        <div class="section">
-            <strong>Technician Notes:</strong>
+        <div class="content">
+            <p><strong>Repair Number:</strong> {{ repair_number }}</p>
+            <p><strong>Device Type:</strong> {{ device_type }}</p>
+            <p><strong>Current Status:</strong> {{ status }}</p>
+            <p><strong>Current Location:</strong> {{ location }}</p>
+
+            {% if changes %}
+            <h3>Changes:</h3>
             <ul>
-                {% for note in technician_notes %}
-                    <li>{{ note }}</li>
+                {% for change in changes %}
+                <li>
+                    <strong>{{ change.field }}:</strong>
+                    <em>{{ change.before }}</em> → <em>{{ change.after }}</em>
+                    (Updated at: {{ change.time }})
+                </li>
                 {% endfor %}
             </ul>
+            {% endif %}
+
+            {% if technician_notes %}
+            <h3>Technician Notes:</h3>
+            <ul>
+                {% for note in technician_notes %}
+                <li>
+                    {{ note.note }} (Added at: {{ note.time }})
+                    {% if note.send_email %}[Sent via Email]{% endif %}
+                    {% if note.send_sms %}[Sent via SMS]{% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+        <div class="footer">
+            <p>If you have any questions, please contact us at support@ezy_repair.com.</p>
         </div>
     </div>
 </body>

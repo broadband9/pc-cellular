@@ -1,8 +1,23 @@
-Repair Update: {{ repair_number }}
+Repair Update for Repair Number: {{ repair_number }}
+
 Device Type: {{ device_type }}
-Status: {{ status }}
-Location: {{ location }}
-Notes:
-{% for note in technician_notes %}
-- {{ note }}
+Current Status: {{ status }}
+Current Location: {{ location }}
+
+{% if changes %}
+Changes:
+{% for change in changes %}
+- {{ change.field }}: {{ change.before }} → {{ change.after }} (Updated at: {{ change.time }})
 {% endfor %}
+{% endif %}
+
+{% if technician_notes %}
+Technician Notes:
+{% for note in technician_notes %}
+- {{ note.note }} (Added at: {{ note.time }})
+{% if note.send_email %}[Sent via Email]{% endif %}
+{% if note.send_sms %}[Sent via SMS]{% endif %}
+{% endfor %}
+{% endif %}
+
+For more details, contact us at support@example.com.

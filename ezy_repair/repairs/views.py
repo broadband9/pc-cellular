@@ -13,6 +13,7 @@ from twilio.rest import Client
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 import datetime
+# from datetime import datetime
 from django.http import JsonResponse
 from django.db.models import Q
 import json
@@ -493,77 +494,119 @@ def add_customer(request):
         return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)
 
 
-@csrf_exempt  # Use only if you need to bypass CSRF protection (you can use Django CSRF middleware in production for security)
+@csrf_exempt  # Use only if you need to bypass CSRF protection (ensure CSRF protection in production for security)
 def save_notes(request):
     if request.method == 'POST':
         try:
             # Get data from the request body
             data = json.loads(request.body)
             repair_id = data.get('repair_id')
-            location = data.get('location1', [])
-            status = data.get('status', [])
+            location_id = data.get('location1', None)
+            status_id = data.get('status', None)
             send_email = data.get('send_email', False)
             send_sms = data.get('send_sms', False)
             notes = data.get('notes', [])
-            print("notes", notes, send_email, send_sms)
-            # Fetch the repair object by id
+
+            # Fetch the repair object by ID
             repair = Repair.objects.get(id=repair_id)
-            status = get_object_or_404(RepairStatus, id=status) if status else None
-            location = get_object_or_404(Location, id=location) if location else None
-            repair.status = status
-            repair.location = location
+
+            # Get the current status and location for comparison
+            previous_status = repair.status.name if repair.status else None
+            previous_location = repair.location.name if repair.location else None
+
+            # Update the status and location if provided
+            new_status = get_object_or_404(RepairStatus, id=status_id) if status_id else None
+            new_location = get_object_or_404(Location, id=location_id) if location_id else None
+            repair.status = new_status
+            repair.location = new_location
             repair.save()
-            # Optionally, you can clear existing notes and save new ones or append the new notes
-            # Clear existing notes (if desired) and create new ones
+
+            # Prepare log entry for changes in status and location
+            changes = []
+            if previous_status != (new_status.name if new_status else None):
+                changes.append({
+                    'field': 'Status',
+                    'before': previous_status,
+                    'after': new_status.name if new_status else 'N/A',
+                    'time': str(datetime.datetime.now())
+                })
+            if previous_location != (new_location.name if new_location else None):
+                changes.append({
+                    'field': 'Location',
+                    'before': previous_location,
+                    'after': new_location.name if new_location else 'N/A',
+                    'time': str(datetime.datetime.now())
+                })
+
+            # Log the notes
             if len(notes) > 0:
                 if repair.technicianNotes:
-                    already_notes = repair.technicianNotes.notes
-                    for a in notes:
-                        already_notes.append(a)
-                    repair.technicianNotes.notes = already_notes
+                    existing_notes = repair.technicianNotes.notes
+                    for note in notes:
+                        existing_notes.append({
+                            'note': note,
+                            'time': str(datetime.datetime.now()),
+                            'send_email': send_email,
+                            'send_sms': send_sms,
+                            'changes': changes
+                        })
+                    repair.technicianNotes.notes = existing_notes
                     repair.technicianNotes.save()
-                # Create new notes for the repair
-                if not repair.technicianNotes:
-                    tech_notes = TechnicianNotes.objects.create(notes=notes)
+                else:
+                    new_notes = [
+                        {
+                            'note': note,
+                            'time': str(datetime.datetime.now()),
+                            'send_email': send_email,
+                            'send_sms': send_sms,
+                            'changes': changes
+                        }
+                        for note in notes
+                    ]
+                    tech_notes = TechnicianNotes.objects.create(notes=new_notes)
                     repair.technicianNotes = tech_notes
                     repair.save()
+
+            # Prepare data for email/SMS
             repair_data = {
                 'repair_number': repair.repair_number,
                 'device_type': repair.device_type,
                 'status': repair.status.name if repair.status else 'N/A',
                 'location': repair.location.name if repair.location else 'N/A',
                 'technician_notes': repair.technicianNotes.notes if repair.technicianNotes else [],
+                'changes': changes
             }
+
+            # Send email if requested
             if send_email and repair.customer.email:
                 subject = f"Repair Update: {repair.repair_number}"
-
                 email_html_message = render_to_string('email_template.html', repair_data)
                 email_plain_message = strip_tags(email_html_message)
                 send_mail(
                     subject,
                     email_plain_message,
-                    settings.EMAIL_HOST_USER,  # Fetch sender email from settings
+                    settings.EMAIL_HOST_USER,  # Sender email from settings
                     [repair.customer.email],  # Recipient email
                     html_message=email_html_message,
                 )
 
-                    # Send SMS if requested
+            # Send SMS if requested
             if send_sms:
-                account_sid = settings.TWILIO_ACCOUNT_SID  # Fetch Twilio SID from settings
-                auth_token = settings.TWILIO_AUTH_TOKEN  # Fetch Twilio Auth Token from settings
+                account_sid = settings.TWILIO_ACCOUNT_SID  # Twilio SID from settings
+                auth_token = settings.TWILIO_AUTH_TOKEN  # Twilio Auth Token from settings
                 client = Client(account_sid, auth_token)
                 sms_message = render_to_string('sms_template.txt', repair_data)
                 try:
                     client.messages.create(
                         body=sms_message,
-                        from_=settings.TWILIO_PHONE_NUMBER,  # Replace with your Twilio phone number
-                        to=repair.customer.phone  # Replace with the customer's phone number
+                        from_=settings.TWILIO_PHONE_NUMBER,  # Twilio phone number
+                        to=repair.customer.phone  # Customer phone number
                     )
-                except:
-                    print("Error in twillio")
+                except Exception as sms_error:
+                    print(f"Twilio Error: {sms_error}")
 
             # Return a success response
-            return JsonResponse({'success': True})
+            return JsonResponse({'success': True, 'changes': changes})
         except Repair.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'Repair not found.'})
         except Exception as e:
