@@ -2,17 +2,17 @@ from django.core.mail import EmailMessage
 from django.core.mail.backends.smtp import EmailBackend
 from django.conf import settings
 
-from ezy_repair.ezy_repair.settings import EMAIL_HOST, EMAIL_PORT, EMAIL_HOST_USER, EMAIL_HOST_PASSWORD, EMAIL_USE_TLS
+# from ezy_repair.ezy_repair.settings import EMAIL_HOST, EMAIL_PORT, EMAIL_HOST_USER, EMAIL_HOST_PASSWORD, EMAIL_USE_TLS
 
 DEFAULT_FROM_EMAIL = 'noreply@9.technology'  # Default sender email
 
 def send_email_with_smtp_go(subject, plain_message, html_message, recipient_email):
     email_backend = EmailBackend(
-        host=EMAIL_HOST,
-        port=EMAIL_PORT,
-        username= EMAIL_HOST_USER,  # No username, leave empty
-        password= EMAIL_HOST_PASSWORD,  # Use API key here
-        use_tls=EMAIL_USE_TLS,
+        host=settings.EMAIL_HOST,
+        port=settings.EMAIL_PORT,
+        username=settings.EMAIL_HOST_USER,  # No username, leave empty
+        password=settings.EMAIL_HOST_PASSWORD,  # Use API key here
+        use_tls=settings.EMAIL_USE_TLS,
     )
 
     email = EmailMessage(

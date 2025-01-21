@@ -296,16 +296,58 @@ function close_customer_modal(){
                                 {% endfor %}
                             </select>
                         </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="passcode" class="form-label">Passcode</label>
+                                <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="passcode" name="passcode" required>
+                            </div>
+
+                    </div>
+                    <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="location" class="form-label">Location</label>
-                            <select class="form-control bg-dark text-light border-secondary" id="location" name="location" required>
-                                {% for location in locations %}
-                                    <option value="{{ location.id }}">{{ location.name }}</option>
+                        <label for="location" class="form-label">Site</label>
+                            <select class="form-control bg-dark text-light border-secondary" id="site" name="site" required>
+                                <option value="">Select a Site</option>
+                                {% for site in locations %}
+                                    <option value="{{ site.id }}">{{ site.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
-                    </div>
-                    <div id="mobile-tablet-fields" class="d-none">
+                        <div class="col-md-6 mb-3">
+                        <label for="location" class="form-label">Location</label>
+                            <select class="form-control bg-dark text-light border-secondary" id="location" name="location" required>
+                                <option value="" disabled selected>Select a Location</option>
+                            </select>
+                        </div>
+                        </div>
+<script>
+    const siteToLocations = {
+        {% for site in locations %}
+            "{{ site.id }}": [
+                {% for location in site.location_set.all %}
+                    { "id": "{{ location.id }}", "name": "{{ location.name }}" },
+                {% endfor %}
+            ],
+        {% endfor %}
+    };
+    document.getElementById('site').addEventListener('change', function () {
+        const siteId = this.value; // Get the selected site ID
+        const locationDropdown = document.getElementById('location');
+
+        // Clear existing options
+        locationDropdown.innerHTML = '<option value="" disabled selected>Select a Location</option>';
+
+        // Populate new options
+        if (siteToLocations[siteId]) {
+            siteToLocations[siteId].forEach(location => {
+                const option = document.createElement('option');
+                option.value = location.id;
+                option.textContent = location.name;
+                locationDropdown.appendChild(option);
+            });
+        }
+    });
+</script>                    <div id="mobile-tablet-fields" class="d-none">
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="imei" class="form-label">IMEI</label>
@@ -431,29 +473,19 @@ function close_customer_modal(){
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="issue_description" class="form-label">Issue Description</label>
-                            <textarea class="form-control bg-dark text-light border-secondary" id="issue_description" name="issue_description" rows="3" required></textarea>
-                        </div>
+
                         <div class="col-md-6 mb-3">
                             <label for="estimated_cost" class="form-label">Estimated Cost</label>
                             <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="estimated_cost" name="estimated_cost" required>
                         </div>
-                    </div>
-                    <!-- Estimated Cost and Signature -->
-                    <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="finalized_price" class="form-label">Finalized Cost</label>
                             <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="finalized_price" name="finalized_price" required>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="passcode" class="form-label">Passcode</label>
-                            <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="passcode" name="passcode" required>
-                        </div>
-
                     </div>
+                    <!-- Estimated Cost and Signature -->
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                         <div class="col-md-6 mb-3">
                             <label for="signatureCanvas_add" class="form-label">Signature</label>
                             <div class="signature-container border bg-light p-3 rounded">
                                 <canvas id="signatureCanvas_add" class="w-100" height="150"></canvas>
@@ -461,7 +493,12 @@ function close_customer_modal(){
                                 <input type="hidden" id="signatureImage_add" name="signatureImage_add">
                             </div>
                         </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="issue_description" class="form-label">Issue Description</label>
+                            <textarea class="form-control bg-dark text-light border-secondary" id="issue_description" name="issue_description" rows="3" required></textarea>
+                        </div>
                     </div>
+
 
                     <!-- Submit Button -->
                     <div class="mb-3">
@@ -511,9 +548,19 @@ function close_customer_modal(){
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
+                            <label for="passcode{{ repair.id }}" class="form-label">Passcode</label>
+                            <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="passcode1{{ repair.id }}" name="passcode" value="{{ repair.passcode }}" disabled>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="location{{ repair.id }}" class="form-label">Location</label>
+                            <input type="text" class="form-control bg-dark text-light border-secondary" id="viewsite{{ repair.id }}" name="site" value="{{ repair.site.name }}" disabled>
+                        </div>
+                        <div class="col-md-6 mb-3">
                             <label for="location{{ repair.id }}" class="form-label">Location</label>
                             <select class="form-control bg-dark text-light border-secondary" id="locationview{{ repair.id }}" name="locationview" required>
-                                {% for location in locations %}
+                                {% for location in repair.site.location_set.all %}
                                     <option value="{{ location.id }}" {% if location.id == repair.location.id %}selected{% endif %}>{{ location.name }}</option>
                                 {% endfor %}
                             </select>
@@ -628,25 +675,23 @@ function close_customer_modal(){
                     </div>
                     <!-- Issue Description and Estimated Cost -->
                     <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="issue_description{{ repair.id }}" class="form-label">Issue Description</label>
-                            <textarea class="form-control bg-dark text-light border-secondary" id="issue_description1{{ repair.id }}" name="issue_description" rows="3" disabled>{{ repair.issue_description }}</textarea>
-                        </div>
+
                         <div class="col-md-6 mb-3">
                             <label for="estimated_cost{{ repair.id }}" class="form-label">Estimated Cost</label>
                             <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="estimated_cost1{{ repair.id }}" name="estimated_cost" value="{{ repair.estimated_cost }}" disabled>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="finalized_price{{ repair.id }}" class="form-label">Finalized Cost</label>
+                            <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="finalized_price1{{ repair.id }}" name="finalized_price" value="{{ repair.finalized_price }}" disabled>
                         </div>
                     </div>
                     <!-- Finalized Price and Signature -->
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="finalized_price{{ repair.id }}" class="form-label">Finalized Cost</label>
-                            <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="finalized_price1{{ repair.id }}" name="finalized_price" value="{{ repair.finalized_price }}" disabled>
+                            <label for="issue_description{{ repair.id }}" class="form-label">Issue Description</label>
+                            <textarea class="form-control bg-dark text-light border-secondary" id="issue_description1{{ repair.id }}" name="issue_description" rows="3" disabled>{{ repair.issue_description }}</textarea>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="passcode{{ repair.id }}" class="form-label">Passcode</label>
-                            <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="passcode1{{ repair.id }}" name="passcode" value="{{ repair.passcode }}" disabled>
-                        </div>
+
                     </div>
 <div class="row">
     <div class="col-md-12 mb-3">
@@ -665,6 +710,11 @@ function close_customer_modal(){
             <p class="form-control bg-dark text-light border-secondary mb-2" id="note-text{{ repair.id }}-{{ forloop.counter }}">
                 {{ note_data.note }}
             </p>
+            {% if note_data.user %}
+        <p class="text-light-50 mb-2">
+            <small><i class="fa fa-user"></i> Created by: {{ note_data.user }}</small>
+        </p>
+    {% endif %}
 
             <!-- Display the date and time -->
             <p class="text-light-50 mb-2">
@@ -783,14 +833,50 @@ function close_customer_modal(){
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
+                            <label for="passcode{{ repair.id }}" class="form-label">Passcode</label>
+                            <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="passcode{{ repair.id }}" name="passcode" value="{{ repair.passcode }}" disabled>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="location{{ repair.id }}" class="form-label">Site</label>
+                            <select class="form-control bg-dark text-light border-secondary" id="site{{ repair.id }}" name="site" required>
+                                {% for site in locations %}
+                                    <option value="{{ site.id }}" {% if site.id == repair.site.id %}selected{% endif %}>{{ site.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
                             <label for="location{{ repair.id }}" class="form-label">Location</label>
                             <select class="form-control bg-dark text-light border-secondary" id="location{{ repair.id }}" name="location" required>
-                                {% for location in locations %}
-                                    <option value="{{ location.id }}" {% if location.id == repair.location.id %}selected{% endif %}>{{ location.name }}</option>
+                                {% for location in repair.site.location_set.all %}
+                                <option value="{{ location.id }}" {% if location.id == repair.location.id %}selected{% endif %}>{{ location.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
                     </div>
+                    <script>
+    document.getElementById('site{{ repair.id }}').addEventListener('change', function () {
+        const siteId = this.value; // Get the selected site ID
+        const locationDropdown = document.getElementById('location{{ repair.id }}');
+
+        // Clear existing options
+        locationDropdown.innerHTML = '<option value="" disabled selected>Select a Location</option>';
+
+        // Populate new options
+        if (siteToLocations[siteId]) {
+            siteToLocations[siteId].forEach(location => {
+                const option = document.createElement('option');
+                option.value = location.id;
+                option.textContent = location.name;
+                locationDropdown.appendChild(option);
+            });
+        }
+    });
+</script>
+
                     {% if repair.device_type == 'Mobile' or repair.device_type == 'Tablet' %}
                     <div id="mobile-tablet{{ repair.id }}" >
                         <div class="row">
@@ -900,26 +986,18 @@ function close_customer_modal(){
                     </div>
                     <!-- Issue Description and Estimated Cost -->
                     <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="issue_description{{ repair.id }}" class="form-label">Issue Description</label>
-                            <textarea class="form-control bg-dark text-light border-secondary" id="issue_description{{ repair.id }}" name="issue_description" rows="3" required>{{ repair.issue_description }}</textarea>
-                        </div>
+
                         <div class="col-md-6 mb-3">
                             <label for="estimated_cost{{ repair.id }}" class="form-label">Estimated Cost</label>
                             <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="estimated_cost{{ repair.id }}" name="estimated_cost" value="{{ repair.estimated_cost }}" required>
                         </div>
-                    </div>
-                    <!-- Finalized Price and Signature -->
-                    <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="finalized_price{{ repair.id }}" class="form-label">Finalized Cost</label>
                             <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="finalized_price{{ repair.id }}" name="finalized_price" value="{{ repair.finalized_price }}">
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="passcode{{ repair.id }}" class="form-label">Passcode</label>
-                            <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="passcode{{ repair.id }}" name="passcode" value="{{ repair.passcode }}" disabled>
-                        </div>
                     </div>
+                    <!-- Finalized Price and Signature -->
+
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="signatureCanvas{{ repair.id }}" class="form-label">Signature</label>
@@ -928,6 +1006,10 @@ function close_customer_modal(){
                                 <button type="button" class="btn btn-secondary btn-sm mt-2" id="clearCanvas{{ repair.id }}">Clear Signature</button>
                                 <input type="hidden" id="signatureImage{{ repair.id }}" name="signature_image" value="{{ repair.signature_image }}">
                             </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="issue_description{{ repair.id }}" class="form-label">Issue Description</label>
+                            <textarea class="form-control bg-dark text-light border-secondary" id="issue_description{{ repair.id }}" name="issue_description" rows="3" required>{{ repair.issue_description }}</textarea>
                         </div>
 
                     </div>

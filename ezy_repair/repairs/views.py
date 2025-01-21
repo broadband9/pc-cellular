@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import Repair, Location, Make, RepairStatus, ActivityLog, TechnicianNotes
+from .models import Repair, Location, Make, RepairStatus, ActivityLog, TechnicianNotes, Sites
 from customers.models import Customer
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.files.base import ContentFile
@@ -38,7 +38,9 @@ def repairs_list(request):
         repairs = paginator.page(paginator.num_pages)  # If page is out of range, show the last page
     statuses = RepairStatus.objects.all()
     customers = Customer.objects.all()
-    locations = Location.objects.all()
+    # locations = Location.objects.all()
+    locations = Sites.objects.prefetch_related('location_set').all()
+
     mob_yes = ['lens_lcd_damage', 'camera_lens_back_damage', 'risk_back', 'risk_biometric', 'button_function_ok', 'sim_removed', 'risk_lcd']
     lap_yes = ['keyboard_functional', 'screen_damage', 'hinge_damage', 'trackpad_functional']
     mandatory_yes = ['tampered', 'missing_part', 'power_up', 'liquid_damage']
@@ -58,6 +60,7 @@ def add_repair(request):
         location_id = request.POST.get("location")
         make_id = request.POST.get("make")
         model = request.POST.get("model")
+        site = request.POST.get("site")
         issue_description = request.POST.get("issue_description")
         estimated_cost = request.POST.get("estimated_cost")
         finalized_price = request.POST.get("finalized_price")
@@ -77,6 +80,7 @@ def add_repair(request):
         status = get_object_or_404(RepairStatus, id=status_id) if status_id else None
         location = get_object_or_404(Location, id=location_id) if location_id else None
         make = get_object_or_404(Make, id=make_id) if make_id else None
+        site = get_object_or_404(Sites, id=site) if make_id else None
         customer = get_object_or_404(Customer, id=customer_id)
         repair_number = f"ezy-{current_date}-{customer.first_name}-{passcode}"
 
@@ -95,7 +99,8 @@ def add_repair(request):
             liquid_damage=liquid_damage,
             power_up=power_up,
             missing_part=missing_part,
-            tampered=tampered
+            tampered=tampered,
+            site=site
         )
         if device_type == "Mobile" or "Tablet":
             imei = request.POST.get("imei")
@@ -146,6 +151,7 @@ def add_location(request):
     if request.method == 'POST':
         name = request.POST.get('name')
         address = request.POST.get('address')
+
         if name and address:
             location = Location.objects.create(name=name, address=address)
             ActivityLog.objects.create(description=f"Add Location name {location.name}.", user=request.user)
@@ -232,6 +238,7 @@ def edit_repair(request, pk):
         status_id = request.POST.get("status")
         location_id = request.POST.get("location")
         make_id = request.POST.get("make")
+        site_id = request.POST.get("site")
         model = request.POST.get("model")
         issue_description = request.POST.get("issue_description")
         estimated_cost = request.POST.get("estimated_cost")
@@ -250,6 +257,7 @@ def edit_repair(request, pk):
             ext = format.split('/')[-1]
             repair.signature.save(f"repair_{repair.id}_signature.{ext}", ContentFile(base64.b64decode(imgstr)))
         customer = get_object_or_404(Customer, id=customer_id)
+        site = get_object_or_404(Sites, id=site_id)
         status = get_object_or_404(RepairStatus, id=status_id) if status_id else None
         location = get_object_or_404(Location, id=location_id) if location_id else None
         make = get_object_or_404(Make, id=make_id) if make_id else None
@@ -267,6 +275,7 @@ def edit_repair(request, pk):
         repair.power_up = power_up
         repair.missing_part = missing_part
         repair.tampered = tampered
+        repair.site = site
 
         if repair.device_type == "Mobile" or "Tablet":
             imei = request.POST.get("imei")
@@ -318,7 +327,7 @@ def delete_repair(request, pk):
 # Locations
 @login_required
 def locations(request):
-    locations = Location.objects.all()
+    locations = Sites.objects.prefetch_related('location_set').all()
     page = request.GET.get('page', 1)  # Get the current page number from the request
     paginator = Paginator(locations, 10)  # 10 logs per page
 
@@ -457,6 +466,7 @@ def global_search(request):
 
     return JsonResponse({"results": results})
 
+
 @csrf_exempt
 def add_customer(request):
     if request.method == 'POST':
@@ -496,7 +506,7 @@ def add_customer(request):
     else:
         return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)
 
-
+@login_required
 @csrf_exempt  # Use only if you need to bypass CSRF protection (ensure CSRF protection in production for security)
 def save_notes(request):
     if request.method == 'POST':
@@ -509,6 +519,8 @@ def save_notes(request):
             send_email = data.get('send_email', False)
             send_sms = data.get('send_sms', False)
             notes = data.get('notes', [])
+
+            user = request.user
 
             # Fetch the repair object by ID
             repair = Repair.objects.get(id=repair_id)
@@ -531,14 +543,16 @@ def save_notes(request):
                     'field': 'Status',
                     'before': previous_status,
                     'after': new_status.name if new_status else 'N/A',
-                    'time': str(datetime.datetime.now())
+                    'time': str(datetime.datetime.now()),
+                    'user': user.username
                 })
             if previous_location != (new_location.name if new_location else None):
                 changes.append({
                     'field': 'Location',
                     'before': previous_location,
                     'after': new_location.name if new_location else 'N/A',
-                    'time': str(datetime.datetime.now())
+                    'time': str(datetime.datetime.now()),
+                    'user': user.username
                 })
 
             # Log the notes
@@ -551,7 +565,8 @@ def save_notes(request):
                             'time': str(datetime.datetime.now()),
                             'send_email': send_email,
                             'send_sms': send_sms,
-                            'changes': changes
+                            'changes': changes,
+                            'user': user.username
                         })
                     repair.technicianNotes.notes = existing_notes
                     repair.technicianNotes.save()
@@ -562,7 +577,8 @@ def save_notes(request):
                             'time': str(datetime.datetime.now()),
                             'send_email': send_email,
                             'send_sms': send_sms,
-                            'changes': changes
+                            'changes': changes,
+                            'user': user.username
                         }
                         for note in notes
                     ]
@@ -615,3 +631,62 @@ def save_notes(request):
             return JsonResponse({'success': False, 'error': str(e)})
 
     return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+
+@login_required
+def add_site(request):
+    if request.method == "POST":
+        site_name = request.POST.get("name")
+        location_names = request.POST.getlist("locations[]")
+        print("site name", site_name, location_names)
+        site = Sites.objects.create(name=site_name)
+        for location_name in location_names:
+            if location_name.strip():
+                Location.objects.create(name=location_name, site=site)
+
+    return redirect("locations")  # Change `site_list` to your listing view name
+
+    # return render(request, "add_site.html")
+
+
+@login_required
+def edit_site(request, pk):
+    site = get_object_or_404(Sites, id=pk)
+    locations = site.location_set.all()
+
+    if request.method == "POST":
+        site.name = request.POST.get("name")
+        site.save()
+        location_del = Location.objects.filter(site=site)
+        for a in location_del:
+            a.delete()
+        # Update existing locations
+        location_ids = request.POST.getlist("location_ids[]")
+        location_names = request.POST.getlist("locations[]")
+        print("locations ids", location_ids)
+        print("locations names", location_names)
+        for location_id, location_name in zip(location_ids, location_names):
+            # location = get_object_or_404(Location, id=location_id, site=site)
+            location = Location(site=site, name=location_name)
+            location.save()
+
+        # Add new locations
+        new_locations = request.POST.getlist("new_locations[]")
+        print("new locations", new_locations)
+        for new_location_name in new_locations:
+            if new_location_name.strip():
+                Location.objects.create(name=new_location_name, site=site)
+
+    return redirect("locations")  # Change `site_list` to your listing view name
+
+    # return render(request, "edit_site.html", {"site": site, "locations": locations})
+
+@login_required
+def delete_site(request, pk):
+    site = get_object_or_404(Sites, id=pk)
+
+    if request.method == "POST":
+        site.delete()
+    return redirect("locations")  # Change `site_list` to your listing view name
+
+    # return render(request, "delete_site.html", {"site": site})

@@ -13,9 +13,15 @@ class RepairStatus(models.Model):
         return self.name
 
 
+class Sites(models.Model):
+    name = models.CharField(max_length=100)
+    def __str__(self):
+        return self.name
+
 class Location(models.Model):
     name = models.CharField(max_length=100)
-    address = models.CharField(max_length=1000, default="")
+    site = models.ForeignKey(Sites, null=True, blank=True, on_delete=models.CASCADE)
+
 
     def __str__(self):
         return self.name
@@ -83,6 +89,7 @@ class Repair(models.Model):
 
     signature = models.ImageField(upload_to='signatures/', null=True, blank=True)  # New field for signature
     status = models.ForeignKey(RepairStatus, on_delete=models.SET_NULL, null=True, blank=True)
+    site = models.ForeignKey(Sites, on_delete=models.SET_NULL, null=True, blank=True)
     location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, blank=True)
     make = models.ForeignKey(Make, on_delete=models.SET_NULL, null=True, blank=True)
     model = models.CharField(max_length=100)
