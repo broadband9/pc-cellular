@@ -110,20 +110,20 @@ function printLabel(repairNumber) {
     printTab.document.write('@page { size: 38mm 90mm; margin: 0; page-break-after: always; }');
     printTab.document.write('body { font-family: Arial, sans-serif; font-size: 10px; margin: 0; padding: 0; height: 100%; }');
 
-    // Label content style - Adjusted for better fit
+    // Label content style - Adjusted for vertical text
     printTab.document.write('.content { display: flex; justify-content: center; align-items: center; height: 100%; width: 100%; text-align: center; overflow: hidden; }');
-    printTab.document.write('.content p { margin: 0; padding: 0; white-space: nowrap; overflow: hidden; text-overflow: clip; word-wrap: break-word; max-width: 100%; }');
+    printTab.document.write('.content p { margin: 0; padding: 0; writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; word-wrap: break-word; overflow: hidden; text-overflow: clip; }');
     printTab.document.write('</style></head><body>');
 
     // Adjust font size dynamically based on the length of the repair number
     const fontSize = repairNumber.length > 10 ? '8px' : '10px'; // Smaller font for longer text
 
-    // First page content (Label 1) - Repair Number in the same line
+    // First page content (Label 1) - Repair Number printed vertically
     printTab.document.write('<div class="content">');
     printTab.document.write('<p style="font-size:' + fontSize + '">R/N: ' + repairNumber + '</p>');
     printTab.document.write('</div>');
 
-    // Second page content (Label 2) - Repair Number in the same line
+    // Second page content (Label 2) - Repair Number printed vertically
     printTab.document.write('<div class="content">');
     printTab.document.write('<p style="font-size:' + fontSize + '">R/N: ' + repairNumber + '</p>');
     printTab.document.write('</div>');
@@ -136,6 +136,7 @@ function printLabel(repairNumber) {
         printTab.print();
     };
 }
+
 
 </script>
 
