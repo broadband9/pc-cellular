@@ -619,13 +619,17 @@ def save_notes(request):
             if send_email and repair.customer.email:
                 subject = f"Repair Update: {repair.repair_number}"
                 email_html_message = render_to_string('email_template.html', repair_data)
+                print(email_html_message)
                 email_plain_message = strip_tags(email_html_message)
-                send_email_with_smtp_go(
-                    subject,
-                    email_plain_message,
-                    email_html_message,
-                    repair.customer.email,  # Recipient email
-                )
+                try:
+                    send_email_with_smtp_go(
+                        subject,
+                        email_plain_message,
+                        email_html_message,
+                        repair.customer.email,  # Recipient email
+                    )
+                except Exception as e:
+                    print(f"Error in sending email {str(e)}")
 
             # Send SMS if requested
             if send_sms:
