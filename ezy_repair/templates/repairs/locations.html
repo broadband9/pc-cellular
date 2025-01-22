@@ -27,7 +27,7 @@
                 <td>{{ site.name }}</td>
                 <td>
                     <ul>
-                        {% for location in site.location_set.all %}
+                        {% for location in site.locations.all %}
                         <li>{{ location.name }}</li>
                         {% endfor %}
                     </ul>
@@ -45,6 +45,31 @@
         </tbody>
     </table>
 </div>
+<nav aria-label="Repairs log pagination">
+    <ul class="pagination justify-content-center">
+        {% if locations.has_previous %}
+            <li class="page-item">
+                <a class="page-link bg-dark text-light border-secondary" href="?page=1">&laquo; First</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link bg-dark text-light border-secondary" href="?page={{ locations.previous_page_number }}">Previous</a>
+            </li>
+        {% endif %}
+
+        <li class="page-item disabled">
+            <span class="page-link bg-dark text-light border-secondary">Page {{ locations.number }} of {{ locations.paginator.num_pages }}</span>
+        </li>
+
+        {% if locations.has_next %}
+            <li class="page-item">
+                <a class="page-link bg-dark text-light border-secondary" href="?page={{ locations.next_page_number }}">Next</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link bg-dark text-light border-secondary" href="?page={{ locations.paginator.num_pages }}">Last &raquo;</a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
 
 <!-- Add Site Modal -->
 <div class="modal fade" id="addSiteModal" tabindex="-1" aria-labelledby="addSiteModalLabel" aria-hidden="true">
@@ -109,7 +134,7 @@ function addLocationField() {
 
                     <!-- Locations -->
                     <div id="locationsContainer{{ site.id }}">
-                        {% for location in site.location_set.all %}
+                        {% for location in site.locations.all %}
                         <div class="mb-3 location-field">
                             <label for="location{{ location.id }}" class="form-label">Location {{ forloop.counter }}</label>
                             <input type="hidden" name="location_ids[]" value="{{ location.id }}">

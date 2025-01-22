@@ -67,6 +67,7 @@
                     {{ note.note }} (Added at: {{ note.time }})
                     {% if note.send_email %}[Sent via Email]{% endif %}
                     {% if note.send_sms %}[Sent via SMS]{% endif %}
+                    {% if note.user %}(user: {{note.user}}){% endif %}
                 </li>
                 {% endfor %}
             </ul>

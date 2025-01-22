@@ -325,7 +325,7 @@ function close_customer_modal(){
     const siteToLocations = {
         {% for site in locations %}
             "{{ site.id }}": [
-                {% for location in site.location_set.all %}
+                {% for location in site.locations.all %}
                     { "id": "{{ location.id }}", "name": "{{ location.name }}" },
                 {% endfor %}
             ],
@@ -561,7 +561,7 @@ function close_customer_modal(){
                         <div class="col-md-6 mb-3">
                             <label for="location{{ repair.id }}" class="form-label">Location</label>
                             <select class="form-control bg-dark text-light border-secondary" id="locationview{{ repair.id }}" name="locationview" required>
-                                {% for location in repair.site.location_set.all %}
+                                {% for location in repair.site.locations.all %}
                                     <option value="{{ location.id }}" {% if location.id == repair.location.id %}selected{% endif %}>{{ location.name }}</option>
                                 {% endfor %}
                             </select>
@@ -852,7 +852,7 @@ function close_customer_modal(){
                         <div class="col-md-6 mb-3">
                             <label for="location{{ repair.id }}" class="form-label">Location</label>
                             <select class="form-control bg-dark text-light border-secondary" id="location{{ repair.id }}" name="location" required>
-                                {% for location in repair.site.location_set.all %}
+                                {% for location in repair.site.locations.all %}
                                 <option value="{{ location.id }}" {% if location.id == repair.location.id %}selected{% endif %}>{{ location.name }}</option>
                                 {% endfor %}
                             </select>

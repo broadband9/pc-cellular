@@ -6,6 +6,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.files.base import ContentFile
 import base64
 from django.conf import settings
+from collections import defaultdict
 
 from django.views.decorators.csrf import csrf_exempt
 from django.core.mail import send_mail
@@ -39,7 +40,7 @@ def repairs_list(request):
     statuses = RepairStatus.objects.all()
     customers = Customer.objects.all()
     # locations = Location.objects.all()
-    locations = Sites.objects.prefetch_related('location_set').all()
+    locations = Sites.objects.prefetch_related('locations').all()
 
     mob_yes = ['lens_lcd_damage', 'camera_lens_back_damage', 'risk_back', 'risk_biometric', 'button_function_ok', 'sim_removed', 'risk_lcd']
     lap_yes = ['keyboard_functional', 'screen_damage', 'hinge_damage', 'trackpad_functional']
@@ -141,7 +142,7 @@ def add_repair(request):
             format, imgstr = signature_data.split(';base64,')
             ext = format.split('/')[-1]
             repair.signature.save(f"repair_{repair.id}_signature.{ext}", ContentFile(base64.b64decode(imgstr)))
-        ActivityLog.objects.create(description=f"Add repair with id {repair.id}", user=request.user)
+        ActivityLog.objects.create(description=f"Add repair  {repair.repair_number}", user=request.user)
 
     return redirect('repairs_list')
 
@@ -314,20 +315,20 @@ def edit_repair(request, pk):
             repair.operating_system = operating_system
 
         repair.save()
-        ActivityLog.objects.create(description=f"Edit repair with id {repair.id}", user=request.user)
+        ActivityLog.objects.create(description=f"Edit repair {repair.repair_number}", user=request.user)
     return redirect('repairs_list')
 
 @login_required
 def delete_repair(request, pk):
     repair = get_object_or_404(Repair, pk=pk)
-    ActivityLog.objects.create(description=f"Delete repair with id {repair.id}", user=request.user)
+    ActivityLog.objects.create(description=f"Delete repair {repair.repair_number}", user=request.user)
     repair.delete()
     return redirect('repairs_list')
 
 # Locations
 @login_required
 def locations(request):
-    locations = Sites.objects.prefetch_related('location_set').all()
+    locations = Sites.objects.prefetch_related('locations').all()
     page = request.GET.get('page', 1)  # Get the current page number from the request
     paginator = Paginator(locations, 10)  # 10 logs per page
 
@@ -435,7 +436,7 @@ def global_search(request):
         Q(device_type__icontains=query) |
         Q(repair_number__icontains=query)
     ).values(
-        'id', 'repair_number', 'model', 'imei', 'device_type',
+        'id', 'repair_number', 'model', 'imei', 'device_type', 'site__name',
         'customer__first_name', 'customer__last_name', 'status__name', 'make__name', 'status__name',
         'location__name', 'finalized_price', 'estimated_cost', 'lens_lcd_damage', 'camera_lens_back_damage',
         'camera_lens_back_damage', 'risk_back', 'risk_biometric', 'button_function_ok', 'sim_removed', 'risk_lcd',
@@ -451,17 +452,35 @@ def global_search(request):
         Q(name__icontains=query)
     ).values('id', 'name', 'description')
 
-    location_results = Location.objects.filter(
+    # Query to fetch data
+    query_results = Sites.objects.filter(
         Q(name__icontains=query)
-    ).values('id', 'name', 'address')
+    ).prefetch_related('locations').values('id', 'name', 'locations__id', 'locations__name')
 
+    # Group data by Sites
+    grouped_results = defaultdict(lambda: {'locations': []})
+    for result in query_results:
+        site_id = result['id']
+        if 'site_name' not in grouped_results[site_id]:
+            grouped_results[site_id]['site_name'] = result['name']
+        if result['locations__id']:
+            grouped_results[site_id]['locations'].append({
+                'id': result['locations__id'],
+                'name': result['locations__name'],
+            })
+
+    # Convert to list
+    output = [
+        {'site_id': site_id,  **data}
+        for site_id, data in grouped_results.items()
+    ]
     # Combine all results
     results = {
         "customers": list(customer_results),
         "repairs": list(repair_results),
         "makes": list(make_results),
         "statuses": list(status_results),
-        "locations": list(location_results),
+        "locations": output,
     }
 
     return JsonResponse({"results": results})
@@ -643,6 +662,8 @@ def add_site(request):
         for location_name in location_names:
             if location_name.strip():
                 Location.objects.create(name=location_name, site=site)
+        ActivityLog.objects.create(description=f"Add site {site.name}", user=request.user)
+
 
     return redirect("locations")  # Change `site_list` to your listing view name
 
@@ -652,7 +673,7 @@ def add_site(request):
 @login_required
 def edit_site(request, pk):
     site = get_object_or_404(Sites, id=pk)
-    locations = site.location_set.all()
+    locations = site.locations.all()
 
     if request.method == "POST":
         site.name = request.POST.get("name")
@@ -677,6 +698,9 @@ def edit_site(request, pk):
             if new_location_name.strip():
                 Location.objects.create(name=new_location_name, site=site)
 
+        ActivityLog.objects.create(description=f"Edit site {site.name} data", user=request.user)
+
+
     return redirect("locations")  # Change `site_list` to your listing view name
 
     # return render(request, "edit_site.html", {"site": site, "locations": locations})
@@ -686,6 +710,8 @@ def delete_site(request, pk):
     site = get_object_or_404(Sites, id=pk)
 
     if request.method == "POST":
+        ActivityLog.objects.create(description=f"Delete site {site.name}", user=request.user)
+
         site.delete()
     return redirect("locations")  # Change `site_list` to your listing view name
 

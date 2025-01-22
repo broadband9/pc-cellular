@@ -20,7 +20,7 @@ class Sites(models.Model):
 
 class Location(models.Model):
     name = models.CharField(max_length=100)
-    site = models.ForeignKey(Sites, null=True, blank=True, on_delete=models.CASCADE)
+    site = models.ForeignKey(Sites, null=True, blank=True, on_delete=models.CASCADE, related_name="locations")
 
 
     def __str__(self):

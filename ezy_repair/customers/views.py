@@ -16,9 +16,12 @@ def dashboard(request):
     # Example of fetching additional data for the dashboard
     repair_count = Repair.objects.all().count()  # Replace with actual query
     active_repair_count = 5  # Replace with actual query
-    activity_logs = []  # Replace with actual logs query
+    # activity_logs = []  # Replace with actual logs query
     statuses = {}
     fetch_status = RepairStatus.objects.all()
+    activities = ActivityLog.objects.order_by('-created_at')[:5]
+    print("check", activities.values('description', 'created_at'))
+
     statuses["Total"] = repair_count
     for obj in fetch_status:
         statuses[obj.name] = Repair.objects.filter(status=obj).count()
@@ -30,7 +33,7 @@ def dashboard(request):
         'customer_count': customer_count,
         'repair_count': repair_count,
         'active_repair_count': active_repair_count,
-        'activity_logs': activity_logs,
+        'activity_logs': activities,
         'statuses': statuses
     }
     return render(request, 'dashboard.html', context)
