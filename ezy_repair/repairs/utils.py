@@ -17,7 +17,7 @@ def send_email_with_smtp_go(subject, plain_message, html_message, recipient_emai
 
     email = EmailMessage(
         subject=subject,
-        body=plain_message,
+        body=html_message,
         from_email=settings.DEFAULT_FROM_EMAIL,
         to=[recipient_email],
         connection=email_backend,
