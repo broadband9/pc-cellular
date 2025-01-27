@@ -189,79 +189,97 @@ document.addEventListener('click', (event) => {
 
     // Loop through the notes and create cards
     data.technicianNotes__notes.forEach((note, index) => {
-        const cardDiv = document.createElement('div'); // Card container
-        cardDiv.classList.add('card-body');
+    // Create card container
+    const cardDiv = document.createElement('div');
+    cardDiv.classList.add('card', 'border-dark', 'bg-dark', 'text-light', 'mb-3');
+    cardDiv.id = `note${index + 1}`;
 
-        // Add Note #
-        const noteNumber = document.createElement('p');
-        noteNumber.classList.add('text-light-50', 'mb-2');
-        noteNumber.innerHTML = `<strong>Note #${index + 1}:</strong>`;
-        cardDiv.appendChild(noteNumber);
+    // Create card body
+    const cardBody = document.createElement('div');
+    cardBody.classList.add('card-body');
 
-        // Add Note Text
-        const noteText = document.createElement('p');
-        noteText.classList.add('form-control', 'bg-dark', 'text-light', 'border-secondary', 'mb-2');
-        noteText.id = `note-text-${index}`;
-        noteText.textContent = note.note || 'No note provided.';
-        cardDiv.appendChild(noteText);
+    // Add Note #
+    const noteNumber = document.createElement('p');
+    noteNumber.classList.add('text-light-50', 'mb-2');
+    noteNumber.innerHTML = `<strong>Note #${index + 1}:</strong>`;
+    cardBody.appendChild(noteNumber);
 
-        // Add User (if available)
-        if (note.user) {
-            const userText = document.createElement('p');
-            userText.classList.add('text-light-50', 'mb-2');
-            userText.innerHTML = `<small><i class="fa fa-user"></i> Created by: ${note.user}</small>`;
-            cardDiv.appendChild(userText);
-        }
+    // Add Note Text
+    const noteText = document.createElement('p');
+    noteText.classList.add('form-control', 'bg-dark', 'text-light', 'border-secondary', 'mb-2');
+    noteText.id = `note-text-${index}`;
+    noteText.textContent = note.note || 'No note provided.';
+    cardBody.appendChild(noteText);
 
-        // Add Date and Time
-        const dateTime = document.createElement('p');
-        dateTime.classList.add('text-light-50', 'mb-2');
-        dateTime.innerHTML = `<small><i class="fa fa-clock"></i> Date and Time: ${note.time ? note.time.slice(0, 16) : 'N/A'}</small>`;
-        cardDiv.appendChild(dateTime);
+    // Attributes row
+    const attributesRow = document.createElement('div');
+    attributesRow.classList.add('d-flex', 'flex-wrap', 'align-items-center', 'text-light-50', 'mb-2');
 
-        // Add Delivery Method
-        const deliveryMethod = document.createElement('p');
-        deliveryMethod.classList.add('text-light-50', 'mb-2');
-        let deliveryText = `<small><i class="fa fa-envelope"></i> `;
-        if (note.send_email && note.send_sms) {
-            deliveryText += 'Sent as Email and SMS';
-        } else if (note.send_email) {
-            deliveryText += 'Sent as Email';
-        } else if (note.send_sms) {
-            deliveryText += 'Sent as SMS';
-        } else {
-            deliveryText += 'Not Sent';
-        }
-        deliveryText += '</small>';
-        deliveryMethod.innerHTML = deliveryText;
-        cardDiv.appendChild(deliveryMethod);
+    // Add User (if available)
+    if (note.user) {
+        const userText = document.createElement('small');
+        userText.classList.add('me-3', 'd-flex', 'align-items-center');
+        userText.innerHTML = `<i class="fa fa-user me-1"></i> ${note.user}`;
+        attributesRow.appendChild(userText);
+    }
 
-        // Add Changes (if available)
-        if (note.changes && note.changes.length > 0) {
-            const changesDiv = document.createElement('div');
-            changesDiv.classList.add('mt-2');
+    // Add Date and Time
+    const dateTime = document.createElement('small');
+    dateTime.classList.add('me-3', 'd-flex', 'align-items-center');
+    dateTime.innerHTML = `<i class="fa fa-clock me-1"></i> ${note.time ? note.time.slice(0, 16) : 'N/A'}`;
+    attributesRow.appendChild(dateTime);
 
-            const changesTitle = document.createElement('p');
-            changesTitle.classList.add('mb-1');
-            changesTitle.innerHTML = '<strong>Changes:</strong>';
-            changesDiv.appendChild(changesTitle);
+    // Add Delivery Method
+    const deliveryMethod = document.createElement('small');
+    deliveryMethod.classList.add('d-flex', 'align-items-center');
+    let deliveryText = `<i class="fa fa-envelope me-1"></i> `;
+    if (note.send_email && note.send_sms) {
+        deliveryText += 'Email & SMS';
+    } else if (note.send_email) {
+        deliveryText += 'Email';
+    } else if (note.send_sms) {
+        deliveryText += 'SMS';
+    } else {
+        deliveryText += 'Not Sent';
+    }
+    deliveryMethod.innerHTML = deliveryText;
+    attributesRow.appendChild(deliveryMethod);
 
-            const changesList = document.createElement('ul');
-            changesList.classList.add('list-unstyled');
+    // Append attributes row to card body
+<!--    cardBody.appendChild(attributesRow);-->
 
-            note.changes.forEach(change => {
-                const changeItem = document.createElement('li');
-                changeItem.innerHTML = `<strong>${change.field}:</strong> ${change.before} → ${change.after}`;
-                changesList.appendChild(changeItem);
-            });
+    // Add Changes (if available)
+    if (note.changes && note.changes.length > 0) {
+        const changesDiv = document.createElement('div');
+        changesDiv.classList.add('d-flex', 'flex-wrap', 'mt-2');
+        changesDiv.style.marginLeft = '10px';
 
-            changesDiv.appendChild(changesList);
-            cardDiv.appendChild(changesDiv);
-        }
+        const changesTitle = document.createElement('p');
+        changesTitle.classList.add('mb-1', 'me-1');
+        changesTitle.innerHTML = '<strong>Changes:</strong>';
+        changesDiv.appendChild(changesTitle);
 
-        // Append the card to the container
-        notesDiv.appendChild(cardDiv);
-    });
+        const changesList = document.createElement('ul');
+        changesList.classList.add('list-inline', 'mb-0');
+
+        note.changes.forEach(change => {
+            const changeItem = document.createElement('li');
+            changeItem.classList.add('list-inline-item');
+            changeItem.innerHTML = `<strong>${change.field}:</strong> ${change.before} → ${change.after}`;
+            changesList.appendChild(changeItem);
+        });
+
+        changesDiv.appendChild(changesList);
+        attributesRow.appendChild(changesDiv);
+        cardBody.appendChild(attributesRow);
+    }
+
+    // Append card body to card container
+    cardDiv.appendChild(cardBody);
+
+    // Append the card to the container
+    notesDiv.appendChild(cardDiv);
+});
         } else {
             // If no notes, add a <p> tag with the value "No notes"
             const pTag = document.createElement('p');

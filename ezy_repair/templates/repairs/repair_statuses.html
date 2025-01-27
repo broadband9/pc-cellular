@@ -23,7 +23,7 @@
         <tbody>
             {% for status in statuses %}
             <tr>
-                <td>{{ status.id }}</td>
+                <td>{{ forloop.counter }}</td>
                 <td>{{ status.name }}</td>
                 <td>{{ status.description }}</td>
                 <td>

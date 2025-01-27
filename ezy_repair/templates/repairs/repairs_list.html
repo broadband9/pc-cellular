@@ -184,7 +184,7 @@ function printLabel(repairNumber) {
         <div class="modal-content bg-dark text-light">
             <div class="modal-header">
                 <h5 class="modal-title" id="addRepairModalLabel">Add New Repair</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" onclick="refreshPage()" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form method="post" action="{% url 'add_repair' %}" enctype="multipart/form-data">
@@ -258,12 +258,12 @@ function printLabel(repairNumber) {
                 // Optionally clear the form
                 addCustomerForm.reset();
             } else {
-                alert('Failed to add customer. Please try again.');
+                alert(data.error);
             }
         })
         .catch(error => {
             console.error('Error adding customer:', error);
-            alert('An error occurred. Please try again.');
+            alert('Error adding customer:', error);
         });
     });
 function close_customer_modal(){
@@ -556,7 +556,7 @@ function close_customer_modal(){
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="location{{ repair.id }}" class="form-label">Location</label>
+                            <label for="location{{ repair.id }}" class="form-label">Sites</label>
                             <input type="text" class="form-control bg-dark text-light border-secondary" id="viewsite{{ repair.id }}" name="site" value="{{ repair.site.name }}" disabled>
                         </div>
                         <div class="col-md-6 mb-3">
@@ -697,78 +697,84 @@ function close_customer_modal(){
                     </div>
 <div class="row">
     <div class="col-md-12 mb-3">
-        <label for="notes" class="form-label">Technician Notes
-            <button type="button" class="btn btn-sm btn-primary ms-2" id="add-note-btn-{{ repair.id }}" onclick="showNoteInput({{ repair.id }})">Add</button>
-        </label>
-
+        <label for="notes" class="form-label">Technician Notes</label>
+        <div class="mt-2"> <!-- Add margin-top for spacing -->
+        <label for="already_notes" class="form-label">Already:</label>
+    </div>
         <!-- Loop to display existing notes for each repair -->
         {% for note_data in repair.technicianNotes.notes %}
-    <div id="note{{ repair.id }}-{{ forloop.counter }}" class="card mb-1 border-dark bg-dark text-light">
+
+    <div id="note{{ repair.id }}-{{ forloop.counter }}" class="card border-dark bg-dark text-light">
         <div class="card-body">
-            <p class="text-light-50 mb-2">
+            <!-- Note text -->
+            <p class="text-light-50">
                 <strong>Note #{{ forloop.counter }}:</strong>
             </p>
-            <!-- Display the note -->
-            <p class="form-control bg-dark text-light border-secondary mb-2" id="note-text{{ repair.id }}-{{ forloop.counter }}">
-                {{ note_data.note }}
-            </p>
-            {% if note_data.user %}
-        <p class="text-light-50 mb-2">
-            <small><i class="fa fa-user"></i> Created by: {{ note_data.user }}</small>
-        </p>
-    {% endif %}
-
-            <!-- Display the date and time -->
-            <p class="text-light-50 mb-2">
-                <small><i class="fa fa-clock"></i> Date and Time: {{ note_data.time|slice:":16" }}</small>
+            <p class="form-control bg-dark text-light border-secondary" id="note-text{{ repair.id }}-{{ forloop.counter }}">
+                 {{ note_data.note }}
             </p>
 
-            <!-- Display the delivery method -->
-            <p class="text-light-50 mb-2">
-                <small>
-                    <i class="fa fa-envelope"></i>
+            <!-- Attributes row -->
+            <div class="d-flex flex-wrap align-items-center text-light-50">
+                {% if note_data.user %}
+                    <small class="me-3 d-flex align-items-center">
+                        <i class="fa fa-user me-1"></i> {{ note_data.user }}
+                    </small>
+                {% endif %}
+
+                <small class="me-3 d-flex align-items-center">
+                    <i class="fa fa-clock me-1"></i> {{ note_data.time|slice:":16" }}
+                </small>
+
+                <small class="d-flex align-items-center">
+                    <i class="fa fa-envelope me-1"></i>
                     {% if note_data.send_email and note_data.send_sms %}
-                        Sent as Email and SMS
+                        Email & SMS
                     {% elif note_data.send_email %}
-                        Sent as Email
+                        Email
                     {% elif note_data.send_sms %}
-                        Sent as SMS
+                        SMS
                     {% else %}
                         Not Sent
                     {% endif %}
                 </small>
-            </p>
 
-            <!-- Display the changes -->
+
+            <!-- Changes in the same row -->
             {% if note_data.changes %}
-                <div class="mt-2">
-                    <p class="mb-1"><strong>Changes:</strong></p>
-                    <ul class="list-unstyled">
+                <div class="d-flex flex-wrap mt-2" style="margin-left:10px">
+                    <p class="mb-1 me-1"><strong>Changes:</strong></p>
+                    <ul class="list-inline mb-0">
                         {% for change in note_data.changes %}
-                            <li>
+                            <li class="list-inline-item">
                                 <strong>{{ change.field }}:</strong> {{ change.before }} → {{ change.after }}
                             </li>
                         {% endfor %}
                     </ul>
                 </div>
             {% endif %}
+                </div>
         </div>
     </div>
-        {% empty %}
-            <p id="no-notes-message" class="form-control bg-dark text-light border-secondary mb-2">
-                No notes available.
-            </p>
-        {% endfor %}
+{% empty %}
+    <p id="no-notes-message" class="form-control bg-dark text-light border-secondary mb-2">
+        No notes available.
+    </p>
+{% endfor %}
+        <div class="mt-2"> <!-- Add margin-top for spacing -->
+        <label for="new_notes" class="form-label">New Notes:</label>
+    </div>
 
+        <!-- Dynamic notes list for each repair -->
+        <div id="dynamic-notes-{{ repair.id }}"></div>
         <!-- Text area for adding a new note, scoped to repair.id -->
-        <div id="note-input-container-{{ repair.id }}" class="d-none">
+        <div id="note-input-container-{{ repair.id }}" class="mt-2">
             <textarea class="form-control bg-dark text-light border-secondary mb-2" id="new-note-{{ repair.id }}" placeholder="Write your note here"></textarea>
             <button type="button" class="btn btn-success btn-sm mt-1" onclick="addNote({{ repair.id }})">Done</button>
         </div>
 
-        <!-- Dynamic notes list for each repair -->
-        <div id="dynamic-notes-{{ repair.id }}"></div>
-        <div id="actions-container-{{ repair.id }}" class="row d-none">
+
+        <div id="actions-container-{{ repair.id }}" class="row mt-2 d-none">
                         <div class=" mb-3 col-md-6">
                             <input type="checkbox" class="form-check-input" id="sendAsSms-{{repair.id}}" name="sendAsSms">
                             <label for="sendAsSms-{{repair.id}}" class="form-check-label">Send as SMS</label>
@@ -1158,7 +1164,7 @@ function addNote(repairId) {
 
         // Hide the input area and clear it
         document.getElementById("new-note-" + repairId).value = "";
-        document.getElementById("note-input-container-" + repairId).classList.add("d-none");
+<!--        document.getElementById("note-input-container-" + repairId).classList.add("d-none");-->
         toggleActionButtons(repairId, true);
         // Hide the "No notes available" message if new notes are added
         document.getElementById("no-notes-message-" + repairId)?.classList.add("d-none");
@@ -1335,6 +1341,9 @@ function handleOutsideClick(event) {
 
 // Add event listener to the document to listen for clicks outside the modal
 document.addEventListener('click', handleOutsideClick);
+    function refreshPage() {
+        window.location.reload(); // Reloads the current page
+    }
     </script>
 
 {% endblock %}

@@ -22,7 +22,7 @@
         <tbody>
             {% for make in makes %}
             <tr>
-                <td>{{ make.id }}</td>
+                <td>{{ forloop.counter }}</td>
                 <td>{{ make.name }}</td>
                 <td>
                     <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editMakeModal{{ make.id }}">

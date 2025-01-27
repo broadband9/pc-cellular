@@ -22,5 +22,5 @@ urlpatterns = [
     path('repair_statuses/', views.repair_statuses, name='repair_statuses'),
     path('activity_logs/', views.activity_logs, name='activity_logs'),
     path('api/global-search/', views.global_search, name='global_search'),
-    path('add-customer/', views.add_customer, name='add_customer'),
+    path('add-customer/', views.add_customer, name='add_customer1'),
 ]

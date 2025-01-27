@@ -7,6 +7,7 @@ from django.core.files.base import ContentFile
 import base64
 from django.conf import settings
 from collections import defaultdict
+from django.db import IntegrityError
 
 from django.views.decorators.csrf import csrf_exempt
 from django.core.mail import send_mail
@@ -517,7 +518,13 @@ def add_customer(request):
                     'last_name': customer.last_name,
                 }
             })
-
+        except IntegrityError:
+            # Handle duplicate phone number
+            error_message = f"Exception in adding customer. The phone number is already associated with another customer."
+            return JsonResponse({
+                'error': error_message,
+                'success': False,  # Pass customer data to display the list
+            }, status=400)
         except json.JSONDecodeError:
             return JsonResponse({'success': False, 'error': 'Invalid JSON data.'}, status=400)
         except Exception as e:

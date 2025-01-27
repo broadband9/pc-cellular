@@ -23,7 +23,7 @@
         <tbody>
             {% for site in locations %}
             <tr>
-                <td>{{ site.id }}</td>
+                <td>{{ forloop.counter }}</td>
                 <td>{{ site.name }}</td>
                 <td>
                     <ul>

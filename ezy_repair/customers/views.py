@@ -5,6 +5,7 @@ from .models import Customer
 from repairs.models import *
 from django.contrib import messages
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.db import IntegrityError
 
 # from repairs.models import Repair
 
@@ -70,7 +71,7 @@ def customers_list(request):
         customers = paginator.page(1)  # If page is not an integer, show the first page
     except EmptyPage:
         customers = paginator.page(paginator.num_pages)  # If page is out of range, show the last page
-    return render(request, 'customers/customers_list.html', {'customers': customers})
+    return render(request, 'customers/customers_list.html', {'customers': customers, 'messages': None})
 
 # Add Customer
 @login_required
@@ -81,9 +82,28 @@ def add_customer(request):
         email = request.POST.get('email')
         phone = request.POST.get('phone')
         postcode = request.POST.get('postcode')
-        customer = Customer.objects.create(first_name=first_name, last_name=last_name, email=email, phone=phone, postcode=postcode)
-        ActivityLog.objects.create(description=f"Add new customer {customer.first_name} {customer.last_name}", user=request.user)
-        return redirect('customers_list')
+
+        try:
+            customer = Customer.objects.create(
+                first_name=first_name,
+                last_name=last_name,
+                email=email,
+                phone=phone,
+                postcode=postcode
+            )
+            ActivityLog.objects.create(
+                description=f"Added new customer {customer.first_name} {customer.last_name}",
+                user=request.user
+            )
+            return redirect('customers_list')
+        except IntegrityError:
+            # Handle duplicate phone number
+            error_message = f"Exception in adding customer. The phone number {phone} is already associated with another customer."
+            customers = Customer.objects.all()  # Fetch customers to render the list view
+            return render(request, 'customers/customers_list.html', {
+                'messages': error_message,
+                'customers': customers,  # Pass customer data to display the list
+            })
     return redirect('customers_list')
 
 # Edit Customer
@@ -91,15 +111,24 @@ def add_customer(request):
 def edit_customer(request, pk):
     customer = Customer.objects.get(pk=pk)
     if request.method == 'POST':
-        customer.first_name = request.POST.get('first_name')
-        customer.last_name = request.POST.get('last_name')
-        customer.email = request.POST.get('email')
-        customer.phone = request.POST.get('phone')
-        customer.postcode = request.POST.get('postcode')
-        customer.save()
-        ActivityLog.objects.create(description=f"Edit customer {customer.first_name} {customer.last_name}", user=request.user)
+        phone = request.POST.get('phone')
+        try:
+            customer.first_name = request.POST.get('first_name')
+            customer.last_name = request.POST.get('last_name')
+            customer.email = request.POST.get('email')
+            customer.phone = request.POST.get('phone')
+            customer.postcode = request.POST.get('postcode')
+            customer.save()
+            ActivityLog.objects.create(description=f"Edit customer {customer.first_name} {customer.last_name}", user=request.user)
+        except IntegrityError:
+            # Handle duplicate phone number
+            error_message = f"Exception in updating Customer. The phone number {phone} is already associated with another customer."
+            customers = Customer.objects.all()  # Fetch customers to render the list view
+            return render(request, 'customers/customers_list.html', {
+                'messages': error_message,
+                'customers': customers,  # Pass customer data to display the list
+            })
 
-        return redirect('customers_list')
     return redirect('customers_list')
 
 # Delete Customer
