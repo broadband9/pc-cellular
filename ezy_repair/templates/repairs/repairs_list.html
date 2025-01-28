@@ -106,36 +106,35 @@ function printLabel(repairNumber) {
     printTab.document.write('<html><head><title>Print Label</title>');
     printTab.document.write('<style>');
 
-    // Define the page size (38mm x 90mm) and remove margins
-    printTab.document.write('@page { size: 38mm 90mm; margin: 0; page-break-after: always; }');
-    printTab.document.write('body { font-family: Arial, sans-serif; font-size: 10px; margin: 0; padding: 0; height: 100%; }');
+    // Define the page size (34mm x 92mm) and remove margins
+    printTab.document.write('@page { size: 34mm 92mm; margin: 0; page-break-after: always; }');
+    printTab.document.write('body { font-family: Arial, sans-serif; font-size: 10px; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100%; }');
 
-    // Label content style - Adjusted for vertical text
-    printTab.document.write('.content { display: flex; justify-content: center; align-items: center; height: 100%; width: 100%; text-align: center; overflow: hidden; }');
-    printTab.document.write('.content p { margin: 0; padding: 0; writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; word-wrap: break-word; overflow: hidden; text-overflow: clip; font-weight: bold; }');
+    // Label content style with vertical text
+    printTab.document.write('.content { width: 92mm; height: 34mm; display: flex; justify-content: center; align-items: center; text-align: center; overflow: hidden; position: relative; }');
+    printTab.document.write('.content p { margin: 0; padding: 5mm; font-weight: bold; white-space: nowrap; word-wrap: break-word; overflow: hidden; text-overflow: ellipsis; writing-mode: vertical-rl; transform: rotate(180deg); transform-origin: center; font-size: 14px; }');
     printTab.document.write('</style></head><body>');
 
     // Adjust font size dynamically based on the length of the repair number
-    const fontSize = repairNumber.length > 10 ? '12px' : '14px'; // Larger font size for better visibility
+    const fontSize = repairNumber.length > 10 ? '12px' : '14px'; // Larger font size for shorter text
 
-    // First page content (Label 1) - Repair Number printed vertically, bold, and larger
+    // First page content (Label 1) - Repair Number vertically aligned
     printTab.document.write('<div class="content">');
-    printTab.document.write('<p style="font-size:' + fontSize + '">R/N: ' + repairNumber + '</p>');
+    printTab.document.write('<p style="font-size:' + fontSize + '; padding: 2mm;">R/N: ' + repairNumber + '</p>');
     printTab.document.write('</div>');
 
-    // Second page content (Label 2) - Repair Number printed vertically, bold, and larger
-    printTab.document.write('<div class="content">');
-    printTab.document.write('<p style="font-size:' + fontSize + '">R/N: ' + repairNumber + '</p>');
-    printTab.document.write('</div>');
 
     printTab.document.write('</body></html>');
     printTab.document.close();
 
     // Wait for the tab to load and then trigger the print action
-    printTab.onload = function() {
+    printTab.onload = function () {
         printTab.print();
+        printTab.close(); // Close the tab after printing
     };
 }
+
+
 
 
 
