@@ -86,8 +86,8 @@
                 <button type="button" class="btn-close btn-close-white"  data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form method="post" action="{% url 'add_customer' %}">
-                    {% csrf_token %}
+                <form id="addCustomerForm">
+
                     <div class="mb-3">
                         <label for="first_name" class="form-label">First Name</label>
                         <input type="text" class="form-control bg-dark text-light border-secondary" id="first_name" name="first_name" required>
@@ -106,7 +106,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="postcode" class="form-label">Post Code</label>
-                        <input type="tel" class="form-control bg-dark text-light border-secondary" id="postcode" name="postcode" required>
+                        <input type="tel" class="form-control bg-dark text-light border-secondary" id="postcode" name="postcode">
                     </div>
                     <button type="submit" class="btn btn-primary">Add Customer</button>
                 </form>
@@ -126,8 +126,7 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form method="post" action="{% url 'edit_customer' customer.id %}">
-                        {% csrf_token %}
+                    <form method="post" id="customer-{{customer.id}}">
                         <div class="mb-3">
                             <label for="first_name{{ customer.id }}" class="form-label">First Name</label>
                             <input type="text" class="form-control bg-dark text-light border-secondary" id="first_name{{ customer.id }}" name="first_name" value="{{ customer.first_name }}" required>
@@ -177,4 +176,73 @@
         </div>
     </div>
 {% endfor %}
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+    // Select all edit customer forms
+    const editCustomerForms = document.querySelectorAll("form[id^='customer-']");
+
+    editCustomerForms.forEach((form) => {
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault(); // Prevent the default form submission
+
+            const formData = new FormData(form); // Get form data
+            const customerId = form.id.split("-")[1]; // Extract customer ID from form ID
+            const actionUrl = `/edit/${customerId}/`; // Construct the dynamic URL
+
+            try {
+                const response = await fetch(actionUrl, {
+                    method: "POST",
+                    body: formData,
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+
+                    if (data.success) {
+                        alert("Customer updated successfully.");
+                        window.location.reload(); // Reload to reflect changes
+                    } else {
+                        alert(data.message || "Failed to update customer.");
+                    }
+                } else {
+                    const data = await response.json();
+                    alert(data.message);
+                }
+            } catch (error) {
+                console.error("Error editing customer:", error);
+                alert("Error editing customer.");
+            }
+        });
+    });
+});
+const addCustomerForm = document.getElementById('addCustomerForm');
+    addCustomerForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // Gather form data
+        const formData = new FormData(this);
+
+        // Save customer via API or backend
+        fetch('/repairs/add-customer/', {
+            method: 'POST',
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert("Customer added successfully.")
+                // Hide the modal
+<!--                addCustomerModal.hide();-->
+                // Optionally clear the form
+                window.location.reload();
+            } else {
+                alert(data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error adding customer:', error);
+            alert('Error adding customer:', error);
+        });
+    });
+</script>
 {% endblock %}

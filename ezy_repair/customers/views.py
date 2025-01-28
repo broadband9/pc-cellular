@@ -6,6 +6,9 @@ from repairs.models import *
 from django.contrib import messages
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import IntegrityError
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
 
 # from repairs.models import Repair
 
@@ -108,6 +111,7 @@ def add_customer(request):
 
 # Edit Customer
 @login_required
+@csrf_exempt
 def edit_customer(request, pk):
     customer = Customer.objects.get(pk=pk)
     if request.method == 'POST':
@@ -120,16 +124,14 @@ def edit_customer(request, pk):
             customer.postcode = request.POST.get('postcode')
             customer.save()
             ActivityLog.objects.create(description=f"Edit customer {customer.first_name} {customer.last_name}", user=request.user)
+            return JsonResponse({'success': True, "message": "Customer added successfully."}, status=200)
         except IntegrityError:
             # Handle duplicate phone number
             error_message = f"Exception in updating Customer. The phone number {phone} is already associated with another customer."
-            customers = Customer.objects.all()  # Fetch customers to render the list view
-            return render(request, 'customers/customers_list.html', {
-                'messages': error_message,
-                'customers': customers,  # Pass customer data to display the list
-            })
+            # customers = Customer.objects.all()  # Fetch customers to render the list view
+            return JsonResponse({'success': False, 'message': error_message}, status=400)
 
-    return redirect('customers_list')
+    return JsonResponse({'success': False, 'message': "Something went wrong."}, status=500)
 
 # Delete Customer
 @login_required

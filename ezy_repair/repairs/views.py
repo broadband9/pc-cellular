@@ -533,7 +533,7 @@ def add_customer(request):
         return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)
 
 @login_required
-@csrf_exempt  # Use only if you need to bypass CSRF protection (ensure CSRF protection in production for security)
+@csrf_exempt
 def save_notes(request):
     if request.method == 'POST':
         try:
@@ -654,7 +654,7 @@ def save_notes(request):
                     print(f"Twilio Error: {sms_error}")
 
             # Return a success response
-            return JsonResponse({'success': True, 'changes': changes})
+            return JsonResponse({'success': True, 'changes': changes, "data": repair.technicianNotes.notes})
         except Repair.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'Repair not found.'})
         except Exception as e:

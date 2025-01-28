@@ -116,7 +116,8 @@ function printLabel(repairNumber) {
     printTab.document.write('</style></head><body>');
 
     // Adjust font size dynamically based on the length of the repair number
-    const fontSize = repairNumber.length > 10 ? '12px' : '14px'; // Larger font size for shorter text
+    const fontSize = repairNumber.length > 20 ? '8px' : '10px'; // Larger font size for shorter text
+
 
     // First page content (Label 1) - Repair Number vertically aligned
     printTab.document.write('<div class="content">');
@@ -701,6 +702,7 @@ function close_customer_modal(){
         <label for="already_notes" class="form-label">Already:</label>
     </div>
         <!-- Loop to display existing notes for each repair -->
+         <div id="note{{repair.id}}">
         {% for note_data in repair.technicianNotes.notes %}
 
     <div id="note{{ repair.id }}-{{ forloop.counter }}" class="card border-dark bg-dark text-light">
@@ -760,6 +762,7 @@ function close_customer_modal(){
         No notes available.
     </p>
 {% endfor %}
+</div>
         <div class="mt-2"> <!-- Add margin-top for spacing -->
         <label for="new_notes" class="form-label">New Notes:</label>
     </div>
@@ -769,11 +772,21 @@ function close_customer_modal(){
         <!-- Text area for adding a new note, scoped to repair.id -->
         <div id="note-input-container-{{ repair.id }}" class="mt-2">
             <textarea class="form-control bg-dark text-light border-secondary mb-2" id="new-note-{{ repair.id }}" placeholder="Write your note here"></textarea>
+            <div id="actions-container-{{ repair.id }}" class="row mt-2">
+                <div class=" mb-3 col-md-6">
+                    <input type="checkbox" class="form-check-input" id="sendAsSms-{{repair.id}}" name="sendAsSms">
+                    <label for="sendAsSms-{{repair.id}}" class="form-check-label">Send as SMS</label>
+                </div>
+                <div class=" mb-3 col-md-6">
+                    <input type="checkbox" class="form-check-input" id="sendAsEmail-{{repair.id}}" name="sendAsEmail">
+                    <label for="sendAsEmail-{{repair.id}}" class="form-check-label">Send as Email</label>
+                </div>
+            </div>
             <button type="button" class="btn btn-success btn-sm mt-1" onclick="addNote({{ repair.id }})">Done</button>
         </div>
 
 
-        <div id="actions-container-{{ repair.id }}" class="row mt-2 d-none">
+        <!-- <div id="actions-container-{{ repair.id }}" class="row mt-2 d-none">
                         <div class=" mb-3 col-md-6">
                             <input type="checkbox" class="form-check-input" id="sendAsSms-{{repair.id}}" name="sendAsSms">
                             <label for="sendAsSms-{{repair.id}}" class="form-check-label">Send as SMS</label>
@@ -782,15 +795,15 @@ function close_customer_modal(){
                             <input type="checkbox" class="form-check-input" id="sendAsEmail-{{repair.id}}" name="sendAsEmail">
                             <label for="sendAsEmail-{{repair.id}}" class="form-check-label">Send as Email</label>
                         </div>
-                    </div>
+                    </div> -->
     </div>
 </div>
 
 <!-- Save Changes button -->
 <div class="row">
-    <div class="col-12">
-        <button type="button" id="save-changes-{{ repair.id }}" class="btn btn-primary d-none" onclick="saveChanges({{ repair.id }})">Save Changes</button>
-    </div>
+    <!-- <div class="col-12"> -->
+        <button type="button" id="save-changes-{{ repair.id }}" class="btn btn-primary" onclick="saveChanges({{ repair.id }})">Done Changes</button>
+    <!-- </div> -->
 </div>
 
 
@@ -1149,24 +1162,175 @@ function addNote(repairId) {
             repairNotes[repairId] = [];
         }
         repairNotes[repairId].push(newNote);
+        const status = document.getElementById(`statusview${repairId}`).value;
+    const locationElement  = document.getElementById(`locationview${repairId}`).value;
+    const send_sms  = document.getElementById(`sendAsSms-${repairId}`).checked;
+    const send_email  = document.getElementById(`sendAsEmail-${repairId}`).checked;
+    console.log("location_ element", locationElement, send_sms, send_email)
+    let allNotes = [...(repairNotes[repairId] || [])]; // Start with the new notes
 
-        // Create a new note container with Edit and Delete buttons
-        const dynamicNotesDiv = document.getElementById("dynamic-notes-" + repairId);
-        const noteElement = document.createElement("div");
-        noteElement.className = "note-container";
-        noteElement.innerHTML = `
-            <p class="form-control bg-dark text-light border-secondary mb-2">${newNote}</p>
-            <button type="button" class="btn btn-sm btn-warning" onclick="editNewNote(${repairId})">Edit</button>
-            <button type="button" class="btn btn-sm btn-danger" onclick="deleteNewNote(${repairId})">Delete</button>
-        `;
-        dynamicNotesDiv.appendChild(noteElement);
+    // Get existing notes from the DOM that are not part of newNotes
+    const existingNotes = [...document.querySelectorAll(`#dynamic-notes-${repairId} p`)].map(p => p.textContent);
 
-        // Hide the input area and clear it
-        document.getElementById("new-note-" + repairId).value = "";
-<!--        document.getElementById("note-input-container-" + repairId).classList.add("d-none");-->
-        toggleActionButtons(repairId, true);
-        // Hide the "No notes available" message if new notes are added
-        document.getElementById("no-notes-message-" + repairId)?.classList.add("d-none");
+    // Filter out notes that are already in newNotes (to prevent duplicates)
+    const filteredExistingNotes = existingNotes.filter(note => !repairNotes[repairId]?.includes(note));
+
+    // Combine new notes with filtered existing notes
+    allNotes = allNotes.concat(filteredExistingNotes);
+
+    console.log("all notes", allNotes);
+
+        // Send the notes to the backend
+        fetch('/repairs/save-notes/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: JSON.stringify({
+                repair_id: repairId, // Send the repair id
+                notes: allNotes,
+                status: status, // Include selected status
+                location1: locationElement, // Include selected location
+                send_sms: send_sms,
+                send_email: send_email
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+    if (data.success) {
+        alert("Notes saved successfully!");
+        console.log("data", data);
+
+        const notesDiv = document.getElementById('note' + repairId);
+
+        // Clear the notesDiv before appending new notes
+        notesDiv.innerHTML = "";
+
+        if (data.data && data.data.length > 0) {
+            // Loop through the notes and create cards
+            data.data.forEach((note, index) => {
+                // Create card container
+                const cardDiv = document.createElement('div');
+                cardDiv.classList.add('card', 'border-dark', 'bg-dark', 'text-light', 'mb-3');
+                cardDiv.id = `note${index + 1}`;
+
+                // Create card body
+                const cardBody = document.createElement('div');
+                cardBody.classList.add('card-body');
+
+                // Add Note #
+                const noteNumber = document.createElement('p');
+                noteNumber.classList.add('text-light-50', 'mb-2');
+                noteNumber.innerHTML = `<strong>Note #${index + 1}:</strong>`;
+                cardBody.appendChild(noteNumber);
+
+                // Add Note Text
+                const noteText = document.createElement('p');
+                noteText.classList.add('form-control', 'bg-dark', 'text-light', 'border-secondary', 'mb-2');
+                noteText.id = `note-text-${index}`;
+                noteText.textContent = note.note || 'No note provided.';
+                cardBody.appendChild(noteText);
+
+                // Attributes row
+                const attributesRow = document.createElement('div');
+                attributesRow.classList.add('d-flex', 'flex-wrap', 'align-items-center', 'text-light-50', 'mb-2');
+
+                // Add User (if available)
+                if (note.user) {
+                    const userText = document.createElement('small');
+                    userText.classList.add('me-3', 'd-flex', 'align-items-center');
+                    userText.innerHTML = `<i class="fa fa-user me-1"></i> ${note.user}`;
+                    attributesRow.appendChild(userText);
+                }
+
+                // Add Date and Time
+                const dateTime = document.createElement('small');
+                dateTime.classList.add('me-3', 'd-flex', 'align-items-center');
+                dateTime.innerHTML = `<i class="fa fa-clock me-1"></i> ${note.time ? note.time.slice(0, 16) : 'N/A'}`;
+                attributesRow.appendChild(dateTime);
+
+                // Add Delivery Method
+                const deliveryMethod = document.createElement('small');
+                deliveryMethod.classList.add('d-flex', 'align-items-center');
+                let deliveryText = `<i class="fa fa-envelope me-1"></i> `;
+                if (note.send_email && note.send_sms) {
+                    deliveryText += 'Email & SMS';
+                } else if (note.send_email) {
+                    deliveryText += 'Email';
+                } else if (note.send_sms) {
+                    deliveryText += 'SMS';
+                } else {
+                    deliveryText += 'Not Sent';
+                }
+                deliveryMethod.innerHTML = deliveryText;
+                attributesRow.appendChild(deliveryMethod);
+
+                // cardBody.appendChild(attributesRow);
+
+                // Add Changes (if available)
+                if (note.changes && note.changes.length > 0) {
+                    const changesDiv = document.createElement('div');
+                    changesDiv.classList.add('d-flex', 'flex-wrap', 'mt-2');
+                    changesDiv.style.marginLeft = '10px';
+
+                    const changesTitle = document.createElement('p');
+                    changesTitle.classList.add('mb-1', 'me-1');
+                    changesTitle.innerHTML = '<strong>Changes:</strong>';
+                    changesDiv.appendChild(changesTitle);
+
+                    const changesList = document.createElement('ul');
+                    changesList.classList.add('list-inline', 'mb-0');
+
+                    note.changes.forEach(change => {
+                        const changeItem = document.createElement('li');
+                        changeItem.classList.add('list-inline-item');
+                        changeItem.innerHTML = `<strong>${change.field}:</strong> ${change.before} → ${change.after}`;
+                        changesList.appendChild(changeItem);
+                    });
+
+                    changesDiv.appendChild(changesList);
+                    attributesRow.appendChild(changesDiv);
+                }
+                cardBody.appendChild(attributesRow);
+
+                cardDiv.appendChild(cardBody);
+                notesDiv.appendChild(cardDiv);
+                
+            });
+
+        } else {
+            // If no notes, add a <p> tag with the value "No notes"
+            const pTag = document.createElement('p');
+            pTag.textContent = "No notes"; // Text to display if there are no notes
+            notesDiv.appendChild(pTag); // Append the <p> tag to the notes div
+        }
+        
+        removeNoteAndClear(repairId)
+    } else {
+        alert("Failed to save notes. Please try again.");
+    }
+})
+.catch(error => console.error('Error:', error));
+
+
+//         // Create a new note container with Edit and Delete buttons
+//         const dynamicNotesDiv = document.getElementById("dynamic-notes-" + repairId);
+//         const noteElement = document.createElement("div");
+//         noteElement.className = "note-container";
+//         noteElement.innerHTML = `
+//             <p class="form-control bg-dark text-light border-secondary mb-2">${newNote}</p>
+//             <button type="button" class="btn btn-sm btn-warning" onclick="editNewNote(${repairId})">Edit</button>
+//             <button type="button" class="btn btn-sm btn-danger" onclick="deleteNewNote(${repairId})">Delete</button>
+//         `;
+//         dynamicNotesDiv.appendChild(noteElement);
+
+//         // Hide the input area and clear it
+//         document.getElementById("new-note-" + repairId).value = "";
+// <!--        document.getElementById("note-input-container-" + repairId).classList.add("d-none");-->
+//         toggleActionButtons(repairId, true);
+//         // Hide the "No notes available" message if new notes are added
+//         document.getElementById("no-notes-message-" + repairId)?.classList.add("d-none");
     } else {
         alert("Please write a note before clicking Done.");
     }
@@ -1265,50 +1429,51 @@ function deleteNewNote(repairId) {
 
 // Save changes (send notes to the backend) for a specific repair
 function saveChanges(repairId) {
-const status = document.getElementById(`statusview${repairId}`).value;
-    const locationElement  = document.getElementById(`locationview${repairId}`).value;
-    const send_sms  = document.getElementById(`sendAsSms-${repairId}`).checked;
-    const send_email  = document.getElementById(`sendAsEmail-${repairId}`).checked;
-    console.log("location_ element", locationElement, send_sms, send_email)
-    let allNotes = [...(repairNotes[repairId] || [])]; // Start with the new notes
+    window.location.reload()
+// const status = document.getElementById(`statusview${repairId}`).value;
+//     const locationElement  = document.getElementById(`locationview${repairId}`).value;
+//     const send_sms  = document.getElementById(`sendAsSms-${repairId}`).checked;
+//     const send_email  = document.getElementById(`sendAsEmail-${repairId}`).checked;
+//     console.log("location_ element", locationElement, send_sms, send_email)
+//     let allNotes = [...(repairNotes[repairId] || [])]; // Start with the new notes
 
-    // Get existing notes from the DOM that are not part of newNotes
-    const existingNotes = [...document.querySelectorAll(`#dynamic-notes-${repairId} p`)].map(p => p.textContent);
+//     // Get existing notes from the DOM that are not part of newNotes
+//     const existingNotes = [...document.querySelectorAll(`#dynamic-notes-${repairId} p`)].map(p => p.textContent);
 
-    // Filter out notes that are already in newNotes (to prevent duplicates)
-    const filteredExistingNotes = existingNotes.filter(note => !repairNotes[repairId]?.includes(note));
+//     // Filter out notes that are already in newNotes (to prevent duplicates)
+//     const filteredExistingNotes = existingNotes.filter(note => !repairNotes[repairId]?.includes(note));
 
-    // Combine new notes with filtered existing notes
-    allNotes = allNotes.concat(filteredExistingNotes);
+//     // Combine new notes with filtered existing notes
+//     allNotes = allNotes.concat(filteredExistingNotes);
 
-    console.log("all notes", allNotes);
+//     console.log("all notes", allNotes);
 
-        // Send the notes to the backend
-        fetch('/repairs/save-notes/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}',
-            },
-            body: JSON.stringify({
-                repair_id: repairId, // Send the repair id
-                notes: allNotes,
-                status: status, // Include selected status
-                location1: locationElement, // Include selected location
-                send_sms: send_sms,
-                send_email: send_email
-            }),
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert("Notes saved successfully!");
-                location.reload(); // Reload the page to fetch the updated notes
-            } else {
-                alert("Failed to save notes. Please try again.");
-            }
-        })
-        .catch(error => console.error('Error:', error));
+//         // Send the notes to the backend
+//         fetch('/repairs/save-notes/', {
+//             method: 'POST',
+//             headers: {
+//                 'Content-Type': 'application/json',
+//                 'X-CSRFToken': '{{ csrf_token }}',
+//             },
+//             body: JSON.stringify({
+//                 repair_id: repairId, // Send the repair id
+//                 notes: allNotes,
+//                 status: status, // Include selected status
+//                 location1: locationElement, // Include selected location
+//                 send_sms: send_sms,
+//                 send_email: send_email
+//             }),
+//         })
+//         .then(response => response.json())
+//         .then(data => {
+//             if (data.success) {
+//                 alert("Notes saved successfully!");
+//                 location.reload(); // Reload the page to fetch the updated notes
+//             } else {
+//                 alert("Failed to save notes. Please try again.");
+//             }
+//         })
+//         .catch(error => console.error('Error:', error));
 
 }
     function toggleActionButtons(repairId, show) {
@@ -1335,6 +1500,22 @@ function handleOutsideClick(event) {
             console.log("in second modal")
             close_customer_modal();
         }
+    }
+}
+function removeNoteAndClear(repairId) {
+    // Get the value of the text area
+    const textArea = document.getElementById("new-note-" + repairId);
+    if (textArea) {
+        const noteText = textArea.value.trim(); // Get and trim the text area value
+
+        // Check if the note exists in the dictionary
+        if (repairNotes[repairId]) {
+            // Remove the note from the dictionary
+            repairNotes[repairId] = repairNotes[repairId].filter(note => note !== noteText);
+        }
+
+        // Clear the text area value
+        textArea.value = "";
     }
 }
 
