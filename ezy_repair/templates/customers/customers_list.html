@@ -83,7 +83,7 @@
         <div class="modal-content bg-dark text-light">
             <div class="modal-header">
                 <h5 class="modal-title" id="addCustomerModalLabel">Add New Customer</h5>
-                <button type="button" class="btn-close btn-close-white"  data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form id="addCustomerForm">
@@ -91,23 +91,33 @@
                     <div class="mb-3">
                         <label for="first_name" class="form-label">First Name</label>
                         <input type="text" class="form-control bg-dark text-light border-secondary" id="first_name" name="first_name" required>
+                        <div class="invalid-feedback">Only alphabets are allowed.</div>
                     </div>
+
                     <div class="mb-3">
                         <label for="last_name" class="form-label">Last Name</label>
                         <input type="text" class="form-control bg-dark text-light border-secondary" id="last_name" name="last_name" required>
+                        <div class="invalid-feedback">Only alphabets are allowed.</div>
                     </div>
+
                     <div class="mb-3">
                         <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control bg-dark text-light border-secondary" id="email" name="email">
+                        <input type="email" class="form-control bg-dark text-light border-secondary" id="email" name="email" >
+                        <div class="invalid-feedback">Enter a valid email address.</div>
                     </div>
+
                     <div class="mb-3">
                         <label for="phone" class="form-label">Phone</label>
                         <input type="tel" class="form-control bg-dark text-light border-secondary" id="phone" name="phone" required>
+                        <div class="invalid-feedback">Phone number should start with "+" and contain only numbers.</div>
                     </div>
+
                     <div class="mb-3">
                         <label for="postcode" class="form-label">Post Code</label>
-                        <input type="tel" class="form-control bg-dark text-light border-secondary" id="postcode" name="postcode">
+                        <input type="text" class="form-control bg-dark text-light border-secondary" id="postcode" name="postcode" >
+                        <div class="invalid-feedback">Postcode should be alphanumeric.</div>
                     </div>
+
                     <button type="submit" class="btn btn-primary">Add Customer</button>
                 </form>
             </div>
@@ -130,22 +140,27 @@
                         <div class="mb-3">
                             <label for="first_name{{ customer.id }}" class="form-label">First Name</label>
                             <input type="text" class="form-control bg-dark text-light border-secondary" id="first_name{{ customer.id }}" name="first_name" value="{{ customer.first_name }}" required>
+                            <div class="invalid-feedback">Only alphabets are allowed.</div>
                         </div>
                         <div class="mb-3">
                             <label for="last_name{{ customer.id }}" class="form-label">Last Name</label>
                             <input type="text" class="form-control bg-dark text-light border-secondary" id="last_name{{ customer.id }}" name="last_name" value="{{ customer.last_name }}" required>
+                            <div class="invalid-feedback">Only alphabets are allowed.</div>
                         </div>
                         <div class="mb-3">
                             <label for="email{{ customer.id }}" class="form-label">Email</label>
                             <input type="email" class="form-control bg-dark text-light border-secondary" id="email{{ customer.id }}" name="email" value="{{ customer.email }}" >
+                            <div class="invalid-feedback">Enter a valid email address.</div>
                         </div>
                         <div class="mb-3">
                             <label for="phone{{ customer.id }}" class="form-label">Phone</label>
                             <input type="tel" class="form-control bg-dark text-light border-secondary" id="phone{{ customer.id }}" name="phone" value="{{ customer.phone }}" required>
+                            <div class="invalid-feedback">Phone number should start with "+" and contain only numbers.</div>
                         </div>
                         <div class="mb-3">
                             <label for="postcode{{ customer.id }}" class="form-label">PostCode</label>
-                            <input type="tel" class="form-control bg-dark text-light border-secondary" id="postcode{{ customer.id }}" name="postcode" value="{{ customer.postcode }}" required>
+                            <input type="tel" class="form-control bg-dark text-light border-secondary" id="postcode{{ customer.id }}" name="postcode" value="{{ customer.postcode }}" >
+                            <div class="invalid-feedback">Postcode should be alphanumeric.</div>
                         </div>
                         <button type="submit" class="btn btn-primary">Save Changes</button>
                     </form>
@@ -184,9 +199,58 @@
     editCustomerForms.forEach((form) => {
         form.addEventListener("submit", async (event) => {
             event.preventDefault(); // Prevent the default form submission
+            const customerId = form.id.split("-")[1];
+            let isValid = true;
 
+            // First Name Validation
+            const firstName = document.getElementById(`first_name${customerId}`);
+            if (!/^[A-Za-z]+$/.test(firstName.value.trim())) {
+                firstName.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                firstName.classList.remove('is-invalid');
+            }
+
+            // Last Name Validation
+            const lastName = document.getElementById(`last_name${customerId}`);
+            if (!/^[A-Za-z]+$/.test(lastName.value.trim())) {
+                lastName.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                lastName.classList.remove('is-invalid');
+            }
+
+            // Email Validation
+            const email = document.getElementById(`email${customerId}`);
+            if (email.value.trim() !== "" && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email.value.trim())) {
+                email.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                email.classList.remove('is-invalid');
+            }
+
+            // Phone Validation (+ and numbers only)
+            const phone = document.getElementById(`phone${customerId}`);
+            if (!/^\+\d+$/.test(phone.value.trim())) {
+                phone.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                phone.classList.remove('is-invalid');
+            }
+
+            // Postcode Validation (Alphanumeric only)
+            const postcode = document.getElementById(`postcode${customerId}`);
+            if (postcode.value.trim() !== "" && !/^[A-Za-z0-9]+$/.test(postcode.value.trim())) {
+                postcode.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                postcode.classList.remove('is-invalid');
+            }
+            if (!isValid){
+                return
+            }
             const formData = new FormData(form); // Get form data
-            const customerId = form.id.split("-")[1]; // Extract customer ID from form ID
+             // Extract customer ID from form ID
             const actionUrl = `/edit/${customerId}/`; // Construct the dynamic URL
 
             try {
@@ -218,7 +282,55 @@
 const addCustomerForm = document.getElementById('addCustomerForm');
     addCustomerForm.addEventListener('submit', function (e) {
         e.preventDefault();
+        let isValid = true;
 
+        // First Name Validation
+        const firstName = document.getElementById('first_name');
+        if (!/^[A-Za-z]+$/.test(firstName.value.trim())) {
+            firstName.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            firstName.classList.remove('is-invalid');
+        }
+
+        // Last Name Validation
+        const lastName = document.getElementById('last_name');
+        if (!/^[A-Za-z]+$/.test(lastName.value.trim())) {
+            lastName.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            lastName.classList.remove('is-invalid');
+        }
+
+        // Email Validation
+        const email = document.getElementById('email');
+        if (email.value.trim() !== "" && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email.value.trim())) {
+            email.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            email.classList.remove('is-invalid');
+        }
+
+        // Phone Validation (+ and numbers only)
+        const phone = document.getElementById('phone');
+        if (!/^\+\d+$/.test(phone.value.trim())) {
+            phone.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            phone.classList.remove('is-invalid');
+        }
+
+        // Postcode Validation (Alphanumeric only)
+        const postcode = document.getElementById('postcode');
+        if (postcode.value.trim() !== "" && !/^[A-Za-z0-9]+$/.test(postcode.value.trim())) {
+            postcode.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            postcode.classList.remove('is-invalid');
+        }
+        if (!isValid){
+            return
+        }
         // Gather form data
         const formData = new FormData(this);
 
