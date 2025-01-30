@@ -100,8 +100,10 @@
 <script>
 function printLabel(repairNumber) {
     // Open a new tab for printing
+    const now = new Date();
+    const time = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
     const parts = repairNumber.split("-");
-    const date = parts[1] + "-" + parts[2] + "-" + parts[3]; // Extract date (YYYY-MM-DD)
+    const date = parts[3] + "/" + parts[2] + "/" + parts[1]; // Extract date (YYYY-MM-DD)
     const customer = parts[4]; // Extract customer first name
     const passCode = parts[5];
 
@@ -127,6 +129,7 @@ function printLabel(repairNumber) {
     // First page content (Label 1) - Repair Number vertically aligned
     printTab.document.write('<div class="content">');
     printTab.document.write('<p style="font-size:' + fontSize + '; padding: 2mm;">Date: ' + date + '</p>');
+    printTab.document.write('<p style="font-size:' + fontSize + '; padding: 2mm;">Time: ' + time + '</p>');
     printTab.document.write('<p style="font-size:' + fontSize + '; padding: 2mm;">Customer: ' + customer + '</p>');
     printTab.document.write('<p style="font-size:' + fontSize + '; padding: 2mm;">Pass code: ' + passCode + '</p>');
 
@@ -176,8 +179,8 @@ function printLabel(repairNumber) {
                     </div>
                     <div class="mb-3">
                         <label for="phone" class="form-label">Phone</label>
-                        <input type="tel" class="form-control bg-dark text-light border-secondary" id="phone" name="phone" required>
-                        <div class="invalid-feedback">Phone number should start with "+" and contain only numbers.</div>
+                        <input type="tel" class="form-control bg-dark text-light border-secondary" id="phone" name="phone" maxlength="15" required>
+                        <div class="invalid-feedback">Phone number should contain only numbers.</div>
                     </div>
                     <div class="mb-3">
                         <label for="postcode" class="form-label">Post Code</label>
@@ -268,11 +271,11 @@ function printLabel(repairNumber) {
 
         // Phone Validation (+ and numbers only)
         const phone = document.getElementById('phone');
-        if (!/^\+\d+$/.test(phone.value.trim())) {
-            phone.classList.add('is-invalid');
-            isValid = false;
-        } else {
-            phone.classList.remove('is-invalid');
+        if (!/^\+?\d{1,15}$/.test(phone.value.trim())) {  
+            phone.classList.add('is-invalid');  
+            isValid = false;  
+        } else {  
+            phone.classList.remove('is-invalid');  
         }
 
         // Postcode Validation (Alphanumeric only)
@@ -312,7 +315,7 @@ function printLabel(repairNumber) {
                 parentModalElement.classList.add('show');
                 parentModalElement.removeAttribute('aria-hidden');
                 parentModalElement.style.display = 'block';
-
+                alert("Customer added successfully.")
                 // Focus back on parent modal
                 parentModalElement.focus();
 

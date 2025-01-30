@@ -108,8 +108,8 @@
 
                     <div class="mb-3">
                         <label for="phone" class="form-label">Phone</label>
-                        <input type="tel" class="form-control bg-dark text-light border-secondary" id="phone" name="phone" required>
-                        <div class="invalid-feedback">Phone number should start with "+" and contain only numbers.</div>
+                        <input type="tel" class="form-control bg-dark text-light border-secondary" id="phone" name="phone" maxlength="15" required>
+                        <div class="invalid-feedback">Phone number should contain only numbers.</div>
                     </div>
 
                     <div class="mb-3">
@@ -154,8 +154,8 @@
                         </div>
                         <div class="mb-3">
                             <label for="phone{{ customer.id }}" class="form-label">Phone</label>
-                            <input type="tel" class="form-control bg-dark text-light border-secondary" id="phone{{ customer.id }}" name="phone" value="{{ customer.phone }}" required>
-                            <div class="invalid-feedback">Phone number should start with "+" and contain only numbers.</div>
+                            <input type="tel" class="form-control bg-dark text-light border-secondary" id="phone{{ customer.id }}" name="phone" value="{{ customer.phone }}" maxlength="15" required>
+                            <div class="invalid-feedback">Phone number should contain only numbers.</div>
                         </div>
                         <div class="mb-3">
                             <label for="postcode{{ customer.id }}" class="form-label">PostCode</label>
@@ -231,11 +231,11 @@
 
             // Phone Validation (+ and numbers only)
             const phone = document.getElementById(`phone${customerId}`);
-            if (!/^\+\d+$/.test(phone.value.trim())) {
-                phone.classList.add('is-invalid');
-                isValid = false;
-            } else {
-                phone.classList.remove('is-invalid');
+            if (!/^\+?\d{1,15}$/.test(phone.value.trim())) {  
+                phone.classList.add('is-invalid');  
+                isValid = false;  
+            } else {  
+                phone.classList.remove('is-invalid');  
             }
 
             // Postcode Validation (Alphanumeric only)
@@ -313,11 +313,11 @@ const addCustomerForm = document.getElementById('addCustomerForm');
 
         // Phone Validation (+ and numbers only)
         const phone = document.getElementById('phone');
-        if (!/^\+\d+$/.test(phone.value.trim())) {
-            phone.classList.add('is-invalid');
-            isValid = false;
-        } else {
-            phone.classList.remove('is-invalid');
+        if (!/^\+?\d{1,15}$/.test(phone.value.trim())) {  
+            phone.classList.add('is-invalid');  
+            isValid = false;  
+        } else {  
+            phone.classList.remove('is-invalid');  
         }
 
         // Postcode Validation (Alphanumeric only)
