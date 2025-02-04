@@ -171,8 +171,8 @@ document.addEventListener('click', (event) => {
         // Populate modal fields with the data
         document.getElementById('customer').value = data.customer__first_name + " " + data.customer__last_name || '';
         document.getElementById('device_type').value = data.device_type || '';
-        document.getElementById('status').value = data.status__name || '';
-        document.getElementById('location').value = data.location__name || '';
+        document.getElementById('status').value = data.status__id || '';
+        repair_id = data.id
         document.getElementById('make').value = data.make__name || '';
         document.getElementById('model').value = data.model || '';
         document.getElementById('issue_description').value = data.issue_description || '';
@@ -344,6 +344,28 @@ document.addEventListener('click', (event) => {
                 document.getElementById('screen_damage-no').checked = true
             }
         }
+        if(data.site__id){
+            const siteToLocations = {
+        {% for site in locations %}
+            "{{ site.id }}": [
+                {% for location in site.locations.all %}
+                    { "id": "{{ location.id }}", "name": "{{ location.name }}" },
+                {% endfor %}
+            ],
+        {% endfor %}
+    };
+            const locationDropdown = document.getElementById('location');
+
+        // Clear existing options
+        locationDropdown.innerHTML = '<option value="" disabled selected>Select a Location</option>';
+            siteToLocations[data.site__id].forEach(location => {
+                const option = document.createElement('option');
+                option.value = location.id;
+                option.textContent = location.name;
+                locationDropdown.appendChild(option);
+            });
+            document.getElementById('location').value = data.location__id || '';
+        }
         if(data.device_type === "Mobile" || data.device_type === "Tablet"){
             const mobileTabletFields = document.getElementById('mobile-tablet-fields');
             mobileTabletFields.classList.remove('d-none');
@@ -399,15 +421,13 @@ document.addEventListener('click', (event) => {
                 }
 
         // Disable the fields
-        document.getElementById('location').disabled = true;
+        
         document.getElementById('site_repair').disabled = true;
-        document.getElementById('status').disabled = true;
         document.getElementById('device_type').disabled = true;
         document.getElementById('customer').disabled = true;
         document.getElementById('make').disabled = true;
         document.getElementById('issue_description').disabled = true
         document.getElementById('estimated_cost').disabled = true
-        document.getElementById('finalized_price').disabled = true
         document.getElementById('passcode').disabled = true
 
         // Open the "statuses" modal
@@ -568,6 +588,7 @@ document.addEventListener('click', (event) => {
         const modal = document.getElementById('ViewRepairModal'); // Replace 'yourModalId' with the actual modal ID
         if (modal) {
             modal.style.display = 'none'; // Hide the modal (you can adjust this based on your modal structure)
+            repair_id = ""
         }
 
         // Reload the page
@@ -577,6 +598,7 @@ document.addEventListener('click', (event) => {
             <div class="modal-body">
                 <form>
                     <!-- Form Fields -->
+                     <h4>Device Info</h4>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="customer" class="form-label">Customer</label>
@@ -590,14 +612,15 @@ document.addEventListener('click', (event) => {
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="status" class="form-label">Status</label>
-                            <input type="text" class="form-control bg-dark text-light border-secondary" id="status" name="status">
+                            <label for="make" class="form-label">Make</label>
+                            <input type="text" class="form-control bg-dark text-light border-secondary" id="make" name="make" required>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="location" class="form-label">Location</label>
-                            <input type="text" class="form-control bg-dark text-light border-secondary" id="location" name="location">
+                            <label for="model" class="form-label">Model</label>
+                            <input type="text" class="form-control bg-dark text-light border-secondary" id="model" name="model" required>
                         </div>
                     </div>
+                    
                     <div id="mobile-tablet-fields" class="d-none">
                         <div class="row">
                             <div class="col-md-6 mb-3">
@@ -620,12 +643,10 @@ document.addEventListener('click', (event) => {
                                     </div>
                                     <div class="form-check">
                                         <input class="form-check-input" type="radio" name="risk_lcd" id="risk_lcd-no" value="False" disabled>
-                                        <label class="form-check-label" for="{{ field }}-no">No</label>
+                                        <label class="form-check-label" for="risk_lcd-no">No</label>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label">Sim Removed</label>
                                 <div class="d-flex">
@@ -640,6 +661,7 @@ document.addEventListener('click', (event) => {
                                 </div>
                             </div>
                         </div>
+                        
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label">Button Function Ok</label>
@@ -654,8 +676,6 @@ document.addEventListener('click', (event) => {
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label">Risk Biometric</label>
                                 <div class="d-flex">
@@ -670,6 +690,7 @@ document.addEventListener('click', (event) => {
                                 </div>
                             </div>
                         </div>
+                        
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label">Risk Back</label>
@@ -684,8 +705,6 @@ document.addEventListener('click', (event) => {
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label">Camera Lens/Back Damage</label>
                                 <div class="d-flex">
@@ -694,12 +713,13 @@ document.addEventListener('click', (event) => {
                                         <label class="form-check-label" for="camera_lens_back_damage-yes">Yes</label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="risk_lcd" id="camera_lens_back_damage-no" value="False" disabled>
+                                        <input class="form-check-input" type="radio" name="camera_lens_back_damage" id="camera_lens_back_damage-no" value="False" disabled>
                                         <label class="form-check-label" for="camera_lens_back_damage-no">No</label>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label">Lens Lcd Damage</label>
@@ -715,6 +735,7 @@ document.addEventListener('click', (event) => {
                                 </div>
                             </div>
                         </div>
+                        
 
 
 
@@ -753,22 +774,22 @@ document.addEventListener('click', (event) => {
                                     </div>
                                 </div>
                             </div>
+                        
+                        
+                            <div class="col-md-6">
+                                <label class="form-label">Hinge Damage</label>
+                                <div class="d-flex">
+                                    <div class="form-check me-3">
+                                        <input class="form-check-input" type="radio" name="hinge_damage" id="hinge_damage-yes" value="True" disabled>
+                                        <label class="form-check-label" for="hinge_damage-yes">Yes</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="hinge_damage" id="hinge_damage-no" value="False" disabled>
+                                        <label class="form-check-label" for="hinge_damage-no">No</label>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="row mb-3">
-    <div class="col-md-6">
-        <label class="form-label">Hinge Damage</label>
-        <div class="d-flex">
-            <div class="form-check me-3">
-                <input class="form-check-input" type="radio" name="hinge_damage" id="hinge_damage-yes" value="True" disabled>
-                <label class="form-check-label" for="hinge_damage-yes">Yes</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="radio" name="hinge_damage" id="hinge_damage-no" value="False" disabled>
-                <label class="form-check-label" for="hinge_damage-no">No</label>
-            </div>
-        </div>
-    </div>
-</div>
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label">Keyboard Functional</label>
@@ -783,8 +804,7 @@ document.addEventListener('click', (event) => {
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                         <div class="row mb-3">
+                        
                             <div class="col-md-6">
                                 <label class="form-label">Trackpad Working</label>
                                 <div class="d-flex">
@@ -818,22 +838,21 @@ document.addEventListener('click', (event) => {
                                 </div>
                             </div>
                         </div>
+                    
+                        <div class="col-md-6">
+                            <label class="form-label">Missing Parts</label>
+                            <div class="d-flex">
+                                <div class="form-check me-3">
+                                    <input class="form-check-input" type="radio" name="missing_part" id="missing_part-yes" value="True" disabled>
+                                    <label class="form-check-label" for="missing_part-yes">Yes</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="missing_part" id="missing_part-no" value="False" disabled>
+                                    <label class="form-check-label" for="missing_part-no">No</label>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="row mb-3">
-    <div class="col-md-6">
-        <label class="form-label">Missing Parts</label>
-        <div class="d-flex">
-            <div class="form-check me-3">
-                <input class="form-check-input" type="radio" name="missing_part" id="missing_part-yes" value="True" disabled>
-                <label class="form-check-label" for="missing_part-yes">Yes</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="radio" name="missing_part" id="missing_part-no" value="False" disabled>
-                <label class="form-check-label" for="missing_part-no">No</label>
-            </div>
-        </div>
-    </div>
-</div>
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label class="form-label">Power Up</label>
@@ -848,8 +867,7 @@ document.addEventListener('click', (event) => {
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="row mb-3">
+                    
                         <div class="col-md-6">
                             <label class="form-label">Liquid Damage</label>
                             <div class="d-flex">
@@ -864,45 +882,56 @@ document.addEventListener('click', (event) => {
                             </div>
                         </div>
                     </div>
-
-
+                    <h4>Repair Status</h4>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="make" class="form-label">Make</label>
-                            <input type="text" class="form-control bg-dark text-light border-secondary" id="make" name="make" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="model" class="form-label">Model</label>
-                            <input type="text" class="form-control bg-dark text-light border-secondary" id="model" name="model" required>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="issue_description" class="form-label">Issue Description</label>
-                            <textarea class="form-control bg-dark text-light border-secondary" id="issue_description" name="issue_description" rows="3" required></textarea>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="estimated_cost" class="form-label">Estimated Cost</label>
-                            <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="estimated_cost" name="estimated_cost" required>
-                        </div>
-
-                    </div>
-                    <!-- Estimated Cost and Signature -->
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="finalized_price" class="form-label">Finalized Cost</label>
-                            <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="finalized_price" name="finalized_price" required>
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-control bg-dark text-light border-secondary" id="status" name="status" required>
+                                {% for status in repair_statuses %}
+                                    <option value="{{ status.id }}">{{ status.name }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="passcode" class="form-label">Passcode</label>
                             <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="passcode" name="passcode" required>
                         </div>
-
+                        
                     </div>
                     <div class="row">
+                        
                         <div class="col-md-6 mb-3">
                             <label for="finalized_price" class="form-label">Site </label>
                             <input type="text" class="form-control bg-dark text-light border-secondary" id="site_repair" name="site_repair" disabled>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="location" class="form-label">Location</label>
+                                <select class="form-control bg-dark text-light border-secondary" id="location" name="location" required>
+                                    <option value="" disabled selected>Select a Location</option>
+                                </select>
+                            </div>
+
+                    </div>
+                    <h4>Costs</h4>
+                    <div class="row">
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="estimated_cost" class="form-label">Estimated Cost</label>
+                            <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="estimated_cost" name="estimated_cost" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="finalized_price" class="form-label">Finalized Cost</label>
+                            <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="finalized_price" name="finalized" >
+                        </div>
+
+                    </div>
+                    <!-- Estimated Cost and Signature -->
+                    
+                    <div class="row">
+                        
+                        <div class="col mb-3">
+                            <label for="issue_description" class="form-label">Issue Description</label>
+                            <textarea class="form-control bg-dark text-light border-secondary" id="issue_description" name="issue_description" rows="3" required></textarea>
                         </div>
                     </div>
                     <div class="row">
@@ -911,6 +940,20 @@ document.addEventListener('click', (event) => {
 
         <div id="notes" class="note-container">
 
+            </div>
+            <div id="note-input-container" class="mt-2">
+                <textarea class="form-control bg-dark text-light border-secondary mb-2" id="new-note" placeholder="Write your note here"></textarea>
+                <div id="actions-container" class="row mt-2">
+                    <div class=" mb-3 col-md-6">
+                        <input type="checkbox" class="form-check-input" id="sendAsSms" name="sendAsSms">
+                        <label for="sendAsSms" class="form-check-label">Send as SMS</label>
+                    </div>
+                    <div class=" mb-3 col-md-6">
+                        <input type="checkbox" class="form-check-input" id="sendAsEmail" name="sendAsEmail">
+                        <label for="sendAsEmail" class="form-check-label">Send as Email</label>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-success btn-sm mt-1" onclick="addNote()">Done</button>
             </div>
 
 
@@ -952,6 +995,179 @@ document.addEventListener('click', (event) => {
                 }
             }
         });
+    
+        
     });
+    let repair_id = ""
+    function addNote() {
+        if (repair_id === ""){
+            alert("Something went wrong")
+
+        }
+    const newNote = document.getElementById("new-note").value.trim();
+    if (newNote) {
+        // Add the note to the repair's notes array
+        
+        const status = document.getElementById(`status`).value;
+        const locationElement  = document.getElementById(`location`).value;
+    const finalizedElement  = document.getElementById(`finalized_price`).value;
+
+    const send_sms  = document.getElementById(`sendAsSms`).checked;
+    const send_email  = document.getElementById(`sendAsEmail`).checked;
+    console.log("location_ element", locationElement, send_sms, send_email)
+    let allNotes = [newNote]; // Start with the new notes
+
+    // Get existing notes from the DOM that are not part of newNotes
+    
+
+    // Filter out notes that are already in newNotes (to prevent duplicates)
+    
+
+    // Combine new notes with filtered existing notes
+    
+
+    console.log("all notes", allNotes);
+
+        // Send the notes to the backend
+        fetch('/repairs/save-notes/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: JSON.stringify({
+                repair_id: repair_id, // Send the repair id
+                notes: allNotes,
+                finalized: finalizedElement,
+                status: status, // Include selected status
+                location1: locationElement, // Include selected location
+                send_sms: send_sms,
+                send_email: send_email
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+    if (data.success) {
+        alert("Notes saved successfully!");
+        console.log("data", data);
+        document.getElementById("new-note").value=""
+
+        const notesDiv = document.getElementById('notes');
+
+        // Clear the notesDiv before appending new notes
+        notesDiv.innerHTML = "";
+
+        if (data.data && data.data.length > 0) {
+            // Loop through the notes and create cards
+            data.data.forEach((note, index) => {
+                // Create card container
+                const cardDiv = document.createElement('div');
+                cardDiv.classList.add('card', 'border-dark', 'bg-dark', 'text-light', 'mb-3');
+                cardDiv.id = `note${index + 1}`;
+
+                // Create card body
+                const cardBody = document.createElement('div');
+                cardBody.classList.add('card-body');
+
+                // Add Note #
+                const noteNumber = document.createElement('p');
+                noteNumber.classList.add('text-light-50', 'mb-2');
+                noteNumber.innerHTML = `<strong>Note #${index + 1}:</strong>`;
+                cardBody.appendChild(noteNumber);
+
+                // Add Note Text
+                const noteText = document.createElement('p');
+                noteText.classList.add('form-control', 'bg-dark', 'text-light', 'border-secondary', 'mb-2');
+                noteText.id = `note-text-${index}`;
+                noteText.textContent = note.note || 'No note provided.';
+                cardBody.appendChild(noteText);
+
+                // Attributes row
+                const attributesRow = document.createElement('div');
+                attributesRow.classList.add('d-flex', 'flex-wrap', 'align-items-center', 'text-light-50', 'mb-2');
+
+                // Add User (if available)
+                if (note.user) {
+                    const userText = document.createElement('small');
+                    userText.classList.add('me-3', 'd-flex', 'align-items-center');
+                    userText.innerHTML = `<i class="fa fa-user me-1"></i> ${note.user}`;
+                    attributesRow.appendChild(userText);
+                }
+
+                // Add Date and Time
+                const dateTime = document.createElement('small');
+                dateTime.classList.add('me-3', 'd-flex', 'align-items-center');
+                dateTime.innerHTML = `<i class="fa fa-clock me-1"></i> ${note.time ? note.time.slice(0, 16) : 'N/A'}`;
+                attributesRow.appendChild(dateTime);
+
+                // Add Delivery Method
+                const deliveryMethod = document.createElement('small');
+                deliveryMethod.classList.add('d-flex', 'align-items-center');
+                let deliveryText = `<i class="fa fa-envelope me-1"></i> `;
+                if (note.send_email && note.send_sms) {
+                    deliveryText += 'Email & SMS';
+                } else if (note.send_email) {
+                    deliveryText += 'Email';
+                } else if (note.send_sms) {
+                    deliveryText += 'SMS';
+                } else {
+                    deliveryText += 'Not Sent';
+                }
+                deliveryMethod.innerHTML = deliveryText;
+                attributesRow.appendChild(deliveryMethod);
+
+                // cardBody.appendChild(attributesRow);
+
+                // Add Changes (if available)
+                if (note.changes && note.changes.length > 0) {
+                    const changesDiv = document.createElement('div');
+                    changesDiv.classList.add('d-flex', 'flex-wrap', 'mt-2');
+                    changesDiv.style.marginLeft = '10px';
+
+                    const changesTitle = document.createElement('p');
+                    changesTitle.classList.add('mb-1', 'me-1');
+                    changesTitle.innerHTML = '<strong>Changes:</strong>';
+                    changesDiv.appendChild(changesTitle);
+
+                    const changesList = document.createElement('ul');
+                    changesList.classList.add('list-inline', 'mb-0');
+
+                    note.changes.forEach(change => {
+                        const changeItem = document.createElement('li');
+                        changeItem.classList.add('list-inline-item');
+                        changeItem.innerHTML = `<strong>${change.field}:</strong> ${change.before} → ${change.after}`;
+                        changesList.appendChild(changeItem);
+                    });
+
+                    changesDiv.appendChild(changesList);
+                    attributesRow.appendChild(changesDiv);
+                }
+                cardBody.appendChild(attributesRow);
+
+                cardDiv.appendChild(cardBody);
+                notesDiv.appendChild(cardDiv);
+                
+            });
+
+        } else {
+            // If no notes, add a <p> tag with the value "No notes"
+            const pTag = document.createElement('p');
+            pTag.textContent = "No notes"; // Text to display if there are no notes
+            notesDiv.appendChild(pTag); // Append the <p> tag to the notes div
+        }
+        
+        
+    } else {
+        alert("Failed to save notes. Please try again.");
+    }
+})
+.catch(error => console.error('Error:', error));
+
+
+
+    } else {
+        alert("Please write a note before clicking Done.");
+    }
+}
 </script>
 {% endblock %}

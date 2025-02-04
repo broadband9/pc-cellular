@@ -10,6 +10,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
 
+
 # from repairs.models import Repair
 
 
@@ -30,15 +31,18 @@ def dashboard(request):
     for obj in fetch_status:
         statuses[obj.name] = Repair.objects.filter(status=obj).count()
 
-
+    repair_statuses = RepairStatus.objects.all()
     print("statuses", statuses)
+    locations = Sites.objects.prefetch_related('locations').all()
 
     context = {
         'customer_count': customer_count,
         'repair_count': repair_count,
         'active_repair_count': active_repair_count,
         'activity_logs': activities,
-        'statuses': statuses
+        'statuses': statuses,
+        'repair_statuses': repair_statuses,
+        "locations": locations
     }
     return render(request, 'dashboard.html', context)
 

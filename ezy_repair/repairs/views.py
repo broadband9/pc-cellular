@@ -97,13 +97,14 @@ def add_repair(request):
             model=model,
             issue_description=issue_description,
             estimated_cost=estimated_cost,
-            finalized_price=finalized_price,
             liquid_damage=liquid_damage,
             power_up=power_up,
             missing_part=missing_part,
             tampered=tampered,
             site=site
         )
+        if finalized_price:
+            repair.finalized_price = finalized_price
         if device_type == "Mobile" or "Tablet":
             imei = request.POST.get("imei")
             lens_lcd_damage = request.POST.get("lens_lcd_damage")
@@ -437,8 +438,8 @@ def global_search(request):
         Q(device_type__icontains=query) |
         Q(repair_number__icontains=query)
     ).values(
-        'id', 'repair_number', 'model', 'imei', 'device_type', 'site__name',
-        'customer__first_name', 'customer__last_name', 'status__name', 'make__name', 'status__name',
+        'id', 'repair_number', 'model', 'imei', 'device_type', 'site__name', 'site__id',
+        'customer__first_name', 'customer__last_name', 'status__name', 'make__name', 'status__name', 'status__id', 'location__id',
         'location__name', 'finalized_price', 'estimated_cost', 'lens_lcd_damage', 'camera_lens_back_damage',
         'camera_lens_back_damage', 'risk_back', 'risk_biometric', 'button_function_ok', 'sim_removed', 'risk_lcd',
         'trackpad_functional', 'keyboard_functional', 'hinge_damage', 'screen_damage', 'liquid_damage', 'power_up',
@@ -542,6 +543,7 @@ def save_notes(request):
             repair_id = data.get('repair_id')
             location_id = data.get('location1', None)
             status_id = data.get('status', None)
+            finalized = data.get('finalized', None)
             send_email = data.get('send_email', False)
             send_sms = data.get('send_sms', False)
             notes = data.get('notes', [])
@@ -560,6 +562,8 @@ def save_notes(request):
             new_location = get_object_or_404(Location, id=location_id) if location_id else None
             repair.status = new_status
             repair.location = new_location
+            if finalized:
+                repair.finalized_price = finalized
             repair.save()
 
             # Prepare log entry for changes in status and location
