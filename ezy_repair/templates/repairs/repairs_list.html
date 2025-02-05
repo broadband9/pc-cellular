@@ -98,45 +98,121 @@
     </div>
 </div>
 <script>
-function printLabel(repairNumber) {
+    function printLabel(repairNumber) {
     const now = new Date();
     const time = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
     const parts = repairNumber.split("-");
-    const date = parts[3] + "/" + parts[2] + "/" + parts[1]; // Extract date (YYYY-MM-DD)
-    const customer = parts[4]; // Extract customer first name
+    const date = parts[3] + "/" + parts[2] + "/" + parts[1];
+    const customer = parts[4];
     const passCode = parts[5];
 
-    const printTab = window.open('', '_blank');
-    if (!printTab) {
-        alert('Pop-up blocked! Please allow pop-ups for this site.');
-        return;
-    }
+    const htmlContent = `
+        <html>
+            <head>
+                <title>Print Label</title>
+                <style>
+                    @page { 
+                        size: 34mm 92mm; 
+                        margin: 0; 
+                    }
+                    body { 
+                        font-family: Arial, sans-serif; 
+                        font-size: 10px; 
+                        margin: 0; 
+                        padding: 0; 
+                        display: flex; 
+                        justify-content: center; 
+                        align-items: center; 
+                        height: 100vh; 
+                    }
+                    .content { 
+                        width: 92mm; 
+                        height: 34mm; 
+                        display: flex; 
+                        justify-content: center; 
+                        align-items: center; 
+                        text-align: center; 
+                        overflow: hidden; 
+                    }
+                    .content p { 
+                        margin: 0; 
+                        padding: 2mm; 
+                        font-weight: bold; 
+                        white-space: nowrap; 
+                        writing-mode: vertical-rl; 
+                        transform: rotate(180deg); 
+                        font-size: 14px; 
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="content">
+                    <p>Date: ${date}</p>
+                    <p>Time: ${time}</p>
+                    <p>Customer: ${customer}</p>
+                    <p>Pass code: ${passCode}</p>
+                </div>
+            </body>
+        </html>
+    `;
 
-    printTab.document.write('<html><head><title>Print Label</title>');
-    printTab.document.write('<style>');
-    printTab.document.write('@page { size: 34mm 92mm; margin: 0; page-break-after: always; }');
-    printTab.document.write('body { font-family: Arial, sans-serif; font-size: 10px; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100%; }');
-    printTab.document.write('.content { width: 92mm; height: 34mm; display: flex; justify-content: center; align-items: center; text-align: center; overflow: hidden; position: relative; }');
-    printTab.document.write('.content p { margin: 0; padding: 5mm; font-weight: bold; white-space: nowrap; word-wrap: break-word; overflow: hidden; text-overflow: ellipsis; writing-mode: vertical-rl; transform: rotate(180deg); transform-origin: center; font-size: 14px; }');
-    printTab.document.write('</style></head><body>');
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = 'none';
+    document.body.appendChild(iframe);
 
-    printTab.document.write('<div class="content">');
-    printTab.document.write('<p style="font-size:14px; padding: 2mm;">Date: ' + date + '</p>');
-    printTab.document.write('<p style="font-size:14px; padding: 2mm;">Time: ' + time + '</p>');
-    printTab.document.write('<p style="font-size:14px; padding: 2mm;">Customer: ' + customer + '</p>');
-    printTab.document.write('<p style="font-size:14px; padding: 2mm;">Pass code: ' + passCode + '</p>');
-    printTab.document.write('</div>');
+    iframe.contentDocument.write(htmlContent);
+    iframe.contentDocument.close();
 
-    printTab.document.write('</body></html>');
-    printTab.document.close();
-
-    // Delay the print command
-    setTimeout(() => {
-        printTab.print();
-        printTab.close();
-    }, 500);
+    iframe.contentWindow.onload = () => {
+        setTimeout(() => {
+            iframe.contentWindow.print();
+            document.body.removeChild(iframe);
+        }, 1000); // Increased delay to ensure content loads
+    };
 }
+// function printLabel(repairNumber) {
+//     const now = new Date();
+//     const time = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+//     const parts = repairNumber.split("-");
+//     const date = parts[3] + "/" + parts[2] + "/" + parts[1]; // Extract date (YYYY-MM-DD)
+//     const customer = parts[4]; // Extract customer first name
+//     const passCode = parts[5];
 
+//     const printTab = window.open('', '_blank');
+//     if (!printTab) {
+//         alert('Pop-up blocked! Please allow pop-ups for this site.');
+//         return;
+//     }
+
+//     printTab.document.write('<html><head><title>Print Label</title>');
+//     printTab.document.write('<style>');
+//     printTab.document.write('@page { size: 34mm 92mm; margin: 0; page-break-after: always; }');
+//     printTab.document.write('body { font-family: Arial, sans-serif; font-size: 10px; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100%; }');
+//     printTab.document.write('.content { width: 92mm; height: 34mm; display: flex; justify-content: center; align-items: center; text-align: center; overflow: hidden; position: relative; }');
+//     printTab.document.write('.content p { margin: 0; padding: 5mm; font-weight: bold; white-space: nowrap; word-wrap: break-word; overflow: hidden; text-overflow: ellipsis; writing-mode: vertical-rl; transform: rotate(180deg); transform-origin: center; font-size: 14px; }');
+//     printTab.document.write('</style></head><body>');
+
+//     printTab.document.write('<div class="content">');
+//     printTab.document.write('<p style="font-size:14px; padding: 2mm;">Date: ' + date + '</p>');
+//     printTab.document.write('<p style="font-size:14px; padding: 2mm;">Time: ' + time + '</p>');
+//     printTab.document.write('<p style="font-size:14px; padding: 2mm;">Customer: ' + customer + '</p>');
+//     printTab.document.write('<p style="font-size:14px; padding: 2mm;">Pass code: ' + passCode + '</p>');
+//     printTab.document.write('</div>');
+
+//     printTab.document.write('</body></html>');
+//     printTab.document.close();
+
+//     // Delay the print command
+//     setTimeout(() => {
+//         printTab.print();
+//         printTab.close();
+//     }, 500);
+// }
 
 
 </script>

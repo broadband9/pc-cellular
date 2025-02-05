@@ -366,8 +366,9 @@ document.addEventListener('click', (event) => {
             });
             document.getElementById('location').value = data.location__id || '';
         }
+        const mobileTabletFields = document.getElementById('mobile-tablet-fields');
         if(data.device_type === "Mobile" || data.device_type === "Tablet"){
-            const mobileTabletFields = document.getElementById('mobile-tablet-fields');
+            
             mobileTabletFields.classList.remove('d-none');
             mobileTabletFields.classList.add('d-block');
             document.getElementById('network').value = data.network || '';
@@ -632,6 +633,7 @@ document.addEventListener('click', (event) => {
                                 <input type="text" class="form-control bg-dark text-light border-secondary" id="network" name="network">
                             </div>
                         </div>
+                        <h4>Diagnostic Data</h4>
 
                         <div class="row mb-3">
                             <div class="col-md-6">
@@ -759,6 +761,7 @@ document.addEventListener('click', (event) => {
                                 <input type="text" class="form-control bg-dark text-light border-secondary" id="storage" name="storage">
                             </div>
                         </div>
+                        <h4>Diagnostic Data</h4>
 
                         <div class="row mb-3">
                             <div class="col-md-6">
