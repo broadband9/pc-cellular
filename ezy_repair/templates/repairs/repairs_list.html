@@ -164,12 +164,121 @@
 //     }, 500);
 // }
 
+// function printLabel(repairNumber) {
+//     const now = new Date();
+//     const time = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+//     const parts = repairNumber.split("-");
+//     const date = parts[3] + "/" + parts[2] + "/" + parts[1];
+//     const customer = parts[4];
+//     const passCode = parts[5];
+
+//     const htmlContent = `
+//         <html>
+//             <head>
+//                 <title>Print Label</title>
+//                 <style>
+//                     @page { 
+//                         size: 34mm 92mm; 
+//                         margin: 0; 
+//                     }
+//                     body { 
+//                         font-family: Arial, sans-serif; 
+//                         font-size: 10px; 
+//                         margin: 0; 
+//                         padding: 0; 
+//                         display: flex; 
+//                         justify-content: center; 
+//                         align-items: center; 
+//                         height: 100vh; 
+//                     }
+//                     .content { 
+//                         width: 92mm; 
+//                         height: 34mm; 
+//                         display: flex; 
+//                         justify-content: center; 
+//                         align-items: center; 
+//                         text-align: center; 
+//                         overflow: hidden; 
+//                     }
+//                     .content p { 
+//                         margin: 0; 
+//                         padding: 2mm; 
+//                         font-weight: bold; 
+//                         white-space: nowrap; 
+//                         writing-mode: vertical-rl; 
+//                         transform: rotate(180deg); 
+//                         font-size: 14px; 
+//                     }
+//                 </style>
+//             </head>
+//             <body>
+//                 <div class="content">
+//                     <p>Date: ${date}</p>
+//                     <p>Time: ${time}</p>
+//                     <p>Customer: ${customer}</p>
+//                     <p>Pass code: ${passCode}</p>
+//                 </div>
+//             </body>
+//         </html>
+//     `;
+
+//     const iframe = document.createElement('iframe');
+//     iframe.style.position = 'fixed';
+//     iframe.style.right = '0';
+//     iframe.style.bottom = '0';
+//     iframe.style.width = '0';
+//     iframe.style.height = '0';
+//     iframe.style.border = 'none';
+//     document.body.appendChild(iframe);
+
+//     iframe.contentDocument.write(htmlContent);
+//     iframe.contentDocument.close();
+
+//     iframe.contentWindow.onload = () => {
+//         setTimeout(() => {
+//             iframe.contentWindow.focus();
+//             iframe.contentWindow.print();
+//             document.body.removeChild(iframe);
+//         }, 1000); // Increased delay to ensure content loads
+//     };
+// }
+
+function printHtml(html) {
+  // Create an iframe element
+  const iframe = document.createElement('iframe');
+  iframe.style.position = 'absolute';
+  iframe.style.width = '0';
+  iframe.style.height = '0';
+  iframe.style.border = 'none';
+
+  // Append the iframe to the body
+  document.body.appendChild(iframe);
+
+  // Write the content to the iframe
+  const doc = iframe.contentWindow?.document;
+  if (doc) {
+    doc.open();
+    doc.write(html);
+    doc.close();
+  }
+
+  // we need to use the print this way to be able to print in phones
+  setTimeout(() => {
+    window[0].focus();
+    window[0].print();
+    setTimeout(() => {
+      document.body.removeChild(iframe); // Clean up by removing
+    }, 500);
+  }, 500);
+}
+
+
 function printLabel(repairNumber) {
     const now = new Date();
     const time = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
     const parts = repairNumber.split("-");
     const date = parts[3] + "/" + parts[2] + "/" + parts[1];
-    const customer = parts[4];
+    const customer12 = parts[4];
     const passCode = parts[5];
 
     const htmlContent = `
@@ -215,32 +324,14 @@ function printLabel(repairNumber) {
                 <div class="content">
                     <p>Date: ${date}</p>
                     <p>Time: ${time}</p>
-                    <p>Customer: ${customer}</p>
+                    <p>Customer: ${customer12}</p>
                     <p>Pass code: ${passCode}</p>
                 </div>
             </body>
         </html>
     `;
 
-    const iframe = document.createElement('iframe');
-    iframe.style.position = 'fixed';
-    iframe.style.right = '0';
-    iframe.style.bottom = '0';
-    iframe.style.width = '0';
-    iframe.style.height = '0';
-    iframe.style.border = 'none';
-    document.body.appendChild(iframe);
-
-    iframe.contentDocument.write(htmlContent);
-    iframe.contentDocument.close();
-
-    iframe.contentWindow.onload = () => {
-        setTimeout(() => {
-            iframe.contentWindow.focus();
-            iframe.contentWindow.print();
-            document.body.removeChild(iframe);
-        }, 1000); // Increased delay to ensure content loads
-    };
+    printHtml(htmlContent); // Call the workaround function
 }
 
 </script>
