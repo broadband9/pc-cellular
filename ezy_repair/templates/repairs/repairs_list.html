@@ -243,18 +243,43 @@
 //     };
 // }
 
+<!--function printHtml(html) {-->
+<!--  // Create an iframe element-->
+<!--  const iframe = document.createElement('iframe');-->
+<!--  iframe.style.position = 'absolute';-->
+<!--  iframe.style.width = '0';-->
+<!--  iframe.style.height = '0';-->
+<!--  iframe.style.border = 'none';-->
+
+<!--  // Append the iframe to the body-->
+<!--  document.body.appendChild(iframe);-->
+
+<!--  // Write the content to the iframe-->
+<!--  const doc = iframe.contentWindow?.document;-->
+<!--  if (doc) {-->
+<!--    doc.open();-->
+<!--    doc.write(html);-->
+<!--    doc.close();-->
+<!--  }-->
+
+<!--  // we need to use the print this way to be able to print in phones-->
+<!--  setTimeout(() => {-->
+<!--    window[0].focus();-->
+<!--    window[0].print();-->
+<!--    setTimeout(() => {-->
+<!--      document.body.removeChild(iframe); // Clean up by removing-->
+<!--    }, 500);-->
+<!--  }, 500);-->
+<!--}-->
+
 function printHtml(html) {
-  // Create an iframe element
   const iframe = document.createElement('iframe');
   iframe.style.position = 'absolute';
   iframe.style.width = '0';
   iframe.style.height = '0';
   iframe.style.border = 'none';
-
-  // Append the iframe to the body
   document.body.appendChild(iframe);
 
-  // Write the content to the iframe
   const doc = iframe.contentWindow?.document;
   if (doc) {
     doc.open();
@@ -262,12 +287,11 @@ function printHtml(html) {
     doc.close();
   }
 
-  // we need to use the print this way to be able to print in phones
   setTimeout(() => {
-    window[0].focus();
-    window[0].print();
+    // Use the iframe's contentWindow to print
+    iframe.contentWindow?.print();
     setTimeout(() => {
-      document.body.removeChild(iframe); // Clean up by removing
+      document.body.removeChild(iframe);
     }, 500);
   }, 500);
 }
