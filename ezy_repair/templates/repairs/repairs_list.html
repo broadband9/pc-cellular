@@ -272,11 +272,37 @@
 <!--  }, 500);-->
 <!--}-->
 
+<!--function printHtml(html) {-->
+<!--  const iframe = document.createElement('iframe');-->
+<!--  iframe.style.position = 'absolute';-->
+<!--  iframe.style.width = '0';-->
+<!--  iframe.style.height = '0';-->
+<!--  iframe.style.border = 'none';-->
+<!--  document.body.appendChild(iframe);-->
+
+<!--  const doc = iframe.contentWindow?.document;-->
+<!--  if (doc) {-->
+<!--    doc.open();-->
+<!--    doc.write(html);-->
+<!--    doc.close();-->
+<!--  }-->
+
+<!--  setTimeout(() => {-->
+<!--    // Use the iframe's contentWindow to print-->
+<!--    iframe.contentWindow?.print();-->
+<!--    setTimeout(() => {-->
+<!--      document.body.removeChild(iframe);-->
+<!--    }, 2000);-->
+<!--  }, 2000);-->
+<!--}-->
+
 function printHtml(html) {
   const iframe = document.createElement('iframe');
+  // Position iframe off-screen with correct label dimensions
   iframe.style.position = 'absolute';
-  iframe.style.width = '0';
-  iframe.style.height = '0';
+  iframe.style.left = '-1000px';
+  iframe.style.width = '92mm';  // Match label width
+  iframe.style.height = '34mm'; // Match label height
   iframe.style.border = 'none';
   document.body.appendChild(iframe);
 
@@ -288,12 +314,11 @@ function printHtml(html) {
   }
 
   setTimeout(() => {
-    // Use the iframe's contentWindow to print
     iframe.contentWindow?.print();
     setTimeout(() => {
       document.body.removeChild(iframe);
     }, 2000);
-  }, 2000);
+  }, 500); // Reduced timeout for faster devices
 }
 
 
@@ -311,36 +336,36 @@ function printLabel(repairNumber) {
                 <title>Print Label</title>
                 <style>
                     @page { 
-                        size: 34mm 92mm; 
-                        margin: 0; 
+                        size: 34mm 92mm;
+                        margin: 0;
                     }
-                    body { 
-                        font-family: Arial, sans-serif; 
-                        font-size: 10px; 
-                        margin: 0; 
-                        padding: 0; 
-                        display: flex; 
-                        justify-content: center; 
-                        align-items: center; 
-                        height: 100vh; 
+                    body {
+                        font-family: Arial, sans-serif;
+                        font-size: 10px;
+                        margin: 0;
+                        padding: 0;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        height: 100vh;
                     }
-                    .content { 
-                        width: 92mm; 
-                        height: 34mm; 
-                        display: flex; 
-                        justify-content: center; 
-                        align-items: center; 
-                        text-align: center; 
-                        overflow: hidden; 
+                    .content {
+                        width: 92mm;
+                        height: 34mm;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        text-align: center;
+                        overflow: hidden;
                     }
-                    .content p { 
-                        margin: 0; 
-                        padding: 2mm; 
-                        font-weight: bold; 
-                        white-space: nowrap; 
-                        writing-mode: vertical-rl; 
-                        transform: rotate(180deg); 
-                        font-size: 14px; 
+                    .content p {
+                        margin: 0;
+                        padding: 2mm;
+                        font-weight: bold;
+                        white-space: nowrap;
+                        writing-mode: vertical-rl;
+                        transform: rotate(180deg);
+                        font-size: 14px;
                     }
                 </style>
             </head>
