@@ -296,27 +296,6 @@
 <!--  }, 2000);-->
 <!--}-->
 
-<!--function printHtml(html) {-->
-<!--  const iframe = document.createElement('iframe');-->
-<!--  iframe.style.position = 'absolute';-->
-<!--  iframe.style.left = '-1000px';-->
-<!--  iframe.style.width = '92mm';-->
-<!--  iframe.style.height = '34mm';-->
-<!--  iframe.style.border = 'none';-->
-<!--  document.body.appendChild(iframe);-->
-
-<!--  iframe.onload = () => {-->
-<!--    iframe.contentWindow?.print();-->
-<!--    setTimeout(() => {-->
-<!--      document.body.removeChild(iframe);-->
-<!--    }, 2000);-->
-<!--  };-->
-
-<!--  const doc = iframe.contentWindow?.document;-->
-<!--  doc.open();-->
-<!--  doc.write(html);-->
-<!--  doc.close();-->
-<!--}-->
 
 <!--function printLabel(repairNumber) {-->
 <!--    const now = new Date();-->
@@ -327,124 +306,131 @@
 <!--    const passCode = parts[5];-->
 
 <!--    const htmlContent = `-->
-<!--    <html>-->
-<!--      <head>-->
-<!--        <style>-->
-<!--          @page {-->
-<!--            size: 92mm 34mm; /* Correct dimensions */-->
-<!--            margin: 0;-->
-<!--          }-->
-<!--          body {-->
-<!--            margin: 0;-->
-<!--            padding: 2mm;-->
-<!--            font-family: Arial;-->
-<!--            font-size: 12px;-->
-<!--            display: flex;-->
-<!--            flex-direction: column;-->
-<!--            gap: 2mm;-->
-<!--          }-->
-<!--          p { margin: 0; }-->
-<!--        </style>-->
-<!--      </head>-->
-<!--      <body>-->
-<!--        <p>Date: ${date}</p>-->
-<!--        <p>Time: ${time}</p>-->
-<!--        <p>Customer: ${customer12}</p>-->
-<!--        <p>Code: ${passCode}</p>-->
-<!--      </body>-->
-<!--    </html>-->
-<!--  `;-->
+<!--        <html>-->
+<!--            <head>-->
+<!--                <title>Print Label</title>-->
+<!--                <style>-->
+<!--                    @page {-->
+<!--                        size: 34mm 92mm;-->
+<!--                        margin: 0;-->
+<!--                    }-->
+<!--                    body {-->
+<!--                        font-family: Arial, sans-serif;-->
+<!--                        font-size: 10px;-->
+<!--                        margin: 0;-->
+<!--                        padding: 0;-->
+<!--                        display: flex;-->
+<!--                        justify-content: center;-->
+<!--                        align-items: center;-->
+<!--                        height: 100vh;-->
+<!--                    }-->
+<!--                    .content {-->
+<!--                        width: 92mm;-->
+<!--                        height: 34mm;-->
+<!--                        display: flex;-->
+<!--                        justify-content: center;-->
+<!--                        align-items: center;-->
+<!--                        text-align: center;-->
+<!--                        overflow: hidden;-->
+<!--                    }-->
+<!--                    .content p {-->
+<!--                        margin: 0;-->
+<!--                        padding: 2mm;-->
+<!--                        font-weight: bold;-->
+<!--                        white-space: nowrap;-->
+<!--                        writing-mode: vertical-rl;-->
+<!--                        transform: rotate(180deg);-->
+<!--                        font-size: 14px;-->
+<!--                    }-->
+<!--                </style>-->
+<!--            </head>-->
+<!--            <body>-->
+<!--                <div class="content">-->
+<!--                    <p>Date: ${date}</p>-->
+<!--                    <p>Time: ${time}</p>-->
+<!--                    <p>Customer: ${customer12}</p>-->
+<!--                    <p>Pass code: ${passCode}</p>-->
+<!--                </div>-->
+<!--            </body>-->
+<!--        </html>-->
+<!--    `;-->
 
-<!--  printHtml(htmlContent);-->
+<!--    printHtml(htmlContent); // Call the workaround function-->
 <!--}-->
 
     function printHtml(html) {
-  const iframe = document.createElement('iframe');
-  // Tablet-optimized dimensions
-  iframe.style.width = '362px';  // 92mm @ 96dpi
-  iframe.style.height = '134px'; // 34mm @ 96dpi
-  iframe.style.position = 'fixed';
-  iframe.style.left = '-1000px';
-  iframe.style.border = 'none';
-  document.body.appendChild(iframe);
-
-  const doc = iframe.contentWindow?.document;
-  doc.open();
-  doc.write(html);
-  doc.close();
-
-  // Double confirmation for tablet rendering
-  iframe.contentWindow?.addEventListener('afterprint', () => {
-    document.body.removeChild(iframe);
-  });
-
-  // Tablet-specific activation flow
-  const printAttempt = () => {
-    if (!iframe.contentWindow) return;
-
-    // First try immediate print
-    iframe.contentWindow.print();
-
-    // Fallback for WebKit-based tablet browsers
-    setTimeout(() => {
-      if (document.body.contains(iframe)) {
-        iframe.contentWindow?.print();
-        setTimeout(() => document.body.removeChild(iframe), 10000);
-      }
-    }, 300);
-  };
-
-  iframe.contentWindow?.addEventListener('load', printAttempt);
-  setTimeout(printAttempt, 1000); // Final fallback
+    const newWindow = window.open('', '_blank');
+    if (newWindow) {
+        newWindow.document.open();
+        newWindow.document.write(html);
+        newWindow.document.close();
+        setTimeout(() => {
+            newWindow.print();
+            newWindow.close();
+        }, 1000); // Delay for proper rendering
+    }
 }
 
 function printLabel(repairNumber) {
-  const now = new Date();
+    const now = new Date();
     const time = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
     const parts = repairNumber.split("-");
     const date = parts[3] + "/" + parts[2] + "/" + parts[1];
     const customer12 = parts[4];
     const passCode = parts[5];
 
-  const htmlContent = `
-    <html>
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-        <style>
-          @page {
-            size: 92mm 34mm;
-            margin: 0;
-            -webkit-print-color-adjust: exact !important;
-          }
-          body {
-            margin: 0;
-            padding: 2mm !important;
-            background: white !important;
-            font-family: Arial, sans-serif;
-            font-size: 14px;
-            display: flex !important;
-            flex-direction: column;
-            min-height: 34mm !important;
-            width: 92mm !important;
-          }
-          p {
-            margin: 1mm 0 !important;
-            line-height: 1.2;
-            transform: rotate(0deg) !important;
-          }
-        </style>
-      </head>
-      <body>
-        <p>Date: ${date}</p>
-        <p>Time: ${time}</p>
-        <p>Customer: ${customer12}</p>
-        <p>Code: ${passCode}</p>
-      </body>
-    </html>
-  `;
+    const htmlContent = `
+        <html>
+            <head>
+                <title>Print Label</title>
+                <style>
+                    @media print {
+                        body {
+                            font-family: Arial, sans-serif;
+                            font-size: 10px;
+                            margin: 0;
+                            padding: 0;
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            height: 100vh;
+                        }
+                        .content {
+                            width: 92mm;
+                            height: 34mm;
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            text-align: center;
+                            overflow: hidden;
+                        }
+                        .content p {
+                            margin: 0;
+                            padding: 2mm;
+                            font-weight: bold;
+                            white-space: nowrap;
+                            writing-mode: vertical-rl;
+                            transform: rotate(180deg);
+                            font-size: 14px;
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="content">
+                    <p>Date: ${date}</p>
+                    <p>Time: ${time}</p>
+                    <p>Customer: ${customer12}</p>
+                    <p>Pass code: ${passCode}</p>
+                </div>
+            </body>
+        </html>
+    `;
 
-  printHtml(htmlContent);
+    printHtml(htmlContent); // Call the function to print
 }
+
+
 </script>
 
    <!-- Add Customer Modal -->
