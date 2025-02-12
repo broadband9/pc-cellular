@@ -298,29 +298,25 @@
 
 function printHtml(html) {
   const iframe = document.createElement('iframe');
-  // Position iframe off-screen with correct label dimensions
   iframe.style.position = 'absolute';
   iframe.style.left = '-1000px';
-  iframe.style.width = '92mm';  // Match label width
-  iframe.style.height = '34mm'; // Match label height
+  iframe.style.width = '92mm';
+  iframe.style.height = '34mm';
   iframe.style.border = 'none';
   document.body.appendChild(iframe);
 
-  const doc = iframe.contentWindow?.document;
-  if (doc) {
-    doc.open();
-    doc.write(html);
-    doc.close();
-  }
-
-  setTimeout(() => {
+  iframe.onload = () => {
     iframe.contentWindow?.print();
     setTimeout(() => {
       document.body.removeChild(iframe);
     }, 2000);
-  }, 500); // Reduced timeout for faster devices
-}
+  };
 
+  const doc = iframe.contentWindow?.document;
+  doc.open();
+  doc.write(html);
+  doc.close();
+}
 
 function printLabel(repairNumber) {
     const now = new Date();
@@ -331,58 +327,36 @@ function printLabel(repairNumber) {
     const passCode = parts[5];
 
     const htmlContent = `
-        <html>
-            <head>
-                <title>Print Label</title>
-                <style>
-                    @page { 
-                        size: 34mm 92mm;
-                        margin: 0;
-                    }
-                    body {
-                        font-family: Arial, sans-serif;
-                        font-size: 10px;
-                        margin: 0;
-                        padding: 0;
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        height: 100vh;
-                    }
-                    .content {
-                        width: 92mm;
-                        height: 34mm;
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        text-align: center;
-                        overflow: hidden;
-                    }
-                    .content p {
-                        margin: 0;
-                        padding: 2mm;
-                        font-weight: bold;
-                        white-space: nowrap;
-                        writing-mode: vertical-rl;
-                        transform: rotate(180deg);
-                        font-size: 14px;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="content">
-                    <p>Date: ${date}</p>
-                    <p>Time: ${time}</p>
-                    <p>Customer: ${customer12}</p>
-                    <p>Pass code: ${passCode}</p>
-                </div>
-            </body>
-        </html>
-    `;
+    <html>
+      <head>
+        <style>
+          @page {
+            size: 92mm 34mm; /* Correct dimensions */
+            margin: 0;
+          }
+          body {
+            margin: 0;
+            padding: 2mm;
+            font-family: Arial;
+            font-size: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 2mm;
+          }
+          p { margin: 0; }
+        </style>
+      </head>
+      <body>
+        <p>Date: ${date}</p>
+        <p>Time: ${time}</p>
+        <p>Customer: ${customer12}</p>
+        <p>Code: ${passCode}</p>
+      </body>
+    </html>
+  `;
 
-    printHtml(htmlContent); // Call the workaround function
+  printHtml(htmlContent);
 }
-
 </script>
 
    <!-- Add Customer Modal -->
