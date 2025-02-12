@@ -28,7 +28,7 @@ from .utils import send_email_with_smtp_go
 # Repairs
 @login_required
 def repairs_list(request):
-    repairs = Repair.objects.all()
+    repairs = Repair.objects.all().order_by("-id")
     page = request.GET.get('page', 1)  # Get the current page number from the request
     paginator = Paginator(repairs, 10)  # 10 logs per page
 
