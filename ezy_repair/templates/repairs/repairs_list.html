@@ -358,17 +358,29 @@
 <!--    printHtml(htmlContent); // Call the workaround function-->
 <!--}-->
 
-    function printHtml(html) {
+function printHtml(html) {
     const newWindow = window.open('', '_blank');
-    if (newWindow) {
-        newWindow.document.open();
-        newWindow.document.write(html);
-        newWindow.document.close();
-        setTimeout(() => {
-            newWindow.print();
-            newWindow.close();
-        }, 1000); // Delay for proper rendering
+
+    if (!newWindow) {
+        alert("Popup blocked! Please allow pop-ups and try again.");
+        return;
     }
+
+    newWindow.document.open();
+    newWindow.document.write(html);
+    newWindow.document.close();
+
+    newWindow.onload = function () {
+        setTimeout(() => {
+            try {
+                newWindow.print();
+                setTimeout(() => newWindow.close(), 1000); // Close after printing
+            } catch (error) {
+                console.error("Print failed, retrying...", error);
+                alert("Print preview failed. Try again.");
+            }
+        }, 1000); // Delay ensures full page load before printing
+    };
 }
 
 function printLabel(repairNumber) {
@@ -427,7 +439,7 @@ function printLabel(repairNumber) {
         </html>
     `;
 
-    printHtml(htmlContent); // Call the function to print
+    printHtml(htmlContent);
 }
 
 
