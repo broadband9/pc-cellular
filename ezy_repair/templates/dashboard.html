@@ -61,7 +61,13 @@
         searchResults.style.display = 'none';
 
         const results = data.results;
+
         if (Object.keys(results).length === 0){
+        }
+        const allEmpty = Object.values(results).every(list => list.length === 0);
+
+        if (allEmpty) {
+            alert("No data found");
         }
 
         for (const [category, items] of Object.entries(results)) {

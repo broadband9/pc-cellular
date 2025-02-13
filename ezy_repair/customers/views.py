@@ -49,14 +49,23 @@ def dashboard(request):
 # Login View
 def login_view(request):
     if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '').strip()
+
+        # Validation: Check if fields are empty
+        if not username or not password:
+            messages.error(request, "Username and password are required.")
+            return render(request, 'login.html')
+
         user = authenticate(request, username=username, password=password)
+
         if user:
             login(request, user)
             return redirect('dashboard')
         else:
-            return render(request, 'login.html', {'error': 'Invalid credentials'})
+            messages.error(request, "Invalid username or password.")
+            return render(request, 'login.html')
+
     return render(request, 'login.html')
 
 # Logout View
