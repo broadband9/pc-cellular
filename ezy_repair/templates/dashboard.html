@@ -80,7 +80,7 @@
             searchResults.appendChild(categoryItem);
 
             // Add individual items (limit to 5)
-            items.slice(0, 5).forEach(item => {
+            items.forEach(item => {
                 const listItem = document.createElement('li');
                 listItem.className = 'list-group-item';
                 listItem.textContent = item.first_name ? `${item.first_name} ${item.last_name}` : item.name || item.repair_number || item.site_name;
