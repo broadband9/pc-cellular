@@ -668,7 +668,6 @@ function printHtml(html) {
         } else {
             postcode.classList.remove('is-invalid');
         }
-        console.log("isValid", isValid)
         if (!isValid){
             return
         }
@@ -860,7 +859,6 @@ function close_customer_modal(){
             const deviceType = this.value;
             const mobileTabletFields = document.getElementById('mobile-tablet-fields');
             const laptopFields = document.getElementById('laptop-fields');
-            console.log("device_type", deviceType)
             if (deviceType === 'Mobile' || deviceType === 'Tablet') {
                 laptopFields.classList.add('d-none');
                 mobileTabletFields.classList.remove('d-none');
@@ -1666,7 +1664,6 @@ clearButton.addEventListener('click', () => {
 
 // Show the text area for adding a note for a specific repair
 function showNoteInput(repairId) {
-    console.log("in add note for repair", repairId);
     document.getElementById("note-input-container-" + repairId).classList.remove("d-none");
 }
 
@@ -1685,7 +1682,6 @@ function addNote(repairId) {
 
     const send_sms  = document.getElementById(`sendAsSms-${repairId}`).checked;
     const send_email  = document.getElementById(`sendAsEmail-${repairId}`).checked;
-    console.log("location_ element", locationElement, send_sms, send_email)
     let allNotes = [...(repairNotes[repairId] || [])]; // Start with the new notes
 
     // Get existing notes from the DOM that are not part of newNotes
@@ -1697,7 +1693,6 @@ function addNote(repairId) {
     // Combine new notes with filtered existing notes
     allNotes = allNotes.concat(filteredExistingNotes);
 
-    console.log("all notes", allNotes);
 
         // Send the notes to the backend
         fetch('/repairs/save-notes/', {
@@ -1720,7 +1715,6 @@ function addNote(repairId) {
         .then(data => {
     if (data.success) {
         alert("Notes saved successfully!");
-        console.log("data", data);
 
         const notesDiv = document.getElementById('note' + repairId);
 
@@ -1929,7 +1923,6 @@ function deleteNewNote(repairId) {
         .replace(/Delete/g, '') // Remove "Delete"
         .trim(); // Trim extra spaces
 
-    console.log("Cleaned Note Text to Delete:", noteText); // Debugging
 
     // Remove the note element from the UI
     noteElement.remove();
@@ -1954,7 +1947,6 @@ function saveChanges(repairId) {
 //     const locationElement  = document.getElementById(`locationview${repairId}`).value;
 //     const send_sms  = document.getElementById(`sendAsSms-${repairId}`).checked;
 //     const send_email  = document.getElementById(`sendAsEmail-${repairId}`).checked;
-//     console.log("location_ element", locationElement, send_sms, send_email)
 //     let allNotes = [...(repairNotes[repairId] || [])]; // Start with the new notes
 
 //     // Get existing notes from the DOM that are not part of newNotes
@@ -1966,7 +1958,6 @@ function saveChanges(repairId) {
 //     // Combine new notes with filtered existing notes
 //     allNotes = allNotes.concat(filteredExistingNotes);
 
-//     console.log("all notes", allNotes);
 
 //         // Send the notes to the backend
 //         fetch('/repairs/save-notes/', {
@@ -2013,11 +2004,8 @@ function handleOutsideClick(event) {
     const modal = document.getElementById('addRepairModal');
     const secondmodal = document.getElementById('addCustomerModal');
     // Check if the modal is open and if the click is outside the modal
-    console.log("test", modal.classList.contains('show'))
     if (modal.classList.contains('show') && !modal.contains(event.target)) {
-        console.log("in condition", !secondmodal.contains(event.target))
          if (!secondmodal.contains(event.target)){
-            console.log("in second modal")
             close_customer_modal();
         }
     }

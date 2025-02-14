@@ -25,14 +25,12 @@ def dashboard(request):
     statuses = {}
     fetch_status = RepairStatus.objects.all()
     activities = ActivityLog.objects.order_by('-created_at')[:5]
-    print("check", activities.values('description', 'created_at'))
 
     statuses["Total"] = repair_count
     for obj in fetch_status:
         statuses[obj.name] = Repair.objects.filter(status=obj).count()
 
     repair_statuses = RepairStatus.objects.all()
-    print("statuses", statuses)
     locations = Sites.objects.prefetch_related('locations').all()
 
     context = {

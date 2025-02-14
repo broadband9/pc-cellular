@@ -46,7 +46,6 @@ def repairs_list(request):
     mob_yes = ['lens_lcd_damage', 'camera_lens_back_damage', 'risk_back', 'risk_biometric', 'button_function_ok', 'sim_removed', 'risk_lcd']
     lap_yes = ['keyboard_functional', 'screen_damage', 'hinge_damage', 'trackpad_functional']
     mandatory_yes = ['tampered', 'missing_part', 'power_up', 'liquid_damage']
-    print("repairs", repairs)
     makes = Make.objects.all()
     return render(request, 'repairs/repairs_list.html', {'repairs': repairs, "statuses": statuses,
                                                          "customers": customers, "locations": locations,
@@ -73,7 +72,6 @@ def add_repair(request):
         power_up = request.POST.get("power_up")
         missing_part = request.POST.get("missing_part")
         tampered = request.POST.get("tampered")
-        print("signature", signature_data)
 
         # Generate a random passcode (e.g., a 6-character string of digits)
 
@@ -252,7 +250,6 @@ def edit_repair(request, pk):
         tampered = request.POST.get("tampered")
         signature_image_data = request.POST.get("signature_image")  # Getting the base64 signature image data
 
-        print("issue description", issue_description)
         if signature_image_data:
             # Decode the base64 image and save it as an image file
 
@@ -307,7 +304,6 @@ def edit_repair(request, pk):
             keyboard_functional = request.POST.get("keyboard_functional")
             hinge_damage = request.POST.get("hinge_damage")
             screen_damage = request.POST.get("screen_damage")
-            print("aaa", operating_system, trackpad_functional, keyboard_functional, ram, storage)
             repair.trackpad_functional = trackpad_functional
             repair.keyboard_functional = keyboard_functional
             repair.hinge_damage = hinge_damage
@@ -491,7 +487,6 @@ def global_search(request):
 @csrf_exempt
 def add_customer(request):
     if request.method == 'POST':
-        print("request.body", request.body)
         try:
             # Parse the incoming JSON data
             first_name = request.POST.get('first_name', '').strip()
@@ -630,7 +625,6 @@ def save_notes(request):
             if send_email and repair.customer.email:
                 subject = f"Repair Update: {repair.repair_number}"
                 email_html_message = render_to_string('email_template.html', repair_data)
-                print(email_html_message)
                 email_plain_message = strip_tags(email_html_message)
                 try:
                     send_email_with_smtp_go(
@@ -672,7 +666,6 @@ def add_site(request):
     if request.method == "POST":
         site_name = request.POST.get("name")
         location_names = request.POST.getlist("locations[]")
-        print("site name", site_name, location_names)
         site = Sites.objects.create(name=site_name)
         for location_name in location_names:
             if location_name.strip():
@@ -699,8 +692,6 @@ def edit_site(request, pk):
         # Update existing locations
         location_ids = request.POST.getlist("location_ids[]")
         location_names = request.POST.getlist("locations[]")
-        print("locations ids", location_ids)
-        print("locations names", location_names)
         for location_id, location_name in zip(location_ids, location_names):
             # location = get_object_or_404(Location, id=location_id, site=site)
             location = Location(site=site, name=location_name)
@@ -708,7 +699,6 @@ def edit_site(request, pk):
 
         # Add new locations
         new_locations = request.POST.getlist("new_locations[]")
-        print("new locations", new_locations)
         for new_location_name in new_locations:
             if new_location_name.strip():
                 Location.objects.create(name=new_location_name, site=site)

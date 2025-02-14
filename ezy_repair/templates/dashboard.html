@@ -1023,7 +1023,6 @@ document.addEventListener('click', (event) => {
 
     const send_sms  = document.getElementById(`sendAsSms`).checked;
     const send_email  = document.getElementById(`sendAsEmail`).checked;
-    console.log("location_ element", locationElement, send_sms, send_email)
     let allNotes = [newNote]; // Start with the new notes
 
     // Get existing notes from the DOM that are not part of newNotes
@@ -1035,7 +1034,6 @@ document.addEventListener('click', (event) => {
     // Combine new notes with filtered existing notes
     
 
-    console.log("all notes", allNotes);
 
         // Send the notes to the backend
         fetch('/repairs/save-notes/', {
@@ -1058,7 +1056,6 @@ document.addEventListener('click', (event) => {
         .then(data => {
     if (data.success) {
         alert("Notes saved successfully!");
-        console.log("data", data);
         document.getElementById("new-note").value=""
 
         const notesDiv = document.getElementById('notes');

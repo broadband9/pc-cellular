@@ -1,0 +1,68 @@
+# Django Deployment Guide for ezy_repair
+
+## Step 1: Update and Install Required Packages
+sudo apt update && sudo apt upgrade -y
+sudo apt install python3-pip python3-venv nginx -y
+
+## Step 2: Clone the Project and Set Up Virtual Environment
+cd /var/www/
+git clone <your-git-repo-url> ezy_repair
+cd ezy_repair
+python3 -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+
+## Step 3: Configure Django Settings
+# Update ALLOWED_HOSTS in ezy_repair/settings.py
+# Set DEBUG = False
+
+## Step 4: Run Migrations and Collect Static Files
+python manage.py migrate
+python manage.py collectstatic --noinput
+
+## Step 5: Create Gunicorn Service File
+sudo tee /etc/systemd/system/ezy_repair.service > /dev/null <<EOF
+[Unit]
+Description=Gunicorn service for ezy_repair
+After=network.target
+
+[Service]
+User=root
+Group=www-data
+WorkingDirectory=/var/www/ezy_repair
+ExecStart=/var/www/ezy_repair/venv/bin/gunicorn --workers 3 --bind unix:/var/www/ezy_repair/ezy_repair.sock ezy_repair.wsgi:application
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Start and enable the service
+sudo systemctl daemon-reload
+sudo systemctl start ezy_repair
+sudo systemctl enable ezy_repair
+
+## Step 6: Configure NGINX
+sudo tee /etc/nginx/sites-available/ezy_repair > /dev/null <<EOF
+server {
+    listen 80;
+    server_name _;
+
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/var/www/ezy_repair/ezy_repair.sock;
+    }
+}
+EOF
+
+# Enable configuration and restart NGINX
+sudo ln -s /etc/nginx/sites-available/ezy_repair /etc/nginx/sites-enabled
+sudo nginx -t
+sudo systemctl restart nginx
+
+## Step 7: Restart Services
+sudo systemctl restart ezy_repair
+sudo systemctl restart nginx
+
+## Step 8: Verify Deployment
+# Visit your server's IP address to check if the Django app is running.
