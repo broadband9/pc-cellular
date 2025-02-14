@@ -270,7 +270,8 @@ def edit_repair(request, pk):
         # repair.device_type = device_type
         repair.issue_description = issue_description
         repair.estimated_cost = estimated_cost
-        repair.finalized_price = finalized_price
+        if finalized_price:
+            repair.finalized_price = finalized_price
         repair.liquid_damage = liquid_damage
         repair.power_up = power_up
         repair.missing_part = missing_part
